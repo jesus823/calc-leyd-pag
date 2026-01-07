@@ -462,8 +462,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
-        <td><textarea>Cant. Premios</textarea></td>
-        <td><textarea>Valor Premios</textarea></td>
+    <td style="font-weight: bold; text-align: center; vertical-align: middle;">Cant. Premios</td>
+    <td style="font-weight: bold; text-align: center; vertical-align: middle;">Valor Premios</td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
 
@@ -1558,7 +1558,12 @@ let ultimoTimestampRecibido = 0;
 function obtenerPeerIdPersistente() {
   let peerId = localStorage.getItem('peer-id-persistente');
   if (!peerId) {
-    peerId = 'pagato' + Math.random().toString(36).substr(2, 9);
+    // Pedir al usuario que ingrese un ID
+    peerId = prompt('Por favor, ingresa un ID único para este dispositivo (por ejemplo, pagatodo11):');
+    if (!peerId) {
+      // Si no ingresa, generamos uno aleatorio
+      peerId = 'pagato' + Math.random().toString(36).substr(2, 9);
+    }
     localStorage.setItem('peer-id-persistente', peerId);
   }
   return peerId;
@@ -2029,19 +2034,61 @@ function desconectar() {
 
 // Copiar mi ID
 function copiarMiID() {
-  navigator.clipboard.writeText(miID).then(() => {
-    Swal.fire({
-      icon: 'success',
-      title: 'ID copiado',
-      text: 'ID copiado al portapapeles',
-      timer: 1500,
-      showConfirmButton: false
-    });
-  }).catch(() => {
-    prompt('Copia este ID manualmente:', miID);
+  Swal.fire({
+    title: 'Mi ID',
+    text: `ID actual: ${miID}`,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonText: 'Copiar',
+    cancelButtonText: 'Cambiar ID',
+    showDenyButton: true,
+    denyButtonText: 'Cerrar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      navigator.clipboard.writeText(miID).then(() => {
+        Swal.fire({
+          icon: 'success',
+          title: 'ID copiado',
+          text: 'ID copiado al portapapeles',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }).catch(() => {
+        prompt('Copia este ID manualmente:', miID);
+      });
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      // Cambiar ID
+      Swal.fire({
+        title: 'Cambiar ID',
+        input: 'text',
+        inputLabel: 'Nuevo ID',
+        inputValue: miID,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Debes ingresar un ID';
+          }
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const nuevoId = result.value;
+          localStorage.setItem('peer-id-persistente', nuevoId);
+          Swal.fire({
+            icon: 'success',
+            title: 'ID guardado',
+            text: 'El ID ha sido cambiado. La página se recargará para aplicar los cambios.',
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            location.reload();
+          });
+        }
+      });
+    }
   });
 }
-
 // Guardar datos localmente
 function guardarLocalmente() {
   // Guardar todos los campos
@@ -2652,7 +2699,7 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6").forEach(input => {
     input.addEventListener("input", sumarConteoBilletes);
-  });    
+  });
 });
 </script>
 </body>
