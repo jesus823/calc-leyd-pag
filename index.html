@@ -2092,8 +2092,6 @@
     });
   </script>
 
-
-
   <script>
     function sumarConteoBilletes() {
       let total = 0;
@@ -2122,6 +2120,162 @@
       });
   </script>
 
+<!-- PeerJS para conexión P2P -->
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.0/dist/peerjs.min.js"></script>
+
+<script>
+  const peer = new Peer(); // Genera un ID único
+  let conexion = null;
+  let miID = '';
+  let yaEstaEnviando = false; // Evitar envíos duplicados
+
+  // 🆔 Mostrar tu ID al cargar
+  peer.on('open', (id) => {
+    miID = id;
+    console.log('Tu ID de conexión:', id);
+    
+    // Mostrar ID en un botón en lugar de alert molesto
+    document.getElementById('miIDBtn').textContent = `Mi ID: ${id}`;
+    document.getElementById('miIDBtn').style.display = 'block';
+  });
+
+  // 📞 CONECTAR A OTRO DISPOSITIVO
+  function conectarDispositivo() {
+    const idRemoto = prompt('Ingresa el ID del otro dispositivo:');
+    if (!idRemoto) return;
+    
+    conexion = peer.connect(idRemoto);
+
+    conexion.on('open', () => {
+      alert('✅ Conectado exitosamente! Ahora puedes ver los datos en tiempo real.');
+      
+      // Enviar estado actual inmediatamente
+      enviarDatos();
+      
+      // Configurar envío automático
+      if (!yaEstaEnviando) {
+        yaEstaEnviando = true;
+        document.addEventListener("input", enviarDatos);
+        document.addEventListener("change", enviarDatos);
+      }
+    });
+
+    conexion.on('error', (err) => {
+      alert('❌ Error al conectar. Verifica el ID e intenta nuevamente.');
+      console.error(err);
+    });
+  }
+
+  // 📥 RECIBIR CONEXIÓN
+  peer.on('connection', (conn) => {
+    conexion = conn;
+    alert('📲 Otro dispositivo se conectó a ti!');
+    
+    conexion.on('data', (datos) => {
+      // Actualizar inputs y textareas
+      document.querySelectorAll("input, textarea").forEach((campo, index) => {
+        if (datos.campos && datos.campos[index] !== undefined) {
+          campo.value = datos.campos[index];
+          
+          // Actualizar dataset.valor si existe
+          if (campo.dataset.valor !== undefined) {
+            campo.dataset.valor = datos.campos[index].replace(/\D/g, "") || "0";
+          }
+        }
+      });
+
+      // Actualizar celdas con clase rX
+      document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
+        if (datos.celdas && datos.celdas[index] !== undefined) {
+          celda.textContent = datos.celdas[index];
+        }
+      });
+
+      // Actualizar divs especiales (.cantidad3, .cantidad5)
+      if (datos.cantidad3) {
+        const div3 = document.querySelector('.cantidad3');
+        if (div3) {
+          div3.textContent = datos.cantidad3;
+          div3.dataset.valor = datos.cantidad3.replace(/\D/g, "");
+        }
+      }
+
+      if (datos.cantidad5) {
+        const div5 = document.querySelector('.cantidad5');
+        if (div5) {
+          div5.textContent = datos.cantidad5;
+          div5.dataset.valor = datos.cantidad5.replace(/\D/g, "");
+        }
+      }
+
+      // Recalcular totales
+      if (typeof calcularTotales === 'function') {
+        calcularTotales();
+      }
+      if (typeof verificarCamposVacios === 'function') {
+        verificarCamposVacios();
+      }
+    });
+  });
+
+  // 📤 ENVIAR DATOS
+  function enviarDatos() {
+    if (!conexion) return;
+    
+    const datos = {
+      campos: [],
+      celdas: [],
+      cantidad3: '',
+      cantidad5: ''
+    };
+
+    // Capturar inputs y textareas
+    document.querySelectorAll("input, textarea").forEach((campo) => {
+      datos.campos.push(campo.value);
+    });
+
+    // Capturar celdas rX
+    document.querySelectorAll("td[class^='r']").forEach((celda) => {
+      datos.celdas.push(celda.textContent);
+    });
+
+    // Capturar divs especiales
+    const div3 = document.querySelector('.cantidad3');
+    if (div3) datos.cantidad3 = div3.textContent;
+
+    const div5 = document.querySelector('.cantidad5');
+    if (div5) datos.cantidad5 = div5.textContent;
+
+    try {
+      conexion.send(datos);
+    } catch (error) {
+      console.error('Error al enviar:', error);
+    }
+  }
+
+  // 📋 Copiar mi ID al portapapeles
+  function copiarMiID() {
+    navigator.clipboard.writeText(miID).then(() => {
+      alert('✅ ID copiado! Ahora envíalo al otro dispositivo.');
+    }).catch(() => {
+      prompt('Copia este ID manualmente:', miID);
+    });
+  }
+
+  // 🎨 Botones de interfaz mejorada
+  document.addEventListener('DOMContentLoaded', () => {
+    document.body.insertAdjacentHTML('afterbegin', `
+      <div style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        <button id="miIDBtn" onclick="copiarMiID()" style="display:none; background: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 5px; font-weight: bold; width: 100%;">
+          Mi ID: Cargando...
+        </button>
+        <button onclick="conectarDispositivo()" style="background: #2196F3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%;">
+          🔗 Conectar a otro dispositivo
+        </button>
+      </div>
+    `);
+  });
+</script>
 
 </body>
 
