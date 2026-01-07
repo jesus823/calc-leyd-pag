@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-
+  
   <link rel="stylesheet" href="estilos.css">
-  <link rel="icon" type="image/png"
-    href="https://img.freepik.com/vector-gratis/ilustracion-colorida-calculadora-dibujos-animados_1308-174688.jpg">
-
+  <link rel="icon" type="image/png" href="https://img.freepik.com/vector-gratis/ilustracion-colorida-calculadora-dibujos-animados_1308-174688.jpg">
+  
   <title>Contador Diario Pagatodo</title>
-
+  
   <style>
     /* Estilos para los controles P2P */
     .peer-controls {
@@ -21,11 +19,11 @@
       background: white;
       padding: 10px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       max-width: 300px;
       border: 2px solid #4CAF50;
     }
-
+    
     .peer-button {
       background: #4CAF50;
       color: white;
@@ -38,20 +36,20 @@
       width: 100%;
       transition: all 0.3s;
     }
-
+    
     .peer-button:hover {
       opacity: 0.9;
       transform: translateY(-2px);
     }
-
+    
     .peer-button.connect {
       background: #2196F3;
     }
-
+    
     .peer-button.disconnect {
       background: #f44336;
     }
-
+    
     .peer-status {
       margin-top: 5px;
       padding: 5px;
@@ -60,19 +58,19 @@
       font-size: 12px;
       font-weight: bold;
     }
-
+    
     .connected {
       background: #d4edda;
       color: #155724;
       border: 1px solid #c3e6cb;
     }
-
+    
     .disconnected {
       background: #f8d7da;
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
-
+    
     /* Estilos para las sugerencias de autocompletado */
     .sugerencias {
       position: absolute;
@@ -89,30 +87,30 @@
       padding: 0;
       margin: 0;
     }
-
+    
     .sugerencias li {
       padding: 8px;
       cursor: pointer;
       border-bottom: 1px solid #eee;
     }
-
+    
     .sugerencias li:hover {
       background-color: #f0f0f0;
     }
-
+    
     /* Estilos para estados */
     .exacto {
       background-color: yellow !important;
     }
-
+    
     .sobra {
       background-color: lightgreen !important;
     }
-
+    
     .falta {
       background-color: salmon !important;
     }
-
+    
     @media (max-width: 1200px) {
       .peer-controls {
         position: relative;
@@ -128,115 +126,147 @@
 
 <body>
 
-  <!-- Controles de conexión P2P -->
-  <div class="peer-controls">
-    <button id="miIDBtn" class="peer-button" onclick="copiarMiID()">
-      Mi ID: Cargando...
-    </button>
-    <button id="connectBtn" class="peer-button connect" onclick="conectarDispositivo()">
-      🔗 Conectar a otro dispositivo
-    </button>
-    <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none;">
-      🚫 Desconectar
-    </button>
- 
- 
-    <div id="peerStatus" class="peer-status disconnected">
-      Sin conexión
-    </div>
-  </div>
+<!-- Script para bloquear letras en inputs numéricos -->
+<script>
+// Bloquear entrada de letras en todos los inputs numéricos
+document.addEventListener('DOMContentLoaded', function() {
+  // Seleccionar todos los inputs que deben ser solo numéricos
+  const numericInputs = document.querySelectorAll('input[type="tel"]:not([id^="loteria"]), input.input1, input.input2, input.input3, input.input4, input.input5, input.input6, input.input7, input.input8, input.input9, input.input10, input.input11, input.input12, input.input13, input.input14, input.input15, input.input16, input.input17, input.input18, input.input19, input.input20, input.input21, input.input22, input.input23, input.input24, input.input25, input.input26, input.input27, input.input28, input.input29, input.input30, input.input31, input.input32, input.input33, input.input34, input.input35, input.input36, input.input37, input.input38, input.input39, input.input40, input.input41, input.input42, input.input43, input.input44, input.input45, input.input46, input.input47, input.input48, input.input49, input.input50, input.input51, input.input52, input.input53, input.input54, input.input55, input.input56, input.input57, input.input58, input.input59, input.input60');
+  
+  numericInputs.forEach(input => {
+    // Prevenir entrada de caracteres no numéricos
+    input.addEventListener('keydown', function(e) {
+      // Permitir teclas de control: backspace, tab, enter, escape, punto (para decimales)
+      if ([8, 9, 13, 27, 110, 190].includes(e.keyCode) ||
+         // Permitir: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+         (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) ||
+         // Permitir flechas
+         (e.keyCode >= 35 && e.keyCode <= 40)) {
+        return;
+      }
+      
+      // Asegurarse de que es un número
+      if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+        e.preventDefault();
+      }
+    });
+    
+    // Limpiar entrada al pegar
+    input.addEventListener('paste', function(e) {
+      e.preventDefault();
+      const pastedText = e.clipboardData.getData('text');
+      const numbersOnly = pastedText.replace(/\D/g, '');
+      document.execCommand('insertText', false, numbersOnly);
+    });
+  });
+});
+</script>
 
-  <!-- Tabla principal - Manteniendo la estructura original -->
-  <table id="miTabla">
-    <thead>
-      <tr>
-        <th style="width: 75px; background-color: yellow; border: 3px solid;color: black;">$ Total Venta </th>
-        <th style="background-color: white; width: 30px;"></th>
-        <th style="border: 3px solid; color: black;">Sumar a la Venta / Gastos / Nequi</th>
-        <th style="width: 50px;border: 3px solid;color: black;">Valor</th>
-        <th style="background-color: white; width: 30px;"></th>
-        <th style="width: 70px;  border: 3px solid;color: black;">Billetes </th>
-        <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
-        <th style=" width: 110px; border: 3px solid;color: black;">Total</th>
-        <th style="background-color: white; width: 30px;"></th>
-        <th style="width: 50px;border: 3px solid;color: black;">Monedas</th>
-        <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
-        <th style="border: 3px solid;color: black; width: 105px;">Total</th>
-        <th style="background-color: white; width: 30px;"></th>
-        <th style=" border: 3px solid;"></th>
-        <th style=" border: 3px solid;"></th>
-        <th></th>
-        <th
-          style="background-color: #ccc; text-align: center; font-weight: bold; color: black; font-size: 12px; vertical-align: middle; padding: 5px;">
-          <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-            <img
-              src="https://media.istockphoto.com/id/1408463718/es/vector/recordatorio-en-calendario-fecha-l%C3%ADmite-del-calendario-mensaje-push-de-notificaci%C3%B3n-de.jpg?s=612x612&w=0&k=20&c=MyiTsnAG5L-A139FJV9t-fvmVmhA6nDM4LUaqiEFp04="
-              alt="" style="width: 35px; height: 35px; border-radius: 50%;">
-            <span id="fechaHoraActual" style="font-size: 13px;"></span>
-          </div>
-        </th>
-        <th style="width: 105px;"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Fila 1 -->
-      <tr>
-        <td onclick="this.querySelector('input').focus()" style="border: 3px solid black; background-color: yellow;">
-          <input type="tel" inputmode="numeric" class="venta" id="venta-total"
-            style="background-color: yellow; font-size: 17px; font-weight: bold; width: 100px; height: 25px; box-shadow: 0 0 8px rgba(8, 2, 5, 1); border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off">
-        </td>
-        <td><textarea></textarea></td>
-        <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Nequi</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="nequi1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center; "
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight:bolder ;  border: 3px solid;">100,000</td>
-        <td style="border: 3px solid; "><input id="b1" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-bilteles" style="font-weight: bolder; border: 5px solid;">
-        </td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder; border: 3px solid;">1000</td>
-        <td style="border: 3px solid;"> <input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td id="nequi" style=" border: 3px solid;">Nequii</td>
-        <td style="width: 70px;  border: 3px solid;   "><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-      </tr>
-      <!-- Fila 2 -->
-      <tr>
-        <td></td>
-        <td><textarea></textarea></td>
-        <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Don Alfonso</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="alfonso1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50,000</td>
-        <td style="border: 3px solid;"><input id="b2" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">500</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td id="alfonso" style=" border: 3px solid;">Don Alfonso</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td style="position: relative; height: 40px; width: 60px;">
-          <img src="stich.webp" alt="" style="
+<!-- Controles de conexión P2P -->
+<div class="peer-controls">
+  <button id="miIDBtn" class="peer-button" onclick="copiarMiID()">
+    Mi ID: Cargando...
+  </button>
+  <button id="connectBtn" class="peer-button connect" onclick="conectarDispositivo()">
+    🔗 Conectar a otro dispositivo
+  </button>
+  <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none;">
+    🚫 Desconectar
+  </button>
+
+  <div id="peerStatus" class="peer-status disconnected">
+    Sin conexión
+  </div>
+</div>
+
+<!-- Tabla principal - Manteniendo la estructura original -->
+<table id="miTabla">
+  <thead>
+    <tr>
+      <th style="width: 75px; background-color: yellow; border: 3px solid;color: black;">$ Total Venta </th>
+      <th style="background-color: white; width: 30px;"></th>
+      <th style="border: 3px solid; color: black;">Sumar a la Venta / Gastos / Nequi</th>
+      <th style="width: 50px;border: 3px solid;color: black;">Valor</th>
+      <th style="background-color: white; width: 30px;"></th>
+      <th style="width: 70px;  border: 3px solid;color: black;">Billetes </th>
+      <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
+      <th style=" width: 110px; border: 3px solid;color: black;">Total</th>
+      <th style="background-color: white; width: 30px;"></th>
+      <th style="width: 50px;border: 3px solid;color: black;">Monedas</th>
+      <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
+      <th style="border: 3px solid;color: black; width: 105px;">Total</th>
+      <th style="background-color: white; width: 30px;"></th>
+      <th style=" border: 3px solid;"></th>
+      <th style=" border: 3px solid;"></th>
+      <th></th>
+      <th style="background-color: #ccc; text-align: center; font-weight: bold; color: black; font-size: 12px; vertical-align: middle; padding: 5px;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+          <img src="https://media.istockphoto.com/id/1408463718/es/vector/recordatorio-en-calendario-fecha-l%C3%ADmite-del-calendario-mensaje-push-de-notificaci%C3%B3n-de.jpg?s=612x612&w=0&k=20&c=MyiTsnAG5L-A139FJV9t-fvmVmhA6nDM4LUaqiEFp04=" alt="" style="width: 35px; height: 35px; border-radius: 50%;">
+          <span id="fechaHoraActual" style="font-size: 13px;"></span>
+        </div>
+      </th>
+      <th style="width: 105px;"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Fila 1 -->
+    <tr>
+      <td onclick="this.querySelector('input').focus()" style="border: 3px solid black; background-color: yellow;">
+        <input type="tel" inputmode="numeric" class="venta" id="venta-total"
+          style="background-color: yellow; font-size: 17px; font-weight: bold; width: 100px; height: 25px; box-shadow: 0 0 8px rgba(8, 2, 5, 1); border-radius: 6px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off">
+      </td>
+      <td><textarea></textarea></td>
+      <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Nequi</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="nequi1"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center; "
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight:bolder ;  border: 3px solid;">100,000</td>
+      <td style="border: 3px solid; "><input id="b1" type="tel" class="cantidad"
+          style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-bilteles" style="font-weight: bolder; border: 5px solid;">
+      </td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder; border: 3px solid;">1000</td>
+      <td style="border: 3px solid;"> <input type="tel" class="cantidad"
+          style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td id="nequi" style=" border: 3px solid;">Nequii</td>
+      <td style="width: 70px;  border: 3px solid;   "><input type="tel" class="cantidad4"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+    </tr>
+    <!-- Fila 2 -->
+    <tr>
+      <td></td>
+      <td><textarea></textarea></td>
+      <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Don Alfonso</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="alfonso1"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50,000</td>
+      <td style="border: 3px solid;"><input id="b2" type="tel" class="cantidad"
+          style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">500</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad"
+          style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td id="alfonso" style=" border: 3px solid;">Don Alfonso</td>
+      <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td style="position: relative; height: 40px; width: 60px;">
+        <img src="stich.webp" alt="" style="
          position: absolute;
          top: 15px;
          left: 50%;
@@ -245,141 +275,138 @@
          border-radius: 80px;
          pointer-events: none;
        ">
-        </td>
-      </tr>
-      <!-- Fila 3 -->
-      <tr>
-        <td id="sobra" style="font-weight: bolder; border: 3px solid;color: black;"></td>
+      </td>
+    </tr>
+    <!-- Fila 3 -->
+    <tr>
+      <td id="sobra" style="font-weight: bolder; border: 3px solid;color: black;"></td>
+      <td><textarea></textarea></td>
+      <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Descuadre</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="descuadre1"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">20,000</td>
+      <td style="border: 3px solid;"><input id="b3" type="tel" class="cantidad"
+          style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">200</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad"
+          style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td style=" border: 3px solid;" id="descuadre">Descuadre</td>
+      <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+    </tr>
+    <!-- Fila 4 -->
+    <tr>
+      <td id="resul" style="font-weight: bolder; border: 3px solid;color: black;"></td>
+      <td><textarea></textarea></td>
+      <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Mío</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="mio1"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">10,000</td>
+      <td style="border: 3px solid;"><input id="b4" type="tel" class="cantidad"
+          style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid; ">100</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad"
+          style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td id="mio" style="border: 3px solid;">Míoo</td>
+      <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+    </tr>
+    <!-- Fila 5 -->
+    <tr>
+      <td></td>
+      <td><textarea></textarea></td>
+      <td style="border: 3px solid;">Avances</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="Avances1"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">5,000</td>
+      <td style="border: 3px solid;"><input id="b5" type="tel" class="cantidad"
+          style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50</td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad"
+          style="height: 25px;width: 50px; text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td id="Avances" style="border: 3px solid;">Avances</td>
+      <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+    </tr>
+    <!-- Fila 6 -->
+    <tr>
+      <td style="border-bottom: 2px solid black;" class="celda-con-boton">
+        <p style="font-weight: bold; color: rgb(102, 141, 234); margin: 0; text-shadow: 6px 6px 8px rgb(5, 400, 210);">
+          Borrar Todo
+        </p>
+        <img style="margin-top: 50px; width: 90px; margin-right: 10px; height: 80px; box-shadow: 4px 4px 10px rgb(5, 165, 210);" src="https://thumbs.dreamstime.com/b/borrador-feliz-de-la-historieta-53892555.jpg" alt="Borrar" class="img-flotante" onclick="confirmarBorrado()">
+      </td>
+      <td><textarea></textarea></td>
+      <td style="border: 3px solid;"><textarea></textarea></td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad2"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">2,000</td>
+      <td style="border: 3px solid;"><input id="b6" type="tel" class="cantidad"
+          style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+      <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td style="border: 3px solid;"><textarea></textarea></td>
+      <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+    </tr>
+    <!-- Fila 7 -->
+    <tr>
+      <td style="border-bottom: 2px solid black;"><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td style="border: 3px solid;"><textarea></textarea></td>
+      <td style="border: 3px solid;"><input type="tel" class="cantidad2"
+          style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
+          oninput="formatearMiles(this)" autocomplete="off"></td>
+      <td><textarea></textarea></td>
+      <td colspan="2" style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;">
+        $ Total Bilteles</td>
+      <td id="total-general-bilteles"
+        style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;"></td>
+      <td><textarea></textarea></td>
+      <td><textarea></textarea></td>
+      <td class="resultado-conteo-billetes"
+      style="font-weight: bold; font-size: 19px; background-color: rgb(230, 12, 197);border: 3px solid;"></td>
         <td><textarea></textarea></td>
-        <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Descuadre</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="descuadre1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">20,000</td>
-        <td style="border: 3px solid;"><input id="b3" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">200</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid;" id="descuadre">Descuadre</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-      </tr>
-      <!-- Fila 4 -->
-      <tr>
-        <td id="resul" style="font-weight: bolder; border: 3px solid;color: black;"></td>
-        <td><textarea></textarea></td>
-        <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Mío</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="mio1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">10,000</td>
-        <td style="border: 3px solid;"><input id="b4" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid; ">100</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td id="mio" style="border: 3px solid;">Míoo</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-      </tr>
-      <!-- Fila 5 -->
-      <tr>
-        <td></td>
-        <td><textarea></textarea></td>
-        <td style="border: 3px solid;">Avances</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="Avances1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">5,000</td>
-        <td style="border: 3px solid;"><input id="b5" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px; text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td id="Avances" style="border: 3px solid;">Avances</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-      </tr>
-      <!-- Fila 6 -->
-      <tr>
-        <td style="border-bottom: 2px solid black;" class="celda-con-boton">
-          <p
-            style="font-weight: bold; color: rgb(102, 141, 234); margin: 0; text-shadow: 6px 6px 8px rgb(5, 400, 210);">
-            Borrar Todo
-          </p>
-          <img
-            style="margin-top: 50px; width: 90px; margin-right: 10px; height: 80px; box-shadow: 4px 4px 10px rgb(5, 165, 210);"
-            src="https://thumbs.dreamstime.com/b/borrador-feliz-de-la-historieta-53892555.jpg" alt="Borrar"
-            class="img-flotante" onclick="confirmarBorrado()">
-        </td>
-        <td><textarea></textarea></td>
-        <td style="border: 3px solid;"><textarea></textarea></td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">2,000</td>
-        <td style="border: 3px solid;"><input id="b6" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style="border: 3px solid;"><textarea></textarea></td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-      </tr>
-      <!-- Fila 7 -->
-      <tr>
-        <td style="border-bottom: 2px solid black;"><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style="border: 3px solid;"><textarea></textarea></td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td colspan="2" style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;">
-          $ Total Bilteles</td>
-        <td id="total-general-bilteles"
-          style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td class="resultado-conteo-billetes"
-          style="font-weight: bold; font-size: 19px; background-color: rgb(230, 12, 197);border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"><textarea></textarea></td>
@@ -1501,1168 +1528,1168 @@
         <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r30"></td>
       </tr>
 
-    </tbody>
-  </table>
+  </tbody>
+</table>
 
-  <footer class="footer">
-    Powered by <strong>Jesús Sánchez para Fresa </strong>
-  </footer>
+<footer class="footer">
+  Powered by <strong>Jesús Sánchez para Fresa </strong>
+</footer>
 
-  <!-- Librerías externas -->
-  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.0/dist/peerjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Librerías externas -->
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.0/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <script>
-    // ============================================
-    // SISTEMA DE PERSISTENCIA Y SINCRONIZACIÓN P2P
-    // ============================================
+<script>
+// ============================================
+// SISTEMA DE PERSISTENCIA Y SINCRONIZACIÓN P2P
+// ============================================
 
-    // Variables globales
-    let peer = null;
-    let conexion = null;
-    let miID = '';
-    let esAnfitrion = false;
-    let intentandoReconectar = false;
-    let reconnectInterval = null;
-    let ultimoTimestampRecibido = 0;
+// Variables globales
+let peer = null;
+let conexion = null;
+let miID = '';
+let esAnfitrion = false;
+let intentandoReconectar = false;
+let reconnectInterval = null;
+let ultimoTimestampRecibido = 0;
 
-    // ID persistente basado en localStorage
-    function obtenerPeerIdPersistente() {
-      let peerId = localStorage.getItem('peer-id-persistente');
-      if (!peerId) {
-        peerId = 'pagato' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('peer-id-persistente', peerId);
-      }
-      return peerId;
+// ID persistente basado en localStorage
+function obtenerPeerIdPersistente() {
+  let peerId = localStorage.getItem('peer-id-persistente');
+  if (!peerId) {
+    peerId = 'pagato' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('peer-id-persistente', peerId);
+  }
+  return peerId;
+}
+
+// Inicializar PeerJS con ID persistente
+function inicializarPeerJS() {
+  const peerId = obtenerPeerIdPersistente();
+  
+  peer = new Peer(peerId, {
+    debug: 2,
+    config: {
+      'iceServers': [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' }
+      ]
     }
-
-    // Inicializar PeerJS con ID persistente
-    function inicializarPeerJS() {
-      const peerId = obtenerPeerIdPersistente();
-
-      peer = new Peer(peerId, {
-        debug: 2,
-        config: {
-          'iceServers': [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:global.stun.twilio.com:3478' }
-          ]
-        }
-      });
-
-      // Eventos del Peer
-      peer.on('open', (id) => {
-        miID = id;
-        console.log('Mi ID persistente:', id);
-
-        // Mostrar ID en botón
-        const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
-        document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
-        document.getElementById('miIDBtn').style.display = 'block';
-
-        // Intentar reconexión automática si hay un ID remoto guardado
-        const idRemotoGuardado = localStorage.getItem('peer-remote-id');
-        if (idRemotoGuardado && idRemotoGuardado !== id) {
-          setTimeout(() => {
-            conectarAutomaticamente(idRemotoGuardado);
-          }, 1000);
-        }
-
-        actualizarEstadoConexion();
-      });
-
-      peer.on('connection', (conn) => {
-        console.log('📲 Conexión entrante recibida de:', conn.peer);
-        esAnfitrion = true;
-        manejarNuevaConexion(conn);
-
-        // Guardar ID del dispositivo conectado
-        localStorage.setItem('peer-remote-id', conn.peer);
-      });
-
-      peer.on('error', (err) => {
-        console.error('Error en PeerJS:', err);
-        if (err.type === 'peer-unavailable') {
-          intentarReconexion();
-        }
-      });
-
-      peer.on('disconnected', () => {
-        console.log('Peer desconectado, intentando reconectar...');
-        peer.reconnect();
-      });
-
-      peer.on('close', () => {
-        console.log('Peer cerrado');
-        actualizarEstadoConexion();
-      });
-    }
-
-    // Conectar automáticamente (al recargar la página)
-    function conectarAutomaticamente(idRemoto) {
-      if (!peer || !peer.open) {
-        setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
-        return;
-      }
-
-      console.log('Intentando reconexión automática a:', idRemoto);
-      intentandoReconectar = true;
-
-      conexion = peer.connect(idRemoto, {
-        reliable: true,
-        serialization: 'json'
-      });
-
-      configurarEventosConexion(conexion);
-
-      // Guardar ID remoto
-      localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = false;
-    }
-
-    // Conectar manualmente
-    function conectarDispositivo() {
-      const idRemoto = prompt('Ingresa el ID del otro dispositivo:');
-      if (!idRemoto || idRemoto === miID) return;
-
-      Swal.fire({
-        title: 'Conectando...',
-        text: 'Estableciendo conexión con el otro dispositivo',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-
-      conexion = peer.connect(idRemoto, {
-        reliable: true,
-        serialization: 'json'
-      });
-
-      configurarEventosConexion(conexion);
-
-      // Guardar ID remoto
-      localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = false;
-    }
-
-    // Configurar eventos de conexión
-    function configurarEventosConexion(conn) {
-      conn.on('open', () => {
-        console.log('✅ Conexión establecida exitosamente!');
-        conexion = conn;
-        intentandoReconectar = false;
-
-        Swal.close();
-        Swal.fire({
-          icon: 'success',
-          title: '¡Conectado!',
-          text: 'Conexión establecida exitosamente',
-          timer: 2000,
-          showConfirmButton: false
-        });
-
-        // Enviar estado actual inmediatamente
-        setTimeout(() => {
-          enviarDatos();
-        }, 500);
-
-        // Configurar envío automático
-        if (!document.syncListenerAdded) {
-          document.addEventListener("input", enviarDatosConThrottle);
-          document.addEventListener("change", enviarDatosConThrottle);
-          document.syncListenerAdded = true;
-        }
-
-        actualizarEstadoConexion();
-
-        // Configurar reconexión automática si se pierde la conexión
-        conn.on('close', () => {
-          console.log('Conexión cerrada');
-          actualizarEstadoConexion();
-          intentarReconexion();
-        });
-
-        conn.on('error', (err) => {
-          console.error('Error en la conexión:', err);
-        });
-      });
-
-      conn.on('data', (datos) => {
-        console.log('📥 Datos recibidos:', datos);
-        aplicarDatosRecibidos(datos);
-      });
-
-      conn.on('error', (err) => {
-        console.error('❌ Error al conectar:', err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error de conexión',
-          text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
-        });
-        intentarReconexion();
-      });
-    }
-
-    // Manejar nueva conexión entrante
-    function manejarNuevaConexion(conn) {
-      conexion = conn;
-
-      conn.on('open', () => {
-        console.log('✅ Cliente conectado:', conn.peer);
-        actualizarEstadoConexion();
-
-        // Enviar datos actuales al cliente
-        setTimeout(() => {
-          enviarDatos();
-        }, 1000);
-
-        // Configurar envío automático
-        if (!document.syncListenerAdded) {
-          document.addEventListener("input", enviarDatosConThrottle);
-          document.addEventListener("change", enviarDatosConThrottle);
-          document.syncListenerAdded = true;
-        }
-      });
-
-      conn.on('data', (datos) => {
-        console.log('📥 Datos recibidos del cliente:', datos);
-        aplicarDatosRecibidos(datos);
-
-        // Guardar en localStorage del anfitrión también
-        guardarLocalmente();
-      });
-
-      conn.on('close', () => {
-        console.log('Cliente desconectado');
-        actualizarEstadoConexion();
-      });
-
-      conn.on('error', (err) => {
-        console.error('Error en conexión entrante:', err);
-      });
-    }
-
-    // Throttle para evitar demasiados envíos
-    let ultimoEnvio = 0;
-    const throttleDelay = 1000;
-
-    function enviarDatosConThrottle() {
-      const ahora = Date.now();
-      if (ahora - ultimoEnvio > throttleDelay) {
-        enviarDatos();
-        ultimoEnvio = ahora;
-      }
-    }
-
-    // Enviar datos a través de la conexión P2P
-    function enviarDatos() {
-      if (!conexion || !conexion.open) return;
-
-      const datos = obtenerTodosLosDatos();
-
-      try {
-        conexion.send(datos);
-        console.log('📤 Datos enviados:', datos);
-      } catch (error) {
-        console.error('Error al enviar datos:', error);
-      }
-    }
-
-    // Obtener todos los datos de la página
-    function obtenerTodosLosDatos() {
-      const datos = {
-        campos: {},
-        celdas: {},
-        divs: {},
-        localStorage: {},
-        timestamp: Date.now(),
-        esAnfitrion: esAnfitrion
-      };
-
-      // Capturar todos los inputs y textareas
-      document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
-        const clave = campo.id || campo.name || `campo-${index}`;
-        datos.campos[clave] = campo.value;
-
-        if (campo.dataset.valor !== undefined) {
-          datos.campos[clave + '_dataset'] = campo.dataset.valor;
-        }
-      });
-
-      // Capturar todas las celdas con contenido
-      document.querySelectorAll("td[class^='r'], td.resultado, td.valor-fijo").forEach((celda, index) => {
-        const clave = celda.className || `celda-${index}`;
-        datos.celdas[clave] = celda.textContent;
-      });
-
-      // Capturar divs especiales
-      const divsEspeciales = document.querySelectorAll('.cantidad3, .cantidad5, .resultado-adicionales');
-      divsEspeciales.forEach((div, index) => {
-        const clave = div.className || `div-${index}`;
-        datos.divs[clave] = div.textContent;
-        if (div.dataset.valor) {
-          datos.divs[clave + '_dataset'] = div.dataset.valor;
-        }
-      });
-
-      // Capturar algunos datos específicos de localStorage
-      const keysToSync = ['premios-total', 'peer-remote-id'];
-      keysToSync.forEach(key => {
-        datos.localStorage[key] = localStorage.getItem(key);
-      });
-
-      return datos;
-    }
-
-    // Aplicar datos recibidos
-    function aplicarDatosRecibidos(datos) {
-      // Evitar bucles de sincronización
-      if (datos.timestamp && ultimoTimestampRecibido &&
-        datos.timestamp <= ultimoTimestampRecibido) {
-        return;
-      }
-      ultimoTimestampRecibido = datos.timestamp;
-
-      // Aplicar campos
-      if (datos.campos) {
-        Object.keys(datos.campos).forEach(clave => {
-          if (clave.endsWith('_dataset')) return;
-
-          const valor = datos.campos[clave];
-
-          // Buscar campo por id, name o índice
-          let campo = document.getElementById(clave) ||
-            document.querySelector(`[name="${clave}"]`);
-
-          if (!campo && clave.startsWith('campo-')) {
-            const index = parseInt(clave.replace('campo-', ''));
-            const campos = document.querySelectorAll("input, textarea, select");
-            if (campos[index]) campo = campos[index];
-          }
-
-          if (campo && campo.value !== valor) {
-            campo.value = valor;
-
-            // Actualizar dataset.valor si existe
-            const datasetKey = clave + '_dataset';
-            if (datos.campos[datasetKey] && campo.dataset.valor !== undefined) {
-              campo.dataset.valor = datos.campos[datasetKey];
-            }
-
-            // Disparar eventos si es necesario
-            const event = new Event('input', { bubbles: true });
-            campo.dispatchEvent(event);
-          }
-        });
-      }
-
-      // Aplicar celdas
-      if (datos.celdas) {
-        Object.keys(datos.celdas).forEach(clave => {
-          const celdas = document.querySelectorAll(`.${clave}`);
-          celdas.forEach(celda => {
-            if (celda.textContent !== datos.celdas[clave]) {
-              celda.textContent = datos.celdas[clave];
-            }
-          });
-        });
-      }
-
-      // Aplicar divs especiales
-      if (datos.divs) {
-        Object.keys(datos.divs).forEach(clave => {
-          if (clave.endsWith('_dataset')) return;
-
-          const div = document.querySelector(`.${clave}`);
-          if (div && div.textContent !== datos.divs[clave]) {
-            div.textContent = datos.divs[clave];
-
-            const datasetKey = clave + '_dataset';
-            if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
-              div.dataset.valor = datos.divs[datasetKey];
-            }
-          }
-        });
-      }
-
-      // Aplicar localStorage
-      if (datos.localStorage) {
-        Object.keys(datos.localStorage).forEach(key => {
-          if (datos.localStorage[key] !== null) {
-            localStorage.setItem(key, datos.localStorage[key]);
-          }
-        });
-      }
-
-      // Recalcular todo
+  });
+
+  // Eventos del Peer
+  peer.on('open', (id) => {
+    miID = id;
+    console.log('Mi ID persistente:', id);
+    
+    // Mostrar ID en botón
+    const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
+    document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
+    document.getElementById('miIDBtn').style.display = 'block';
+    
+    // Intentar reconexión automática si hay un ID remoto guardado
+    const idRemotoGuardado = localStorage.getItem('peer-remote-id');
+    if (idRemotoGuardado && idRemotoGuardado !== id) {
       setTimeout(() => {
-        if (typeof calcularTotales === 'function') calcularTotales();
-        if (typeof verificarCamposVacios === 'function') verificarCamposVacios();
-        if (typeof sumarInputsImpares === 'function') sumarInputsImpares();
-        if (typeof sumarResultados === 'function') sumarResultados();
-        if (typeof sumarConteoBilletes === 'function') sumarConteoBilletes();
-      }, 100);
+        conectarAutomaticamente(idRemotoGuardado);
+      }, 1000);
     }
+    
+    actualizarEstadoConexion();
+  });
 
-    // Función de sincronización manual
-    function sincronizarDatos() {
-      if (conexion && conexion.open) {
-        enviarDatos();
-        Swal.fire({
-          icon: 'success',
-          title: 'Datos sincronizados',
-          text: 'Los datos se han enviado al otro dispositivo',
-          timer: 1500,
-          showConfirmButton: false
-        });
-      } else {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Sin conexión',
-          text: 'No hay ningún dispositivo conectado'
-        });
-      }
+  peer.on('connection', (conn) => {
+    console.log('📲 Conexión entrante recibida de:', conn.peer);
+    esAnfitrion = true;
+    manejarNuevaConexion(conn);
+    
+    // Guardar ID del dispositivo conectado
+    localStorage.setItem('peer-remote-id', conn.peer);
+  });
+
+  peer.on('error', (err) => {
+    console.error('Error en PeerJS:', err);
+    if (err.type === 'peer-unavailable') {
+      intentarReconexion();
     }
+  });
 
-    // Intentar reconexión automática
-    function intentarReconexion() {
-      if (intentandoReconectar) return;
+  peer.on('disconnected', () => {
+    console.log('Peer desconectado, intentando reconectar...');
+    peer.reconnect();
+  });
 
-      const idRemoto = localStorage.getItem('peer-remote-id');
-      if (!idRemoto || idRemoto === miID) return;
+  peer.on('close', () => {
+    console.log('Peer cerrado');
+    actualizarEstadoConexion();
+  });
+}
 
-      intentandoReconectar = true;
+// Conectar automáticamente (al recargar la página)
+function conectarAutomaticamente(idRemoto) {
+  if (!peer || !peer.open) {
+    setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
+    return;
+  }
+  
+  console.log('Intentando reconexión automática a:', idRemoto);
+  intentandoReconectar = true;
+  
+  conexion = peer.connect(idRemoto, {
+    reliable: true,
+    serialization: 'json'
+  });
 
-      console.log('Intentando reconexión en 5 segundos...');
+  configurarEventosConexion(conexion);
+  
+  // Guardar ID remoto
+  localStorage.setItem('peer-remote-id', idRemoto);
+  esAnfitrion = false;
+}
 
-      if (reconnectInterval) clearInterval(reconnectInterval);
-
-      reconnectInterval = setInterval(() => {
-        if (!conexion || !conexion.open) {
-          conectarAutomaticamente(idRemoto);
-        } else {
-          clearInterval(reconnectInterval);
-          intentandoReconectar = false;
-        }
-      }, 5000);
+// Conectar manualmente
+function conectarDispositivo() {
+  const idRemoto = prompt('Ingresa el ID del otro dispositivo:');
+  if (!idRemoto || idRemoto === miID) return;
+  
+  Swal.fire({
+    title: 'Conectando...',
+    text: 'Estableciendo conexión con el otro dispositivo',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
     }
+  });
+  
+  conexion = peer.connect(idRemoto, {
+    reliable: true,
+    serialization: 'json'
+  });
 
-    // Actualizar estado de conexión en UI
-    function actualizarEstadoConexion() {
-      const statusEl = document.getElementById('peerStatus');
-      const disconnectBtn = document.getElementById('disconnectBtn');
-      const connectBtn = document.getElementById('connectBtn');
+  configurarEventosConexion(conexion);
+  
+  // Guardar ID remoto
+  localStorage.setItem('peer-remote-id', idRemoto);
+  esAnfitrion = false;
+}
 
-      if (conexion && conexion.open) {
-        statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
-        statusEl.className = 'peer-status connected';
-        disconnectBtn.style.display = 'block';
-        connectBtn.style.display = 'none';
-      } else {
-        statusEl.textContent = 'Sin conexión';
-        statusEl.className = 'peer-status disconnected';
-        disconnectBtn.style.display = 'none';
-        connectBtn.style.display = 'block';
-      }
+// Configurar eventos de conexión
+function configurarEventosConexion(conn) {
+  conn.on('open', () => {
+    console.log('✅ Conexión establecida exitosamente!');
+    conexion = conn;
+    intentandoReconectar = false;
+    
+    Swal.close();
+    Swal.fire({
+      icon: 'success',
+      title: '¡Conectado!',
+      text: 'Conexión establecida exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
+    
+    // Enviar estado actual inmediatamente
+    setTimeout(() => {
+      enviarDatos();
+    }, 500);
+    
+    // Configurar envío automático
+    if (!document.syncListenerAdded) {
+      document.addEventListener("input", enviarDatosConThrottle);
+      document.addEventListener("change", enviarDatosConThrottle);
+      document.syncListenerAdded = true;
     }
-
-    // Desconectar
-    function desconectar() {
-      if (conexion) {
-        conexion.close();
-        conexion = null;
-      }
-
-      if (peer) {
-        peer.disconnect();
-      }
-
-      localStorage.removeItem('peer-remote-id');
-      esAnfitrion = false;
-
-      // Remover listeners
-      if (document.syncListenerAdded) {
-        document.removeEventListener("input", enviarDatosConThrottle);
-        document.removeEventListener("change", enviarDatosConThrottle);
-        document.syncListenerAdded = false;
-      }
-
-      Swal.fire({
-        icon: 'info',
-        title: 'Desconectado',
-        text: 'Se ha cerrado la conexión',
-        timer: 1500,
-        showConfirmButton: false
-      });
-
+    
+    actualizarEstadoConexion();
+    
+    // Configurar reconexión automática si se pierde la conexión
+    conn.on('close', () => {
+      console.log('Conexión cerrada');
       actualizarEstadoConexion();
+      intentarReconexion();
+    });
+    
+    conn.on('error', (err) => {
+      console.error('Error en la conexión:', err);
+    });
+  });
+
+  conn.on('data', (datos) => {
+    console.log('📥 Datos recibidos:', datos);
+    aplicarDatosRecibidos(datos);
+  });
+
+  conn.on('error', (err) => {
+    console.error('❌ Error al conectar:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error de conexión',
+      text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
+    });
+    intentarReconexion();
+  });
+}
+
+// Manejar nueva conexión entrante
+function manejarNuevaConexion(conn) {
+  conexion = conn;
+  
+  conn.on('open', () => {
+    console.log('✅ Cliente conectado:', conn.peer);
+    actualizarEstadoConexion();
+    
+    // Enviar datos actuales al cliente
+    setTimeout(() => {
+      enviarDatos();
+    }, 1000);
+    
+    // Configurar envío automático
+    if (!document.syncListenerAdded) {
+      document.addEventListener("input", enviarDatosConThrottle);
+      document.addEventListener("change", enviarDatosConThrottle);
+      document.syncListenerAdded = true;
     }
+  });
 
-    // Copiar mi ID
-    function copiarMiID() {
-      navigator.clipboard.writeText(miID).then(() => {
-        Swal.fire({
-          icon: 'success',
-          title: 'ID copiado',
-          text: 'ID copiado al portapapeles',
-          timer: 1500,
-          showConfirmButton: false
-        });
-      }).catch(() => {
-        prompt('Copia este ID manualmente:', miID);
-      });
+  conn.on('data', (datos) => {
+    console.log('📥 Datos recibidos del cliente:', datos);
+    aplicarDatosRecibidos(datos);
+    
+    // Guardar en localStorage del anfitrión también
+    guardarLocalmente();
+  });
+
+  conn.on('close', () => {
+    console.log('Cliente desconectado');
+    actualizarEstadoConexion();
+  });
+
+  conn.on('error', (err) => {
+    console.error('Error en conexión entrante:', err);
+  });
+}
+
+// Throttle para evitar demasiados envíos
+let ultimoEnvio = 0;
+const throttleDelay = 1000;
+
+function enviarDatosConThrottle() {
+  const ahora = Date.now();
+  if (ahora - ultimoEnvio > throttleDelay) {
+    enviarDatos();
+    ultimoEnvio = ahora;
+  }
+}
+
+// Enviar datos a través de la conexión P2P
+function enviarDatos() {
+  if (!conexion || !conexion.open) return;
+  
+  const datos = obtenerTodosLosDatos();
+  
+  try {
+    conexion.send(datos);
+    console.log('📤 Datos enviados:', datos);
+  } catch (error) {
+    console.error('Error al enviar datos:', error);
+  }
+}
+
+// Obtener todos los datos de la página
+function obtenerTodosLosDatos() {
+  const datos = {
+    campos: {},
+    celdas: {},
+    divs: {},
+    localStorage: {},
+    timestamp: Date.now(),
+    esAnfitrion: esAnfitrion
+  };
+  
+  // Capturar todos los inputs y textareas
+  document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
+    const clave = campo.id || campo.name || `campo-${index}`;
+    datos.campos[clave] = campo.value;
+    
+    if (campo.dataset.valor !== undefined) {
+      datos.campos[clave + '_dataset'] = campo.dataset.valor;
     }
+  });
+  
+  // Capturar todas las celdas con contenido
+  document.querySelectorAll("td[class^='r'], td.resultado, td.valor-fijo").forEach((celda, index) => {
+    const clave = celda.className || `celda-${index}`;
+    datos.celdas[clave] = celda.textContent;
+  });
+  
+  // Capturar divs especiales
+  const divsEspeciales = document.querySelectorAll('.cantidad3, .cantidad5, .resultado-adicionales');
+  divsEspeciales.forEach((div, index) => {
+    const clave = div.className || `div-${index}`;
+    datos.divs[clave] = div.textContent;
+    if (div.dataset.valor) {
+      datos.divs[clave + '_dataset'] = div.dataset.valor;
+    }
+  });
+  
+  // Capturar algunos datos específicos de localStorage
+  const keysToSync = ['premios-total', 'peer-remote-id'];
+  keysToSync.forEach(key => {
+    datos.localStorage[key] = localStorage.getItem(key);
+  });
+  
+  return datos;
+}
 
-    // Guardar datos localmente
-    function guardarLocalmente() {
-      // Guardar todos los campos
-      document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
-        const key = campo.id || campo.name || `campo-${index}`;
-        localStorage.setItem(key, campo.value);
-
-        if (campo.dataset.valor) {
-          localStorage.setItem(`${key}-dataset`, campo.dataset.valor);
+// Aplicar datos recibidos
+function aplicarDatosRecibidos(datos) {
+  // Evitar bucles de sincronización
+  if (datos.timestamp && ultimoTimestampRecibido && 
+      datos.timestamp <= ultimoTimestampRecibido) {
+    return;
+  }
+  ultimoTimestampRecibido = datos.timestamp;
+  
+  // Aplicar campos
+  if (datos.campos) {
+    Object.keys(datos.campos).forEach(clave => {
+      if (clave.endsWith('_dataset')) return;
+      
+      const valor = datos.campos[clave];
+      
+      // Buscar campo por id, name o índice
+      let campo = document.getElementById(clave) || 
+                  document.querySelector(`[name="${clave}"]`);
+      
+      if (!campo && clave.startsWith('campo-')) {
+        const index = parseInt(clave.replace('campo-', ''));
+        const campos = document.querySelectorAll("input, textarea, select");
+        if (campos[index]) campo = campos[index];
+      }
+      
+      if (campo && campo.value !== valor) {
+        campo.value = valor;
+        
+        // Actualizar dataset.valor si existe
+        const datasetKey = clave + '_dataset';
+        if (datos.campos[datasetKey] && campo.dataset.valor !== undefined) {
+          campo.dataset.valor = datos.campos[datasetKey];
+        }
+        
+        // Disparar eventos si es necesario
+        const event = new Event('input', { bubbles: true });
+        campo.dispatchEvent(event);
+      }
+    });
+  }
+  
+  // Aplicar celdas
+  if (datos.celdas) {
+    Object.keys(datos.celdas).forEach(clave => {
+      const celdas = document.querySelectorAll(`.${clave}`);
+      celdas.forEach(celda => {
+        if (celda.textContent !== datos.celdas[clave]) {
+          celda.textContent = datos.celdas[clave];
         }
       });
+    });
+  }
+  
+  // Aplicar divs especiales
+  if (datos.divs) {
+    Object.keys(datos.divs).forEach(clave => {
+      if (clave.endsWith('_dataset')) return;
+      
+      const div = document.querySelector(`.${clave}`);
+      if (div && div.textContent !== datos.divs[clave]) {
+        div.textContent = datos.divs[clave];
+        
+        const datasetKey = clave + '_dataset';
+        if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
+          div.dataset.valor = datos.divs[datasetKey];
+        }
+      }
+    });
+  }
+  
+  // Aplicar localStorage
+  if (datos.localStorage) {
+    Object.keys(datos.localStorage).forEach(key => {
+      if (datos.localStorage[key] !== null) {
+        localStorage.setItem(key, datos.localStorage[key]);
+      }
+    });
+  }
+  
+  // Recalcular todo
+  setTimeout(() => {
+    if (typeof calcularTotales === 'function') calcularTotales();
+    if (typeof verificarCamposVacios === 'function') verificarCamposVacios();
+    if (typeof sumarInputsImpares === 'function') sumarInputsImpares();
+    if (typeof sumarResultados === 'function') sumarResultados();
+    if (typeof sumarConteoBilletes === 'function') sumarConteoBilletes();
+  }, 100);
+}
 
-      // Guardar celdas con clase rX
-      document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
-        localStorage.setItem(`td-${index}`, celda.textContent.trim());
-      });
+// Función de sincronización manual
+function sincronizarDatos() {
+  if (conexion && conexion.open) {
+    enviarDatos();
+    Swal.fire({
+      icon: 'success',
+      title: 'Datos sincronizados',
+      text: 'Los datos se han enviado al otro dispositivo',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  } else {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Sin conexión',
+      text: 'No hay ningún dispositivo conectado'
+    });
+  }
+}
 
-      // Guardar otros estados importantes
-      localStorage.setItem('ultima-sincronizacion', Date.now());
+// Intentar reconexión automática
+function intentarReconexion() {
+  if (intentandoReconectar) return;
+  
+  const idRemoto = localStorage.getItem('peer-remote-id');
+  if (!idRemoto || idRemoto === miID) return;
+  
+  intentandoReconectar = true;
+  
+  console.log('Intentando reconexión en 5 segundos...');
+  
+  if (reconnectInterval) clearInterval(reconnectInterval);
+  
+  reconnectInterval = setInterval(() => {
+    if (!conexion || !conexion.open) {
+      conectarAutomaticamente(idRemoto);
+    } else {
+      clearInterval(reconnectInterval);
+      intentandoReconectar = false;
+    }
+  }, 5000);
+}
 
-      // Mostrar confirmación
+// Actualizar estado de conexión en UI
+function actualizarEstadoConexion() {
+  const statusEl = document.getElementById('peerStatus');
+  const disconnectBtn = document.getElementById('disconnectBtn');
+  const connectBtn = document.getElementById('connectBtn');
+  
+  if (conexion && conexion.open) {
+    statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
+    statusEl.className = 'peer-status connected';
+    disconnectBtn.style.display = 'block';
+    connectBtn.style.display = 'none';
+  } else {
+    statusEl.textContent = 'Sin conexión';
+    statusEl.className = 'peer-status disconnected';
+    disconnectBtn.style.display = 'none';
+    connectBtn.style.display = 'block';
+  }
+}
+
+// Desconectar
+function desconectar() {
+  if (conexion) {
+    conexion.close();
+    conexion = null;
+  }
+  
+  if (peer) {
+    peer.disconnect();
+  }
+  
+  localStorage.removeItem('peer-remote-id');
+  esAnfitrion = false;
+  
+  // Remover listeners
+  if (document.syncListenerAdded) {
+    document.removeEventListener("input", enviarDatosConThrottle);
+    document.removeEventListener("change", enviarDatosConThrottle);
+    document.syncListenerAdded = false;
+  }
+  
+  Swal.fire({
+    icon: 'info',
+    title: 'Desconectado',
+    text: 'Se ha cerrado la conexión',
+    timer: 1500,
+    showConfirmButton: false
+  });
+  
+  actualizarEstadoConexion();
+}
+
+// Copiar mi ID
+function copiarMiID() {
+  navigator.clipboard.writeText(miID).then(() => {
+    Swal.fire({
+      icon: 'success',
+      title: 'ID copiado',
+      text: 'ID copiado al portapapeles',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  }).catch(() => {
+    prompt('Copia este ID manualmente:', miID);
+  });
+}
+
+// Guardar datos localmente
+function guardarLocalmente() {
+  // Guardar todos los campos
+  document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
+    const key = campo.id || campo.name || `campo-${index}`;
+    localStorage.setItem(key, campo.value);
+    
+    if (campo.dataset.valor) {
+      localStorage.setItem(`${key}-dataset`, campo.dataset.valor);
+    }
+  });
+  
+  // Guardar celdas con clase rX
+  document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
+    localStorage.setItem(`td-${index}`, celda.textContent.trim());
+  });
+  
+  // Guardar otros estados importantes
+  localStorage.setItem('ultima-sincronizacion', Date.now());
+  
+  // Mostrar confirmación
+  Swal.fire({
+    icon: 'success',
+    title: 'Datos guardados',
+    text: 'Los datos se han guardado localmente',
+    timer: 1500,
+    showConfirmButton: false
+  });
+}
+
+// ============================================
+// FUNCIONES EXISTENTES DE LA APLICACIÓN ORIGINAL
+// ============================================
+
+// Calcular totales
+function calcularTotales() {
+  let totalBilteles = 0;
+  let totalMonedas = 0;
+  let totalAdicionales = 0;
+  let totalPremios = 0;
+  let totalVenta = 0;
+
+  const filas = document.querySelectorAll("tbody tr");
+
+  filas.forEach(fila => {
+    const valores = fila.querySelectorAll(".valor-fijo");
+    const cantidades = fila.querySelectorAll(".cantidad");
+    const resultados = fila.querySelectorAll(".resultado");
+
+    for (let i = 0; i < valores.length; i++) {
+      const valorTexto = valores[i]?.innerText?.replace(/[^\d.]/g, "") || "0";
+      const valor = parseFloat(valorTexto) || 0;
+      const cantidad = parseFloat(cantidades[i]?.value) || 0;
+      const total = valor * cantidad;
+
+      if (resultados[i]) {
+        resultados[i].innerText = total.toLocaleString("es-CO");
+      }
+
+      if (resultados[i]?.classList.contains("resultado-bilteles")) {
+        totalBilteles += total;
+      }
+      if (resultados[i]?.classList.contains("resultado-monedas")) {
+        totalMonedas += total;
+      }
+    }
+  });
+
+  const adicionalesInputs = document.querySelectorAll("input.cantidad2");
+  adicionalesInputs.forEach(input => {
+    const val = parseFloat(input.dataset.valor || "0");
+    totalAdicionales += val;
+  });
+
+  const premiosDiv = document.querySelector(".cantidad3");
+  if (premiosDiv) {
+    const valorPremio = parseFloat(premiosDiv.dataset.valor || "0");
+    totalPremios = valorPremio;
+  }
+
+  const ventaInput = document.querySelector("input.venta");
+  if (ventaInput) {
+    const valorVenta = parseFloat(ventaInput.dataset.valor || "0");
+    totalVenta = valorVenta;
+  }
+
+  const totalBiltelesEl = document.getElementById("total-general-bilteles");
+  if (totalBiltelesEl) totalBiltelesEl.innerText = totalBilteles.toLocaleString("es-CO");
+
+  const totalMonedasEl = document.getElementById("total-general-monedas");
+  if (totalMonedasEl) totalMonedasEl.innerText = totalMonedas.toLocaleString("es-CO");
+
+  const adicionalesEl = document.querySelector(".resultado-adicionales");
+  if (adicionalesEl) adicionalesEl.innerText = totalAdicionales.toLocaleString("es-CO");
+
+  const sumaTotal = totalBilteles + totalMonedas + totalAdicionales + totalPremios;
+  const sumaTotalEl = document.getElementById("suma-total");
+  if (sumaTotalEl) sumaTotalEl.innerText = sumaTotal.toLocaleString("es-CO");
+
+  const resultadoResta = sumaTotal - totalVenta;
+  const resulEl = document.getElementById("resul");
+  const sobraEl = document.getElementById("sobra");
+
+  if (resulEl) {
+    resulEl.innerText = resultadoResta.toLocaleString("es-CO");
+    resulEl.classList.remove("exacto", "sobra", "falta");
+    if (resultadoResta > 0) {
+      resulEl.classList.add("sobra");
+    } else if (resultadoResta < 0) {
+      resulEl.classList.add("falta");
+    } else {
+      resulEl.classList.add("exacto");
+    }
+  }
+
+  if (sobraEl) {
+    sobraEl.classList.remove("exacto", "sobra", "falta");
+    if (resultadoResta > 0) {
+      sobraEl.innerText = "Sobra";
+      sobraEl.classList.add("sobra");
+    } else if (resultadoResta < 0) {
+      sobraEl.innerText = "Falta";
+      sobraEl.classList.add("falta");
+    } else {
+      sobraEl.innerText = "Exacto";
+      sobraEl.classList.add("exacto");
+    }
+  }
+
+  verificarCamposVacios();
+}
+
+// Formatear números con separadores de miles
+function formatearMiles(input) {
+  const valor = input.value.replace(/\D/g, "");
+  if (valor === "") {
+    input.value = "";
+    input.dataset.valor = "0";
+  } else {
+    const numero = parseInt(valor);
+    input.dataset.valor = numero;
+    input.value = numero.toLocaleString("es-CO");
+  }
+
+  // Actualizar cálculos
+  if (input.classList.contains('venta') || input.classList.contains('cantidad2')) {
+    calcularTotales();
+  }
+  
+  if (input.classList.contains('input')) {
+    calcularResultadoPorInput(input);
+  }
+  
+  verificarCamposVacios();
+  
+  // Sincronizar si hay conexión
+  if (conexion && conexion.open) {
+    enviarDatosConThrottle();
+  }
+}
+
+// Verificar campos vacíos
+function verificarCamposVacios() {
+  const verificaciones = [
+    { inputId: "nequi1", celdaId: "nequi" },
+    { inputId: "alfonso1", celdaId: "alfonso" },
+    { inputId: "descuadre1", celdaId: "descuadre" },
+    { inputId: "mio1", celdaId: "mio" },
+    { inputId: "Avances1", celdaId: "Avances" }
+  ];
+
+  verificaciones.forEach(({ inputId, celdaId }) => {
+    const input = document.getElementById(inputId);
+    const celda = document.getElementById(celdaId);
+
+    if (input && celda) {
+      if (input.value.trim() === "") {
+        celda.style.backgroundColor = "red";
+      } else {
+        celda.style.backgroundColor = "";
+      }
+    }
+  });
+
+  // Pintar morado claro los inputs cantidad4 si tienen valor
+  const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
+  inputsCantidad4.forEach(input => {
+    const valorNumerico = input.value.replace(/\D/g, "");
+    if (valorNumerico !== "") {
+      input.style.backgroundColor = "#d6b3f8";
+    } else {
+      input.style.backgroundColor = "";
+    }
+  });
+}
+
+// Lista de loterías para autocompletado
+const loterias = [
+  "Lote Cundi", "Lote Tolima", "Lote Cruz Roja", "Lote Huila", "Lote Meta", "Lote Valle",
+  "Lote Manizales", "Lote Bogota", "Lote Quindio", "Lote Risaralda", "Lote Medellin",
+  "Lote Santander", "Lote Boyaca", "Lote Cauca", "Extra Colombia", "Quinta", "Astro",
+  "Miloto", "Baloto", "Colorloto", "Pagamillonario", "Chancemillonario", "RaspaTodo",
+  "Pagatón", "Maxichance", "Betplay", "Paga Triple", "Linea Cundi", "Linea Tolima",
+  "Linea Cruz Roja", "Linea Huila", "Linea Meta", "Linea Valle", "Linea Manizales",
+  "Linea Bogota", "Linea Quindio", "Linea Risaralda", "Linea Medellin", "Linea Santander",
+  "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas"
+];
+
+// Configurar autocompletado
+function setupAutoComplete(inputId, sugerenciasId) {
+  const input = document.getElementById(inputId);
+  const sugerencias = document.getElementById(sugerenciasId);
+
+  if (!input || !sugerencias) return;
+
+  input.addEventListener('input', () => {
+    const valor = input.value.toLowerCase();
+    sugerencias.innerHTML = '';
+    sugerencias.style.display = 'none';
+
+    if (valor) {
+      const coincidencias = loterias.filter(dep =>
+        dep.toLowerCase().includes(valor)
+      );
+
+      if (coincidencias.length > 0) {
+        sugerencias.style.display = 'block';
+        coincidencias.forEach(dep => {
+          const li = document.createElement('li');
+          li.textContent = dep;
+          li.style.cursor = 'pointer';
+          li.onclick = () => {
+            input.value = dep;
+            localStorage.setItem(input.id || input.name, dep);
+            sugerencias.style.display = 'none';
+            input.dispatchEvent(new Event('input'));
+          };
+          sugerencias.appendChild(li);
+        });
+      }
+    }
+  });
+
+  // Ocultar lista si se hace clic fuera
+  document.addEventListener('click', e => {
+    if (!sugerencias.contains(e.target) && e.target !== input) {
+      sugerencias.style.display = 'none';
+    }
+  });
+}
+
+// Calcular resultado por input
+function calcularResultadoPorInput(input) {
+  const clases = Array.from(input.classList);
+  const claseInput = clases.find(c => /^input\d+$/.test(c));
+  if (!claseInput) return;
+
+  const numeroClase = parseInt(claseInput.replace('input', ''));
+  const fila = Math.ceil(numeroClase / 2);
+  calcularResultado(fila);
+}
+
+// Calcular resultado de una fila
+function calcularResultado(fila) {
+  const claseA = `input${((fila - 1) * 2) + 1}`;
+  const claseB = `input${((fila - 1) * 2) + 2}`;
+
+  const inputA = document.querySelector(`input.${claseA}`);
+  const inputB = document.querySelector(`input.${claseB}`);
+  const celdaResultado = document.querySelector(`.r${fila}`);
+
+  if (!inputA || !inputB || !celdaResultado) return;
+
+  const valA = inputA.value.replace(/\./g, '').replace(',', '.');
+  const valB = inputB.value.replace(/\./g, '').replace(',', '.');
+
+  const numA = parseFloat(valA) || 0;
+  const numB = parseFloat(valB) || 0;
+
+  if (!isNaN(numA) && !isNaN(numB)) {
+    const resultado = (numA * numB);
+    celdaResultado.textContent = resultado.toLocaleString('es-CO');
+    celdaResultado.dataset.valor = resultado.toString();
+  } else {
+    celdaResultado.textContent = '';
+    celdaResultado.dataset.valor = '0';
+  }
+  
+  sumarResultados();
+}
+
+// Sumar todos los resultados
+function sumarResultados() {
+  let total = 0;
+
+  for (let i = 1; i <= 30; i++) {
+    const celda = document.querySelector(`.r${i}`);
+    if (!celda) continue;
+
+    const texto = celda.textContent.replace(/\./g, '').replace(',', '.');
+    const numero = parseFloat(texto) || 0;
+
+    total += numero;
+  }
+
+  const divCantidad3 = document.querySelector('.cantidad3');
+  if (divCantidad3) {
+    divCantidad3.textContent = total.toLocaleString('es-CO');
+    divCantidad3.dataset.valor = total.toString();
+    localStorage.setItem("premios-total", total.toString());
+  }
+
+  calcularTotales();
+}
+// Añade esta función que falta:
+function detectarFila(input) {
+  const clases = Array.from(input.classList);
+  const claseInput = clases.find(c => /^input\d+$/.test(c));
+  if (!claseInput) return;
+
+  const numeroClase = parseInt(claseInput.replace('input', ''));
+  const fila = Math.ceil(numeroClase / 2);
+  calcularResultado(fila);
+}
+
+// Modifica la función formatearMiles para los inputs de lotería:
+function formatearMiles(input) {
+  const valor = input.value.replace(/\D/g, "");
+  if (valor === "") {
+    input.value = "";
+    input.dataset.valor = "0";
+  } else {
+    const numero = parseInt(valor);
+    input.dataset.valor = numero;
+    input.value = numero.toLocaleString("es-CO");
+  }
+
+  // Si es un input de lotería (input1, input2, etc.), detecta la fila
+  if (input.classList.contains('input1') || input.classList.contains('input2') || 
+      /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
+    detectarFila(input);
+  }
+  
+  calcularTotales();
+  verificarCamposVacios();
+}
+// Sumar inputs impares
+function sumarInputsImpares() {
+  let suma = 0;
+
+  for (let i = 1; i <= 60; i += 2) {
+    const input = document.querySelector(`input.input${i}`);
+    if (input) {
+      const valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+      suma += valor;
+    }
+  }
+
+  const campoCantidad5 = document.querySelector(".cantidad5");
+  if (campoCantidad5) {
+    campoCantidad5.textContent = suma.toLocaleString("es-CO");
+    campoCantidad5.dataset.valor = suma.toString();
+  }
+}
+
+// Sumar conteo de billetes
+function sumarConteoBilletes() {
+  let total = 0;
+
+  const ids = ["b1", "b2", "b3", "b4", "b5", "b6"];
+
+  ids.forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+      const valor = parseInt(input.value) || 0;
+      total += valor;
+    }
+  });
+
+  const celdaResultado = document.querySelector(".resultado-conteo-billetes");
+  if (celdaResultado) {
+    celdaResultado.textContent = total;
+  }
+}
+
+// Configurar autocompletado para todos los inputs de lotería
+// Configurar autocompletado para todos los inputs de lotería
+function configurarTodosLosAutocompletados() {
+  console.log('Configurando autocompletados...');
+  
+  // Configurar loteria (sin número)
+  if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
+    setupAutoComplete('loteria', 'sugerencias');
+    console.log('Configurado loteria');
+  }
+  
+  // Configurar loteria1 a loteria30
+  for (let i = 1; i <= 30; i++) {
+    const inputId = `loteria${i}`;
+    const sugerenciasId = `sugerencias${i}`;
+    
+    if (document.getElementById(inputId) && document.getElementById(sugerenciasId)) {
+      setupAutoComplete(inputId, sugerenciasId);
+      console.log(`Configurado ${inputId}`);
+    }
+  }
+}
+// Confirmar borrado
+function confirmarBorrado() {
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: "Se borrarán todos los datos y no se podrán recuperar.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, borrar todo',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      borrarTodo();
+    }
+  });
+}
+
+// Borrar todo
+function borrarTodo() {
+  localStorage.clear();
+  
+  // Limpiar todos los inputs
+  document.querySelectorAll("input, textarea").forEach(el => {
+    el.value = "";
+    if (el.dataset.valor) el.dataset.valor = "0";
+  });
+  
+  // Limpiar celdas de resultados
+  document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
+    el.textContent = "";
+    if (el.dataset.valor) el.dataset.valor = "0";
+  });
+  
+  // Limpiar divs especiales
+  document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+    el.textContent = "";
+    if (el.dataset.valor) el.dataset.valor = "0";
+  });
+  
+  // Resetear totales
+  document.getElementById("total-general-bilteles").textContent = "";
+  document.getElementById("total-general-monedas").textContent = "";
+  document.getElementById("suma-total").textContent = "";
+  document.getElementById("resul").textContent = "";
+  document.getElementById("sobra").textContent = "";
+  
+  // Recalcular
+  calcularTotales();
+  verificarCamposVacios();
+  sumarResultados();
+  sumarInputsImpares();
+  sumarConteoBilletes();
+  
+  Swal.fire({
+    icon: 'success',
+    title: '¡Borrado!',
+    text: 'Todos los datos han sido borrados.',
+    timer: 1500,
+    showConfirmButton: false
+  });
+}
+
+// Exportar a Excel
+function confirmarEnvioExcel() {
+  Swal.fire({
+    title: '¿Exportar a Excel?',
+    text: 'Se generará un archivo con los datos actuales.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, exportar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      exportarAExcelReal();
       Swal.fire({
+        title: '¡Exportado!',
+        text: 'El archivo fue generado correctamente.',
         icon: 'success',
-        title: 'Datos guardados',
-        text: 'Los datos se han guardado localmente',
-        timer: 1500,
+        timer: 2000,
         showConfirmButton: false
       });
     }
+  });
+}
 
-    // ============================================
-    // FUNCIONES EXISTENTES DE LA APLICACIÓN ORIGINAL
-    // ============================================
+// Exportar a Excel real
+function exportarAExcelReal() {
+  const tabla = document.getElementById("miTabla");
 
-    // Calcular totales
-    function calcularTotales() {
-      let totalBilteles = 0;
-      let totalMonedas = 0;
-      let totalAdicionales = 0;
-      let totalPremios = 0;
-      let totalVenta = 0;
+  if (!tabla) {
+    alert("No se encontró la tabla.");
+    return;
+  }
 
-      const filas = document.querySelectorAll("tbody tr");
+  // Clonar la tabla para no afectar la original
+  const tablaClon = tabla.cloneNode(true);
 
-      filas.forEach(fila => {
-        const valores = fila.querySelectorAll(".valor-fijo");
-        const cantidades = fila.querySelectorAll(".cantidad");
-        const resultados = fila.querySelectorAll(".resultado");
-
-        for (let i = 0; i < valores.length; i++) {
-          const valorTexto = valores[i]?.innerText?.replace(/[^\d.]/g, "") || "0";
-          const valor = parseFloat(valorTexto) || 0;
-          const cantidad = parseFloat(cantidades[i]?.value) || 0;
-          const total = valor * cantidad;
-
-          if (resultados[i]) {
-            resultados[i].innerText = total.toLocaleString("es-CO");
-          }
-
-          if (resultados[i]?.classList.contains("resultado-bilteles")) {
-            totalBilteles += total;
-          }
-          if (resultados[i]?.classList.contains("resultado-monedas")) {
-            totalMonedas += total;
-          }
-        }
-      });
-
-      const adicionalesInputs = document.querySelectorAll("input.cantidad2");
-      adicionalesInputs.forEach(input => {
-        const val = parseFloat(input.dataset.valor || "0");
-        totalAdicionales += val;
-      });
-
-      const premiosDiv = document.querySelector(".cantidad3");
-      if (premiosDiv) {
-        const valorPremio = parseFloat(premiosDiv.dataset.valor || "0");
-        totalPremios = valorPremio;
-      }
-
-      const ventaInput = document.querySelector("input.venta");
-      if (ventaInput) {
-        const valorVenta = parseFloat(ventaInput.dataset.valor || "0");
-        totalVenta = valorVenta;
-      }
-
-      const totalBiltelesEl = document.getElementById("total-general-bilteles");
-      if (totalBiltelesEl) totalBiltelesEl.innerText = totalBilteles.toLocaleString("es-CO");
-
-      const totalMonedasEl = document.getElementById("total-general-monedas");
-      if (totalMonedasEl) totalMonedasEl.innerText = totalMonedas.toLocaleString("es-CO");
-
-      const adicionalesEl = document.querySelector(".resultado-adicionales");
-      if (adicionalesEl) adicionalesEl.innerText = totalAdicionales.toLocaleString("es-CO");
-
-      const sumaTotal = totalBilteles + totalMonedas + totalAdicionales + totalPremios;
-      const sumaTotalEl = document.getElementById("suma-total");
-      if (sumaTotalEl) sumaTotalEl.innerText = sumaTotal.toLocaleString("es-CO");
-
-      const resultadoResta = sumaTotal - totalVenta;
-      const resulEl = document.getElementById("resul");
-      const sobraEl = document.getElementById("sobra");
-
-      if (resulEl) {
-        resulEl.innerText = resultadoResta.toLocaleString("es-CO");
-        resulEl.classList.remove("exacto", "sobra", "falta");
-        if (resultadoResta > 0) {
-          resulEl.classList.add("sobra");
-        } else if (resultadoResta < 0) {
-          resulEl.classList.add("falta");
-        } else {
-          resulEl.classList.add("exacto");
-        }
-      }
-
-      if (sobraEl) {
-        sobraEl.classList.remove("exacto", "sobra", "falta");
-        if (resultadoResta > 0) {
-          sobraEl.innerText = "Sobra";
-          sobraEl.classList.add("sobra");
-        } else if (resultadoResta < 0) {
-          sobraEl.innerText = "Falta";
-          sobraEl.classList.add("falta");
-        } else {
-          sobraEl.innerText = "Exacto";
-          sobraEl.classList.add("exacto");
-        }
-      }
-
-      verificarCamposVacios();
+  // Reemplazar inputs y textareas por su valor
+  const campos = tablaClon.querySelectorAll("input, textarea");
+  campos.forEach(el => {
+    const td = el.closest("td");
+    if (td) {
+      const span = document.createElement("span");
+      span.textContent = el.value.trim();
+      td.replaceChild(span, el);
     }
+  });
 
-    // Formatear números con separadores de miles
-    function formatearMiles(input) {
-      const valor = input.value.replace(/\D/g, "");
-      if (valor === "") {
-        input.value = "";
-        input.dataset.valor = "0";
-      } else {
-        const numero = parseInt(valor);
-        input.dataset.valor = numero;
-        input.value = numero.toLocaleString("es-CO");
-      }
+  // Crear archivo Excel real con XLSX
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
 
-      // Actualizar cálculos
-      if (input.classList.contains('venta') || input.classList.contains('cantidad2')) {
-        calcularTotales();
-      }
+  XLSX.utils.book_append_sheet(wb, ws, "Datos");
+  XLSX.writeFile(wb, "contador_pagatodo.xlsx");
+}
 
-      if (input.classList.contains('input')) {
-        calcularResultadoPorInput(input);
-      }
+// Mostrar fecha y hora actual
+function ponerFechaHora() {
+  const ahora = new Date();
 
-      verificarCamposVacios();
+  const opciones = {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  };
 
-      // Sincronizar si hay conexión
-      if (conexion && conexion.open) {
-        enviarDatosConThrottle();
+  const fechaHora = ahora.toLocaleString("es-CO", opciones);
+  const elemento = document.getElementById("fechaHoraActual");
+  if (elemento) {
+    elemento.textContent = fechaHora;
+  }
+}
+
+// ============================================
+// INICIALIZACIÓN AL CARGAR LA PÁGINA
+// ============================================
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log('Inicializando aplicación...');
+  
+  // 1. Cargar datos desde localStorage
+  const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
+  const premiosDiv = document.querySelector(".cantidad3");
+  const premiosGuardado = localStorage.getItem("premios-total");
+  
+  if (premiosDiv && premiosGuardado !== null) {
+    premiosDiv.textContent = parseFloat(premiosGuardado).toLocaleString('es-CO');
+    premiosDiv.dataset.valor = premiosGuardado;
+  }
+
+  campos.forEach((campo, index) => {
+    const key = `input-${index}`;
+    const valorGuardado = localStorage.getItem(key);
+    if (valorGuardado !== null) {
+      campo.value = valorGuardado;
+
+      if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
+        campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
       }
     }
 
-    // Verificar campos vacíos
-    function verificarCamposVacios() {
-      const verificaciones = [
-        { inputId: "nequi1", celdaId: "nequi" },
-        { inputId: "alfonso1", celdaId: "alfonso" },
-        { inputId: "descuadre1", celdaId: "descuadre" },
-        { inputId: "mio1", celdaId: "mio" },
-        { inputId: "Avances1", celdaId: "Avances" }
-      ];
-
-      verificaciones.forEach(({ inputId, celdaId }) => {
-        const input = document.getElementById(inputId);
-        const celda = document.getElementById(celdaId);
-
-        if (input && celda) {
-          if (input.value.trim() === "") {
-            celda.style.backgroundColor = "red";
-          } else {
-            celda.style.backgroundColor = "";
-          }
-        }
-      });
-
-      // Pintar morado claro los inputs cantidad4 si tienen valor
-      const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
-      inputsCantidad4.forEach(input => {
-        const valorNumerico = input.value.replace(/\D/g, "");
-        if (valorNumerico !== "") {
-          input.style.backgroundColor = "#d6b3f8";
-        } else {
-          input.style.backgroundColor = "";
-        }
-      });
-    }
-
-    // Lista de loterías para autocompletado
-    const loterias = [
-      "Lote Cundi", "Lote Tolima", "Lote Cruz Roja", "Lote Huila", "Lote Meta", "Lote Valle",
-      "Lote Manizales", "Lote Bogota", "Lote Quindio", "Lote Risaralda", "Lote Medellin",
-      "Lote Santander", "Lote Boyaca", "Lote Cauca", "Extra Colombia", "Quinta", "Astro",
-      "Miloto", "Baloto", "Colorloto", "Pagamillonario", "Chancemillonario", "RaspaTodo",
-      "Pagatón", "Maxichance", "Betplay", "Paga Triple", "Linea Cundi", "Linea Tolima",
-      "Linea Cruz Roja", "Linea Huila", "Linea Meta", "Linea Valle", "Linea Manizales",
-      "Linea Bogota", "Linea Quindio", "Linea Risaralda", "Linea Medellin", "Linea Santander",
-      "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas"
-    ];
-
-    // Configurar autocompletado
-    function setupAutoComplete(inputId, sugerenciasId) {
-      const input = document.getElementById(inputId);
-      const sugerencias = document.getElementById(sugerenciasId);
-
-      if (!input || !sugerencias) return;
-
-      input.addEventListener('input', () => {
-        const valor = input.value.toLowerCase();
-        sugerencias.innerHTML = '';
-        sugerencias.style.display = 'none';
-
-        if (valor) {
-          const coincidencias = loterias.filter(dep =>
-            dep.toLowerCase().includes(valor)
-          );
-
-          if (coincidencias.length > 0) {
-            sugerencias.style.display = 'block';
-            coincidencias.forEach(dep => {
-              const li = document.createElement('li');
-              li.textContent = dep;
-              li.style.cursor = 'pointer';
-              li.onclick = () => {
-                input.value = dep;
-                localStorage.setItem(input.id || input.name, dep);
-                sugerencias.style.display = 'none';
-                input.dispatchEvent(new Event('input'));
-              };
-              sugerencias.appendChild(li);
-            });
-          }
-        }
-      });
-
-      // Ocultar lista si se hace clic fuera
-      document.addEventListener('click', e => {
-        if (!sugerencias.contains(e.target) && e.target !== input) {
-          sugerencias.style.display = 'none';
-        }
-      });
-    }
-
-    // Calcular resultado por input
-    function calcularResultadoPorInput(input) {
-      const clases = Array.from(input.classList);
-      const claseInput = clases.find(c => /^input\d+$/.test(c));
-      if (!claseInput) return;
-
-      const numeroClase = parseInt(claseInput.replace('input', ''));
-      const fila = Math.ceil(numeroClase / 2);
-      calcularResultado(fila);
-    }
-
-    // Calcular resultado de una fila
-    function calcularResultado(fila) {
-      const claseA = `input${((fila - 1) * 2) + 1}`;
-      const claseB = `input${((fila - 1) * 2) + 2}`;
-
-      const inputA = document.querySelector(`input.${claseA}`);
-      const inputB = document.querySelector(`input.${claseB}`);
-      const celdaResultado = document.querySelector(`.r${fila}`);
-
-      if (!inputA || !inputB || !celdaResultado) return;
-
-      const valA = inputA.value.replace(/\./g, '').replace(',', '.');
-      const valB = inputB.value.replace(/\./g, '').replace(',', '.');
-
-      const numA = parseFloat(valA) || 0;
-      const numB = parseFloat(valB) || 0;
-
-      if (!isNaN(numA) && !isNaN(numB)) {
-        const resultado = (numA * numB);
-        celdaResultado.textContent = resultado.toLocaleString('es-CO');
-        celdaResultado.dataset.valor = resultado.toString();
-      } else {
-        celdaResultado.textContent = '';
-        celdaResultado.dataset.valor = '0';
-      }
-
-      sumarResultados();
-    }
-
-    // Sumar todos los resultados
-    function sumarResultados() {
-      let total = 0;
-
-      for (let i = 1; i <= 30; i++) {
-        const celda = document.querySelector(`.r${i}`);
-        if (!celda) continue;
-
-        const texto = celda.textContent.replace(/\./g, '').replace(',', '.');
-        const numero = parseFloat(texto) || 0;
-
-        total += numero;
-      }
-
-      const divCantidad3 = document.querySelector('.cantidad3');
-      if (divCantidad3) {
-        divCantidad3.textContent = total.toLocaleString('es-CO');
-        divCantidad3.dataset.valor = total.toString();
-        localStorage.setItem("premios-total", total.toString());
-      }
-
-      calcularTotales();
-    }
-    // Añade esta función que falta:
-    function detectarFila(input) {
-      const clases = Array.from(input.classList);
-      const claseInput = clases.find(c => /^input\d+$/.test(c));
-      if (!claseInput) return;
-
-      const numeroClase = parseInt(claseInput.replace('input', ''));
-      const fila = Math.ceil(numeroClase / 2);
-      calcularResultado(fila);
-    }
-
-    // Modifica la función formatearMiles para los inputs de lotería:
-    function formatearMiles(input) {
-      const valor = input.value.replace(/\D/g, "");
-      if (valor === "") {
-        input.value = "";
-        input.dataset.valor = "0";
-      } else {
-        const numero = parseInt(valor);
-        input.dataset.valor = numero;
-        input.value = numero.toLocaleString("es-CO");
-      }
-
-      // Si es un input de lotería (input1, input2, etc.), detecta la fila
-      if (input.classList.contains('input1') || input.classList.contains('input2') ||
-        /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
-        detectarFila(input);
-      }
-
-      calcularTotales();
-      verificarCamposVacios();
-    }
-    // Sumar inputs impares
-    function sumarInputsImpares() {
-      let suma = 0;
-
-      for (let i = 1; i <= 60; i += 2) {
-        const input = document.querySelector(`input.input${i}`);
-        if (input) {
-          const valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
-          suma += valor;
-        }
-      }
-
-      const campoCantidad5 = document.querySelector(".cantidad5");
-      if (campoCantidad5) {
-        campoCantidad5.textContent = suma.toLocaleString("es-CO");
-        campoCantidad5.dataset.valor = suma.toString();
-      }
-    }
-
-    // Sumar conteo de billetes
-    function sumarConteoBilletes() {
-      let total = 0;
-
-      const ids = ["b1", "b2", "b3", "b4", "b5", "b6"];
-
-      ids.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-          const valor = parseInt(input.value) || 0;
-          total += valor;
-        }
-      });
-
-      const celdaResultado = document.querySelector(".resultado-conteo-billetes");
-      if (celdaResultado) {
-        celdaResultado.textContent = total;
-      }
-    }
-
-    // Configurar autocompletado para todos los inputs de lotería
-    function configurarTodosLosAutocompletados() {
-      console.log('Configurando autocompletados...');
-
-      // Configurar loteria (sin número)
-      if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
-        setupAutoComplete('loteria', 'sugerencias');
-        console.log('Configurado loteria');
-      }
-
-      // Configurar loteria1 a loteria30
-      for (let i = 1; i <= 30; i++) {
-        const inputId = `loteria${i}`;
-        const sugerenciasId = `sugerencias${i}`;
-
-        if (document.getElementById(inputId) && document.getElementById(sugerenciasId)) {
-          setupAutoComplete(inputId, sugerenciasId);
-          console.log(`Configurado ${inputId}`);
-        }
-      }
-    }
-    // Confirmar borrado
-    function confirmarBorrado() {
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: "Se borrarán todos los datos y no se podrán recuperar.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, borrar todo',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          borrarTodo();
-        }
-      });
-    }
-
-    // Borrar todo
-    function borrarTodo() {
-      localStorage.clear();
-
-      // Limpiar todos los inputs
-      document.querySelectorAll("input, textarea").forEach(el => {
-        el.value = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Limpiar celdas de resultados
-      document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Limpiar divs especiales
-      document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Resetear totales
-      document.getElementById("total-general-bilteles").textContent = "";
-      document.getElementById("total-general-monedas").textContent = "";
-      document.getElementById("suma-total").textContent = "";
-      document.getElementById("resul").textContent = "";
-      document.getElementById("sobra").textContent = "";
-
-      // Recalcular
-      calcularTotales();
-      verificarCamposVacios();
-      sumarResultados();
+    campo.addEventListener("input", () => {
+      localStorage.setItem(key, campo.value);
       sumarInputsImpares();
+      if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
+        campo.dataset.valor = campo.value.replace(/\D/g, "") || "0";
+      }
+
+      calcularTotales?.();
+      verificarCamposVacios?.();
+      guardarCeldasTd();
+    });
+  });
+
+  // Restaurar celdas <td class="rX">
+  const celdas = document.querySelectorAll("td[class^='r']");
+  celdas.forEach((celda, index) => {
+    const valor = localStorage.getItem(`td-${index}`);
+    if (valor !== null) {
+      celda.textContent = valor;
+    }
+  });
+
+  function guardarCeldasTd() {
+    celdas.forEach((celda, index) => {
+      localStorage.setItem(`td-${index}`, celda.textContent.trim());
+    });
+  }
+  
+  // 2. Inicializar PeerJS
+  inicializarPeerJS();
+  
+  // 3. Configurar autocompletado
+  configurarTodosLosAutocompletados();
+  
+  // 4. Configurar eventos de input para cálculos
+  document.addEventListener("input", (e) => {
+    if (e.target.classList.contains('cantidad')) {
+      calcularTotales();
       sumarConteoBilletes();
-
-      Swal.fire({
-        icon: 'success',
-        title: '¡Borrado!',
-        text: 'Todos los datos han sido borrados.',
-        timer: 1500,
-        showConfirmButton: false
-      });
     }
-
-    // Exportar a Excel
-    function confirmarEnvioExcel() {
-      Swal.fire({
-        title: '¿Exportar a Excel?',
-        text: 'Se generará un archivo con los datos actuales.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, exportar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          exportarAExcelReal();
-          Swal.fire({
-            title: '¡Exportado!',
-            text: 'El archivo fue generado correctamente.',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        }
-      });
+    
+    if (e.target.classList.contains('cantidad2') || e.target.classList.contains('cantidad4')) {
+      calcularTotales();
     }
-
-    // Exportar a Excel real
-    function exportarAExcelReal() {
-      const tabla = document.getElementById("miTabla");
-
-      if (!tabla) {
-        alert("No se encontró la tabla.");
-        return;
-      }
-
-      // Clonar la tabla para no afectar la original
-      const tablaClon = tabla.cloneNode(true);
-
-      // Reemplazar inputs y textareas por su valor
-      const campos = tablaClon.querySelectorAll("input, textarea");
-      campos.forEach(el => {
-        const td = el.closest("td");
-        if (td) {
-          const span = document.createElement("span");
-          span.textContent = el.value.trim();
-          td.replaceChild(span, el);
-        }
-      });
-
-      // Crear archivo Excel real con XLSX
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
-
-      XLSX.utils.book_append_sheet(wb, ws, "Datos");
-      XLSX.writeFile(wb, "contador_pagatodo.xlsx");
+    
+    if (e.target.classList.contains('input')) {
+      calcularResultadoPorInput(e.target);
+      sumarInputsImpares();
     }
+  });
+  
+  // 5. Inicializar cálculos
+  setTimeout(() => {
+    calcularTotales();
+    verificarCamposVacios();
+    sumarInputsImpares();
+    sumarResultados();
+    sumarConteoBilletes();
+  }, 500);
+  
+  // 6. Iniciar reloj
+  ponerFechaHora();
+  setInterval(ponerFechaHora, 1000);
+  
+  console.log('Aplicación inicializada correctamente');
+});
 
-    // Mostrar fecha y hora actual
-    function ponerFechaHora() {
-      const ahora = new Date();
-
-      const opciones = {
-        weekday: "short",
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true
-      };
-
-      const fechaHora = ahora.toLocaleString("es-CO", opciones);
-      const elemento = document.getElementById("fechaHoraActual");
-      if (elemento) {
-        elemento.textContent = fechaHora;
-      }
-    }
-
-    // ============================================
-    // INICIALIZACIÓN AL CARGAR LA PÁGINA
-    // ============================================
-
-    document.addEventListener("DOMContentLoaded", () => {
-      console.log('Inicializando aplicación...');
-
-      // 1. Cargar datos desde localStorage
-      const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
-      const premiosDiv = document.querySelector(".cantidad3");
-      const premiosGuardado = localStorage.getItem("premios-total");
-
-      if (premiosDiv && premiosGuardado !== null) {
-        premiosDiv.textContent = parseFloat(premiosGuardado).toLocaleString('es-CO');
-        premiosDiv.dataset.valor = premiosGuardado;
-      }
-
-      campos.forEach((campo, index) => {
-        const key = `input-${index}`;
-        const valorGuardado = localStorage.getItem(key);
-        if (valorGuardado !== null) {
-          campo.value = valorGuardado;
-
-          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
-            campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
-          }
-        }
-
-        campo.addEventListener("input", () => {
-          localStorage.setItem(key, campo.value);
-          sumarInputsImpares();
-          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
-            campo.dataset.valor = campo.value.replace(/\D/g, "") || "0";
-          }
-
-          calcularTotales?.();
-          verificarCamposVacios?.();
-          guardarCeldasTd();
-        });
-      });
-
-      // Restaurar celdas <td class="rX">
-      const celdas = document.querySelectorAll("td[class^='r']");
-      celdas.forEach((celda, index) => {
-        const valor = localStorage.getItem(`td-${index}`);
-        if (valor !== null) {
-          celda.textContent = valor;
-        }
-      });
-
-      function guardarCeldasTd() {
-        celdas.forEach((celda, index) => {
-          localStorage.setItem(`td-${index}`, celda.textContent.trim());
-        });
-      }
-
-      // 2. Inicializar PeerJS
-      inicializarPeerJS();
-
-      // 3. Configurar autocompletado
-      configurarTodosLosAutocompletados();
-
-      // 4. Configurar eventos de input para cálculos
-      document.addEventListener("input", (e) => {
-        if (e.target.classList.contains('cantidad')) {
-          calcularTotales();
-          sumarConteoBilletes();
-        }
-
-        if (e.target.classList.contains('cantidad2') || e.target.classList.contains('cantidad4')) {
-          calcularTotales();
-        }
-
-        if (e.target.classList.contains('input')) {
-          calcularResultadoPorInput(e.target);
-          sumarInputsImpares();
-        }
-      });
-
-      // 5. Inicializar cálculos
-      setTimeout(() => {
-        calcularTotales();
-        verificarCamposVacios();
-        sumarInputsImpares();
-        sumarResultados();
-        sumarConteoBilletes();
-      }, 500);
-
-      // 6. Iniciar reloj
-      ponerFechaHora();
-      setInterval(ponerFechaHora, 1000);
-
-      console.log('Aplicación inicializada correctamente');
-    });
-
-    // Configurar eventos para inputs de billetes
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6").forEach(input => {
-        input.addEventListener("input", sumarConteoBilletes);
-      });
-    });
-  </script>
+// Configurar eventos para inputs de billetes
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6").forEach(input => {
+    input.addEventListener("input", sumarConteoBilletes);
+  });
+});
+</script>
 </body>
-
 </html>
