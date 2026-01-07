@@ -10,19 +10,11 @@
     href="https://img.freepik.com/vector-gratis/ilustracion-colorida-calculadora-dibujos-animados_1308-174688.jpg">
 
   <title>Contador Diario Pagatodo</title>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 </head>
 
 <body>
-<!-- En el head -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- En el body, antes de tu script -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <table id="miTabla">
     <thead>
@@ -353,11 +345,6 @@
 ">
             Enviar a Excel
           </button></td>
-          <td>
-  <button type="button" onclick="guardarEnSupabase()" >
-    Guardar en BD
-  </button>
-</td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"> <textarea></textarea></td>
         <td style="border: 3px solid;"><input type="tel" class="cantidad2"
@@ -1408,14 +1395,6 @@
 
 
 
-
-
-
-
-
-
-
-
     </tbody>
   </table>
 
@@ -2142,226 +2121,6 @@
         input.addEventListener("input", sumarConteoBilletes);
       });
   </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-  // Configuración de Supabase
-  const SUPABASE_URL = 'https://qvqgohjoyxhatityvjygdv.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2cWdvaGpveXhhdGl5dmp5Z2R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTg5MDgsImV4cCI6MjA4MzM3NDkwOH0.xina8e9LJCJWrQKBvcfMJYLMNKlwCyMo__TjiPyRy-s';
-
-  // Inicializar Supabase
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // Luego, aquí debajo, agrega todas las funciones que te dieron: recolectarDatosParaSupabase, guardarEnSupabase, etc.
-  // ...
-  function recolectarDatosParaSupabase() {
-  const datos = {
-    // Fecha y hora actual
-    created_at: new Date().toISOString(),
-    fecha: new Date().toLocaleDateString('es-CO'),
-    
-    // Total Venta
-    total_venta: parseFloat(document.querySelector('input.venta').dataset.valor || 0),
-    
-    // Adicionales
-    nequi: parseFloat(document.getElementById('nequi1').dataset.valor || 0),
-    don_alfonso: parseFloat(document.getElementById('alfonso1').dataset.valor || 0),
-    descuadre: parseFloat(document.getElementById('descuadre1').dataset.valor || 0),
-    mio: parseFloat(document.getElementById('mio1').dataset.valor || 0),
-    avances: parseFloat(document.getElementById('Avances1').dataset.valor || 0),
-    
-    // Billetes
-    billetes_100000: parseInt(document.getElementById('b1').value || 0),
-    billetes_50000: parseInt(document.getElementById('b2').value || 0),
-    billetes_20000: parseInt(document.getElementById('b3').value || 0),
-    billetes_10000: parseInt(document.getElementById('b4').value || 0),
-    billetes_5000: parseInt(document.getElementById('b5').value || 0),
-    billetes_2000: parseInt(document.getElementById('b6').value || 0),
-    
-    // Monedas (ajusta los índices según corresponda)
-    monedas_1000: parseInt(document.querySelectorAll('input.cantidad')[6]?.value || 0),
-    monedas_500: parseInt(document.querySelectorAll('input.cantidad')[7]?.value || 0),
-    monedas_200: parseInt(document.querySelectorAll('input.cantidad')[8]?.value || 0),
-    monedas_100: parseInt(document.querySelectorAll('input.cantidad')[9]?.value || 0),
-    monedas_50: parseInt(document.querySelectorAll('input.cantidad')[10]?.value || 0),
-    
-    // Totales calculados
-    total_billetes: parseFloat(document.getElementById('total-general-bilteles')?.innerText.replace(/[^\d.-]/g, '') || 0),
-    total_monedas: parseFloat(document.getElementById('total-general-monedas')?.innerText.replace(/[^\d.-]/g, '') || 0),
-    total_adicionales: parseFloat(document.querySelector('.resultado-adicionales')?.innerText.replace(/[^\d.-]/g, '') || 0),
-    total_premios: parseFloat(document.querySelector('.cantidad3')?.dataset.valor || 0),
-    suma_total: parseFloat(document.getElementById('suma-total')?.innerText.replace(/[^\d.-]/g, '') || 0),
-    resultado: parseFloat(document.getElementById('resul')?.innerText.replace(/[^\d.-]/g, '') || 0),
-    sobra_falta: document.getElementById('sobra')?.innerText || '',
-    
-    // Premios detallados (opcional - si quieres guardar cada fila)
-    premios_detalle: []
-  };
-  
-  // Recolectar datos de premios individuales
-  for (let i = 1; i <= 30; i++) {
-    const inputLoteria = document.getElementById(`loteria${i}`);
-    const inputValor = document.querySelector(`.input${(i-1)*2+1}`);
-    const inputUnidades = document.querySelector(`.input${(i-1)*2+2}`);
-    const resultado = document.querySelector(`.r${i}`);
-    
-    if (inputLoteria && inputLoteria.value) {
-      datos.premios_detalle.push({
-        loteria: inputLoteria.value,
-        valor: parseFloat(inputValor?.dataset.valor || 0),
-        unidades: parseFloat(inputUnidades?.dataset.valor || 0),
-        total: parseFloat(resultado?.innerText.replace(/[^\d.-]/g, '') || 0)
-      });
-    }
-  }
-  
-  return datos;
-}
-async function guardarEnSupabase() {
-  try {
-    // Mostrar mensaje de carga
-    Swal.fire({
-      title: 'Guardando...',
-      text: 'Por favor espera',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-    
-    // Recolectar datos
-    const datos = recolectarDatosParaSupabase();
-    
-    // Insertar en Supabase
-    const { data, error } = await supabase
-      .from('cierres_caja')
-      .insert([datos])
-      .select();
-    
-    if (error) {
-      throw error;
-    }
-    
-    // Mostrar éxito
-    Swal.fire({
-      icon: 'success',
-      title: '¡Guardado exitoso!',
-      text: `Los datos se guardaron con ID: ${data[0].id}`,
-      timer: 3000,
-      showConfirmButton: false
-    });
-    
-    console.log('Datos guardados:', data);
-    
-  } catch (error) {
-    console.error('Error al guardar:', error);
-    
-    Swal.fire({
-      icon: 'error',
-      title: 'Error al guardar',
-      text: error.message || 'Ocurrió un error al conectar con la base de datos',
-      confirmButtonText: 'Entendido'
-    });
-  }
-}
-async function cargarUltimoCierre() {
-  try {
-    const { data, error } = await supabase
-      .from('cierres_caja')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-    
-    if (error) throw error;
-    
-    if (data) {
-      // Aquí puedes implementar la lógica para llenar los campos
-      // con los datos del último cierre
-      console.log('Último cierre:', data);
-      
-      Swal.fire({
-        title: '¿Cargar último cierre?',
-        text: `Hay un cierre guardado del ${new Date(data.created_at).toLocaleDateString()}`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, cargar',
-        cancelButtonText: 'No'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Llamar a función para cargar datos en el formulario
-          cargarDatosEnFormulario(data);
-        }
-      });
-    }
-  } catch (error) {
-    console.log('No hay cierres anteriores o error:', error.message);
-  }
-}
-
-// Llamar al cargar la página
-document.addEventListener('DOMContentLoaded', () => {
-  cargarUltimoCierre();
-});
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script>
-function recolectarTodo() {
-  return {
-    totalVenta: document.getElementById("totalVenta").value,
-
-    adicionales: {
-      nequi: document.getElementById("nequi").value,
-      donAlfonso: document.getElementById("donAlfonso").value,
-      mio: document.getElementById("mio").value,
-      avances: document.getElementById("avances").value
-    },
-
-    billetes: {
-      100000: document.getElementById("b100000").value,
-      50000: document.getElementById("b50000").value,
-      20000: document.getElementById("b20000").value
-    },
-
-    monedas: {
-      1000: document.getElementById("m1000").value,
-      500: document.getElementById("m500").value
-    },
-
-    sumaFinal: document.getElementById("sumaFinal").innerText
-  }
-}
-</script>
-<button onclick="guardar()">GUARDAR</button>
-
-<script>
-async function guardar() {
-  const data = recolectarTodo()
-
-  const { error } = await supabase
-    .from("cierres_caja")
-    .insert([{ data }])
-
-  if (error) {
-    alert("❌ Error")
-    console.error(error)
-  } else {
-    alert("✅ GUARDADO")
-  }
-}
-</script>
 
 
 </body>
