@@ -462,8 +462,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
+        <td><textarea>Cant. Premios</textarea></td>
+        <td><textarea>Valor Premios</textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
 
@@ -2061,15 +2061,6 @@ function guardarLocalmente() {
   
   // Guardar otros estados importantes
   localStorage.setItem('ultima-sincronizacion', Date.now());
-  
-  // Mostrar confirmación
-  Swal.fire({
-    icon: 'success',
-    title: 'Datos guardados',
-    text: 'Los datos se han guardado localmente',
-    timer: 1500,
-    showConfirmButton: false
-  });
 }
 
 // ============================================
@@ -2174,34 +2165,7 @@ function calcularTotales() {
   verificarCamposVacios();
 }
 
-// Formatear números con separadores de miles
-function formatearMiles(input) {
-  const valor = input.value.replace(/\D/g, "");
-  if (valor === "") {
-    input.value = "";
-    input.dataset.valor = "0";
-  } else {
-    const numero = parseInt(valor);
-    input.dataset.valor = numero;
-    input.value = numero.toLocaleString("es-CO");
-  }
 
-  // Actualizar cálculos
-  if (input.classList.contains('venta') || input.classList.contains('cantidad2')) {
-    calcularTotales();
-  }
-  
-  if (input.classList.contains('input')) {
-    calcularResultadoPorInput(input);
-  }
-  
-  verificarCamposVacios();
-  
-  // Sincronizar si hay conexión
-  if (conexion && conexion.open) {
-    enviarDatosConThrottle();
-  }
-}
 
 // Verificar campos vacíos
 function verificarCamposVacios() {
