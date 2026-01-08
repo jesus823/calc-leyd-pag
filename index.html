@@ -52,6 +52,14 @@
       background: #f44336;
     }
 
+    .peer-button.guardar {
+      background: #9C27B0;
+    }
+
+    .peer-button.guardar:hover {
+      background: #7B1FA2;
+    }
+
     .peer-status {
       margin-top: 5px;
       padding: 5px;
@@ -130,54 +138,40 @@
 
   <!-- Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA -->
   <script>
-    // Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA
     document.addEventListener('DOMContentLoaded', function () {
-      // Seleccionar todos los inputs que deben ser solo numéricos
       const numericInputs = document.querySelectorAll('input[type="tel"]:not([id^="loteria"]), input.input1, input.input2, input.input3, input.input4, input.input5, input.input6, input.input7, input.input8, input.input9, input.input10, input.input11, input.input12, input.input13, input.input14, input.input15, input.input16, input.input17, input.input18, input.input19, input.input20, input.input21, input.input22, input.input23, input.input24, input.input25, input.input26, input.input27, input.input28, input.input29, input.input30, input.input31, input.input32, input.input33, input.input34, input.input35, input.input36, input.input37, input.input38, input.input39, input.input40, input.input41, input.input42, input.input43, input.input44, input.input45, input.input46, input.input47, input.input48, input.input49, input.input50, input.input51, input.input52, input.input53, input.input54, input.input55, input.input56, input.input57, input.input58, input.input59, input.input60');
       
       numericInputs.forEach(input => {
-        // MEJORA: Solo prevenir entrada de caracteres no numéricos en keydown
         input.addEventListener('keydown', function (e) {
-          // Permitir todas las teclas de control y navegación
           if ([8, 9, 13, 27, 46, 35, 36, 37, 38, 39, 40].includes(e.keyCode) ||
-              // Permitir: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z
               (e.ctrlKey && [65, 67, 86, 88, 90].includes(e.keyCode)) ||
-              // Permitir: Cmd+A, Cmd+C, Cmd+V, Cmd+X, Cmd+Z (Mac)
               (e.metaKey && [65, 67, 86, 88, 90].includes(e.keyCode))) {
             return;
           }
           
-          // Permitir números y teclado numérico
           if ((e.keyCode >= 48 && e.keyCode <= 57) || 
               (e.keyCode >= 96 && e.keyCode <= 105)) {
             return;
           }
           
-          // Permitir punto y coma para decimales
           if (e.keyCode === 190 || e.keyCode === 188 || e.keyCode === 110) {
             return;
           }
           
-          // Prevenir cualquier otro carácter
           e.preventDefault();
         });
         
-        // MEJORA: Mejor manejo del pegado
         input.addEventListener('paste', function (e) {
-          // Permitir el comportamiento por defecto primero
           setTimeout(() => {
-            // Limpiar solo después de pegar
             const valor = input.value;
             const numerosSolo = valor.replace(/[^\d]/g, '');
             input.value = numerosSolo;
             
-            // Disparar evento input para cálculos
             const event = new Event('input', { bubbles: true });
             input.dispatchEvent(event);
           }, 10);
         });
         
-        // MEJORA: Validar al perder el foco
         input.addEventListener('blur', function () {
           const valor = input.value;
           const numerosSolo = valor.replace(/[^\d]/g, '');
@@ -202,6 +196,10 @@
     <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none;">
       🚫 Desconectar
     </button>
+    <!-- NUEVO BOTÓN: Guardar Cambios -->
+    <button id="guardarCambiosBtn" class="peer-button guardar" onclick="guardarCambiosConfirmados()" style="display:none;">
+      💾 Guardar Cambios Confirmados
+    </button>
 
     <div id="peerStatus" class="peer-status disconnected">
       Sin conexión
@@ -223,7 +221,7 @@
         <th style="background-color: white; width: 30px;"></th>
         <th style="width: 50px;border: 3px solid;color: black;">Monedas</th>
         <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
-        <th style="border: 3px solid;color: black; width: 105px;">Total</th>
+        <th style="border: 3px solid;color black; width: 105px;">Total</th>
         <th style="background-color: white; width: 30px;"></th>
         <th style=" border: 3px solid;"></th>
         <th style=" border: 3px solid;"></th>
@@ -461,7 +459,6 @@
         <td style="border: 3px solid;"><input type="tel" class="cantidad2"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
             oninput="formatearMiles(this)"></td>
-        <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -1605,9 +1602,7 @@
         const inputs = document.querySelectorAll('input[type="tel"], input.cantidad, input.cantidad2, input.cantidad4, .venta, .input1, .input2, .input3, .input4, .input5, .input6, .input7, .input8, .input9, .input10, .input11, .input12, .input13, .input14, .input15, .input16, .input17, .input18, .input19, .input20, .input21, .input22, .input23, .input24, .input25, .input26, .input27, .input28, .input29, .input30, .input31, .input32, .input33, .input34, .input35, .input36, .input37, .input38, .input39, .input40, .input41, .input42, .input43, .input44, .input45, .input46, .input47, .input48, .input49, .input50, .input51, .input52, .input53, .input54, .input55, .input56, .input57, .input58, .input59, .input60');
         
         inputs.forEach(input => {
-            // MEJORA: Mejor manejo del evento input
             input.addEventListener('input', function(e) {
-                // Permitir que el navegador procese el input primero
                 setTimeout(() => {
                     if (sincronizacionActiva && conexion && conexion.open) {
                         enviarDatosDebounced();
@@ -1615,12 +1610,9 @@
                 }, 100);
             });
             
-            // MEJORA: Mejor manejo del pegado
             input.addEventListener('paste', function(e) {
-                // Permitir el pegado normal primero
                 setTimeout(() => {
                     if (sincronizacionActiva && conexion && conexion.open) {
-                        // Enviar después de pegar con un retraso mayor
                         setTimeout(() => {
                             enviarDatos();
                         }, 300);
@@ -1628,7 +1620,6 @@
                 }, 50);
             });
             
-            // MEJORA: Sincronizar al salir del campo
             input.addEventListener('blur', function() {
                 if (sincronizacionActiva && conexion && conexion.open) {
                     enviarDatos();
@@ -1645,7 +1636,7 @@
             if (conexion && conexion.open) {
                 enviarDatos();
             }
-        }, 1500); // Aumentado a 1.5 segundos para menos interferencia
+        }, 1500);
     }
 
     // MEJORA: Función para suspender temporalmente la sincronización
@@ -1656,12 +1647,68 @@
         }, tiempoMs);
     }
 
+    // NUEVA FUNCIÓN: Guardar cambios confirmados
+    function guardarCambiosConfirmados() {
+        if (conexion && conexion.open) {
+            Swal.fire({
+                title: '¿Guardar cambios confirmados?',
+                text: 'Esta acción garantizará que los cambios se sincronicen permanentemente en ambos dispositivos.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, guardar cambios',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#9C27B0'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Forzar guardado en localStorage de ambos dispositivos
+                    guardarLocalmente();
+                    
+                    // Enviar datos con flag especial de confirmación
+                    const datos = obtenerTodosLosDatos();
+                    datos.tipo = 'confirmacion_cambios';
+                    datos.timestampConfirmacion = Date.now();
+                    datos.mensaje = 'Cambios confirmados y guardados permanentemente';
+                    
+                    try {
+                        conexion.send(datos);
+                        console.log('✅ Cambios confirmados enviados:', datos);
+                        
+                        // Guardar estado confirmado en localStorage
+                        localStorage.setItem('ultima-confirmacion', Date.now().toString());
+                        localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Cambios Guardados',
+                            text: 'Los cambios han sido confirmados y sincronizados permanentemente en ambos dispositivos.',
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+                    } catch (error) {
+                        console.error('Error al enviar confirmación:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudieron guardar los cambios. Verifica la conexión.'
+                        });
+                    }
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sin conexión',
+                text: 'Debes estar conectado a otro dispositivo para guardar cambios confirmados.'
+            });
+        }
+    }
+
     // Inicializar PeerJS con ID persistente
     function inicializarPeerJS() {
         const peerId = obtenerPeerIdPersistente();
 
         peer = new Peer(peerId, {
-            debug: 1, // Reducido de 2 a 1 para menos logs
+            debug: 1,
             config: {
                 'iceServers': [
                     { urls: 'stun:stun.l.google.com:19302' },
@@ -1670,20 +1717,16 @@
             }
         });
 
-        // Eventos del Peer
         peer.on('open', (id) => {
             miID = id;
             console.log('Mi ID persistente:', id);
 
-            // Mostrar ID en botón
             const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
             document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
             document.getElementById('miIDBtn').style.display = 'block';
 
-            // Configurar inputs para sincronización
             configurarInputsParaSincronizacion();
 
-            // Intentar reconexión automática si hay un ID remoto guardado
             const idRemotoGuardado = localStorage.getItem('peer-remote-id');
             if (idRemotoGuardado && idRemotoGuardado !== id) {
                 setTimeout(() => {
@@ -1699,7 +1742,6 @@
             esAnfitrion = true;
             manejarNuevaConexion(conn);
 
-            // Guardar ID del dispositivo conectado
             localStorage.setItem('peer-remote-id', conn.peer);
         });
 
@@ -1721,7 +1763,7 @@
         });
     }
 
-    // Conectar automáticamente (al recargar la página)
+    // Conectar automáticamente
     function conectarAutomaticamente(idRemoto) {
         if (!peer || !peer.open) {
             setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
@@ -1738,7 +1780,6 @@
 
         configurarEventosConexion(conexion);
 
-        // Guardar ID remoto
         localStorage.setItem('peer-remote-id', idRemoto);
         esAnfitrion = false;
     }
@@ -1764,7 +1805,6 @@
 
         configurarEventosConexion(conexion);
 
-        // Guardar ID remoto
         localStorage.setItem('peer-remote-id', idRemoto);
         esAnfitrion = false;
     }
@@ -1785,14 +1825,12 @@
                 showConfirmButton: false
             });
 
-            // Enviar estado actual inmediatamente
             setTimeout(() => {
                 enviarDatos();
             }, 800);
 
             actualizarEstadoConexion();
 
-            // Configurar eventos de reconexión
             conn.on('close', () => {
                 console.log('Conexión cerrada');
                 actualizarEstadoConexion();
@@ -1806,7 +1844,31 @@
 
         conn.on('data', (datos) => {
             console.log('📥 Datos recibidos:', datos);
-            aplicarDatosRecibidos(datos);
+            
+            // Verificar si es una confirmación especial
+            if (datos.tipo === 'confirmacion_cambios') {
+                console.log('✅ Confirmación de cambios recibida:', datos.mensaje);
+                
+                // Aplicar datos confirmados
+                aplicarDatosRecibidos(datos);
+                
+                // Guardar confirmación en localStorage
+                localStorage.setItem('ultima-confirmacion', Date.now().toString());
+                localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+                
+                // Mostrar notificación
+                if (datos.esAnfitrion !== esAnfitrion) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cambios Confirmados',
+                        text: 'El otro dispositivo ha confirmado y guardado los cambios permanentemente.',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                }
+            } else {
+                aplicarDatosRecibidos(datos);
+            }
         });
 
         conn.on('error', (err) => {
@@ -1828,7 +1890,6 @@
             console.log('✅ Cliente conectado:', conn.peer);
             actualizarEstadoConexion();
 
-            // Enviar datos actuales al cliente
             setTimeout(() => {
                 enviarDatos();
             }, 1000);
@@ -1836,10 +1897,19 @@
 
         conn.on('data', (datos) => {
             console.log('📥 Datos recibidos del cliente:', datos);
-            aplicarDatosRecibidos(datos);
-
-            // Guardar en localStorage del anfitrión también
-            guardarLocalmente();
+            
+            if (datos.tipo === 'confirmacion_cambios') {
+                console.log('✅ Confirmación de cambios recibida del cliente');
+                
+                aplicarDatosRecibidos(datos);
+                guardarLocalmente();
+                
+                localStorage.setItem('ultima-confirmacion', Date.now().toString());
+                localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+            } else {
+                aplicarDatosRecibidos(datos);
+                guardarLocalmente();
+            }
         });
 
         conn.on('close', () => {
@@ -1877,7 +1947,6 @@
             esAnfitrion: esAnfitrion
         };
 
-        // Capturar todos los inputs y textareas
         document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
             const clave = campo.id || campo.name || `campo-${index}`;
             datos.campos[clave] = campo.value;
@@ -1887,13 +1956,11 @@
             }
         });
 
-        // Capturar todas las celdas con contenido
         document.querySelectorAll("td[class^='r'], td.resultado, td.valor-fijo").forEach((celda, index) => {
             const clave = celda.className || `celda-${index}`;
             datos.celdas[clave] = celda.textContent;
         });
 
-        // Capturar divs especiales
         const divsEspeciales = document.querySelectorAll('.cantidad3, .cantidad5, .resultado-adicionales');
         divsEspeciales.forEach((div, index) => {
             const clave = div.className || `div-${index}`;
@@ -1903,8 +1970,7 @@
             }
         });
 
-        // Capturar algunos datos específicos de localStorage
-        const keysToSync = ['premios-total', 'peer-remote-id'];
+        const keysToSync = ['premios-total', 'peer-remote-id', 'ultima-confirmacion'];
         keysToSync.forEach(key => {
             datos.localStorage[key] = localStorage.getItem(key);
         });
@@ -1914,24 +1980,20 @@
 
     // MEJORA: Optimizar la aplicación de datos recibidos
     function aplicarDatosRecibidos(datos) {
-        // Evitar bucles de sincronización
         if (datos.timestamp && ultimoTimestampRecibido &&
             datos.timestamp <= ultimoTimestampRecibido) {
             return;
         }
         ultimoTimestampRecibido = datos.timestamp;
         
-        // Suspender sincronización temporalmente para evitar retroalimentación
         sincronizacionActiva = false;
 
-        // Aplicar campos
         if (datos.campos) {
             Object.keys(datos.campos).forEach(clave => {
                 if (clave.endsWith('_dataset')) return;
 
                 const valor = datos.campos[clave];
 
-                // Buscar campo por id, name o índice
                 let campo = document.getElementById(clave) ||
                     document.querySelector(`[name="${clave}"]`);
 
@@ -1942,20 +2004,16 @@
                 }
 
                 if (campo && campo.value !== valor) {
-                    // Verificar si el campo está enfocado (el usuario está editando)
                     const estaEnfocado = (document.activeElement === campo);
                     
-                    // Solo actualizar si el usuario no está editando este campo
                     if (!estaEnfocado) {
                         campo.value = valor;
 
-                        // Actualizar dataset.valor si existe
                         const datasetKey = clave + '_dataset';
                         if (datos.campos[datasetKey] && campo.dataset.valor !== undefined) {
                             campo.dataset.valor = datos.campos[datasetKey];
                         }
 
-                        // Disparar eventos si es necesario
                         const event = new Event('input', { bubbles: true });
                         campo.dispatchEvent(event);
                     }
@@ -1963,7 +2021,6 @@
             });
         }
 
-        // Aplicar celdas
         if (datos.celdas) {
             Object.keys(datos.celdas).forEach(clave => {
                 const celdas = document.querySelectorAll(`.${clave}`);
@@ -1975,7 +2032,6 @@
             });
         }
 
-        // Aplicar divs especiales
         if (datos.divs) {
             Object.keys(datos.divs).forEach(clave => {
                 if (clave.endsWith('_dataset')) return;
@@ -1992,7 +2048,6 @@
             });
         }
 
-        // Aplicar localStorage
         if (datos.localStorage) {
             Object.keys(datos.localStorage).forEach(key => {
                 if (datos.localStorage[key] !== null) {
@@ -2001,7 +2056,6 @@
             });
         }
 
-        // Recalcular todo después de un breve retraso
         setTimeout(() => {
             if (typeof calcularTotales === 'function') calcularTotales();
             if (typeof verificarCamposVacios === 'function') verificarCamposVacios();
@@ -2009,31 +2063,10 @@
             if (typeof sumarResultados === 'function') sumarResultados();
             if (typeof sumarConteoBilletes === 'function') sumarConteoBilletes();
             
-            // Reactivar sincronización después de procesar
             setTimeout(() => {
                 sincronizacionActiva = true;
             }, 500);
         }, 100);
-    }
-
-    // Función de sincronización manual
-    function sincronizarDatos() {
-        if (conexion && conexion.open) {
-            enviarDatos();
-            Swal.fire({
-                icon: 'success',
-                title: 'Datos sincronizados',
-                text: 'Los datos se han enviado al otro dispositivo',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        } else {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Sin conexión',
-                text: 'No hay ningún dispositivo conectado'
-            });
-        }
     }
 
     // Intentar reconexión automática
@@ -2059,22 +2092,25 @@
         }, 5000);
     }
 
-    // Actualizar estado de conexión en UI
+    // Actualizar estado de conexión en UI (MODIFICADA PARA INCLUIR BOTÓN GUARDAR)
     function actualizarEstadoConexion() {
         const statusEl = document.getElementById('peerStatus');
         const disconnectBtn = document.getElementById('disconnectBtn');
         const connectBtn = document.getElementById('connectBtn');
+        const guardarBtn = document.getElementById('guardarCambiosBtn'); // NUEVO
 
         if (conexion && conexion.open) {
             statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
             statusEl.className = 'peer-status connected';
             disconnectBtn.style.display = 'block';
             connectBtn.style.display = 'none';
+            guardarBtn.style.display = 'block'; // MOSTRAR BOTÓN GUARDAR
         } else {
             statusEl.textContent = 'Sin conexión';
             statusEl.className = 'peer-status disconnected';
             disconnectBtn.style.display = 'none';
             connectBtn.style.display = 'block';
+            guardarBtn.style.display = 'none'; // OCULTAR BOTÓN GUARDAR
         }
     }
 
@@ -2128,7 +2164,6 @@
                     prompt('Copia este ID manualmente:', miID);
                 });
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                // Cambiar ID
                 Swal.fire({
                     title: 'Cambiar ID',
                     input: 'text',
@@ -2163,7 +2198,6 @@
 
     // Guardar datos localmente
     function guardarLocalmente() {
-        // Guardar todos los campos
         document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
             const key = campo.id || campo.name || `campo-${index}`;
             localStorage.setItem(key, campo.value);
@@ -2173,12 +2207,10 @@
             }
         });
 
-        // Guardar celdas con clase rX
         document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
             localStorage.setItem(`td-${index}`, celda.textContent.trim());
         });
 
-        // Guardar otros estados importantes
         localStorage.setItem('ultima-sincronizacion', Date.now());
     }
 
@@ -2307,7 +2339,6 @@
             }
         });
 
-        // Pintar morado claro los inputs cantidad4 si tienen valor
         const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
         inputsCantidad4.forEach(input => {
             const valorNumerico = input.value.replace(/\D/g, "");
@@ -2366,7 +2397,6 @@
             }
         });
 
-        // Ocultar lista si se hace clic fuera
         document.addEventListener('click', e => {
             if (!sugerencias.contains(e.target) && e.target !== input) {
                 sugerencias.style.display = 'none';
@@ -2461,7 +2491,6 @@
             input.value = numero.toLocaleString("es-CO");
         }
 
-        // Si es un input de lotería (input1, input2, etc.), detecta la fila
         if (input.classList.contains('input1') || input.classList.contains('input2') ||
             /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
             detectarFila(input);
@@ -2514,13 +2543,11 @@
     function configurarTodosLosAutocompletados() {
         console.log('Configurando autocompletados...');
 
-        // Configurar loteria (sin número)
         if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
             setupAutoComplete('loteria', 'sugerencias');
             console.log('Configurado loteria');
         }
 
-        // Configurar loteria1 a loteria30
         for (let i = 1; i <= 30; i++) {
             const inputId = `loteria${i}`;
             const sugerenciasId = `sugerencias${i}`;
@@ -2554,32 +2581,27 @@
     function borrarTodo() {
         localStorage.clear();
 
-        // Limpiar todos los inputs
         document.querySelectorAll("input, textarea").forEach(el => {
             el.value = "";
             if (el.dataset.valor) el.dataset.valor = "0";
         });
 
-        // Limpiar celdas de resultados
         document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
             el.textContent = "";
             if (el.dataset.valor) el.dataset.valor = "0";
         });
 
-        // Limpiar divs especiales
         document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
             el.textContent = "";
             if (el.dataset.valor) el.dataset.valor = "0";
         });
 
-        // Resetear totales
         document.getElementById("total-general-bilteles").textContent = "";
         document.getElementById("total-general-monedas").textContent = "";
         document.getElementById("suma-total").textContent = "";
         document.getElementById("resul").textContent = "";
         document.getElementById("sobra").textContent = "";
 
-        // Recalcular
         calcularTotales();
         verificarCamposVacios();
         sumarResultados();
@@ -2629,10 +2651,8 @@
             return;
         }
 
-        // Clonar la tabla para no afectar la original
         const tablaClon = tabla.cloneNode(true);
 
-        // Reemplazar inputs y textareas por su valor
         const campos = tablaClon.querySelectorAll("input, textarea");
         campos.forEach(el => {
             const td = el.closest("td");
@@ -2643,7 +2663,6 @@
             }
         });
 
-        // Crear archivo Excel real con XLSX
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
 
