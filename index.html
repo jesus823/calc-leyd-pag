@@ -193,12 +193,12 @@
     <button id="connectBtn" class="peer-button connect" onclick="conectarDispositivo()">
       🔗 Conectar a otro dispositivo
     </button>
-    <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none;">
+    <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none; height: 50px;">
       🚫 Desconectar
     </button>
     <!-- NUEVO BOTÓN: Guardar Cambios -->
     <button id="guardarCambiosBtn" class="peer-button guardar" onclick="guardarCambiosConfirmados()"
-      style="display:none;">
+      style="display:none; height: 60px;">
       💾 Guardar Cambios Confirmados
     </button>
 
@@ -1589,7 +1589,7 @@
     let sincronizacionActiva = true;
 
     // ID persistente basado en localStorage
-// ID persistente basado en localStorage - COMPLETAMENTE FIJO
+    // ID persistente basado en localStorage - COMPLETAMENTE FIJO
     function obtenerPeerIdPersistente() {
       let peerId = localStorage.getItem('peer-id-persistente');
 
@@ -1599,11 +1599,11 @@
         const timestamp = Date.now();
         const random = Math.random().toString(36).substr(2, 9);
         peerId = `pagato-${timestamp}-${random}`;
-        
+
         // Guardar permanentemente
         localStorage.setItem('peer-id-persistente', peerId);
         console.log('🆕 ID FIJO creado y guardado permanentemente:', peerId);
-        
+
         // Mostrar al usuario su ID fijo
         setTimeout(() => {
           Swal.fire({
