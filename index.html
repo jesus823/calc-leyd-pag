@@ -140,38 +140,38 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const numericInputs = document.querySelectorAll('input[type="tel"]:not([id^="loteria"]), input.input1, input.input2, input.input3, input.input4, input.input5, input.input6, input.input7, input.input8, input.input9, input.input10, input.input11, input.input12, input.input13, input.input14, input.input15, input.input16, input.input17, input.input18, input.input19, input.input20, input.input21, input.input22, input.input23, input.input24, input.input25, input.input26, input.input27, input.input28, input.input29, input.input30, input.input31, input.input32, input.input33, input.input34, input.input35, input.input36, input.input37, input.input38, input.input39, input.input40, input.input41, input.input42, input.input43, input.input44, input.input45, input.input46, input.input47, input.input48, input.input49, input.input50, input.input51, input.input52, input.input53, input.input54, input.input55, input.input56, input.input57, input.input58, input.input59, input.input60');
-      
+
       numericInputs.forEach(input => {
         input.addEventListener('keydown', function (e) {
           if ([8, 9, 13, 27, 46, 35, 36, 37, 38, 39, 40].includes(e.keyCode) ||
-              (e.ctrlKey && [65, 67, 86, 88, 90].includes(e.keyCode)) ||
-              (e.metaKey && [65, 67, 86, 88, 90].includes(e.keyCode))) {
+            (e.ctrlKey && [65, 67, 86, 88, 90].includes(e.keyCode)) ||
+            (e.metaKey && [65, 67, 86, 88, 90].includes(e.keyCode))) {
             return;
           }
-          
-          if ((e.keyCode >= 48 && e.keyCode <= 57) || 
-              (e.keyCode >= 96 && e.keyCode <= 105)) {
+
+          if ((e.keyCode >= 48 && e.keyCode <= 57) ||
+            (e.keyCode >= 96 && e.keyCode <= 105)) {
             return;
           }
-          
+
           if (e.keyCode === 190 || e.keyCode === 188 || e.keyCode === 110) {
             return;
           }
-          
+
           e.preventDefault();
         });
-        
+
         input.addEventListener('paste', function (e) {
           setTimeout(() => {
             const valor = input.value;
             const numerosSolo = valor.replace(/[^\d]/g, '');
             input.value = numerosSolo;
-            
+
             const event = new Event('input', { bubbles: true });
             input.dispatchEvent(event);
           }, 10);
         });
-        
+
         input.addEventListener('blur', function () {
           const valor = input.value;
           const numerosSolo = valor.replace(/[^\d]/g, '');
@@ -197,7 +197,8 @@
       🚫 Desconectar
     </button>
     <!-- NUEVO BOTÓN: Guardar Cambios -->
-    <button id="guardarCambiosBtn" class="peer-button guardar" onclick="guardarCambiosConfirmados()" style="display:none;">
+    <button id="guardarCambiosBtn" class="peer-button guardar" onclick="guardarCambiosConfirmados()"
+      style="display:none;">
       💾 Guardar Cambios Confirmados
     </button>
 
@@ -1588,642 +1589,669 @@
     let sincronizacionActiva = true;
 
     // ID persistente basado en localStorage
- function obtenerPeerIdPersistente() {
-        let peerId = localStorage.getItem('peer-id-persistente');
+  function obtenerPeerIdPersistente() {
+      let peerId = localStorage.getItem('peer-id-persistente');
+
+      // Si no existe, crear uno nuevo ÚNICO
+      if (!peerId) {
+        // Generar ID único basado en timestamp + random
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        peerId = `pagato-${timestamp}-${random}`;
         
-        // Si no existe, crear uno nuevo
-        if (!peerId) {
-            peerId = 'pagato' + Date.now() + Math.random().toString(36).substr(2, 6);
-            localStorage.setItem('peer-id-persistente', peerId);
-            console.log('🆕 Nuevo ID creado y guardado:', peerId);
-        } else {
-            console.log('♻️ ID recuperado de localStorage:', peerId);
-        }
+        // Guardar permanentemente
+        localStorage.setItem('peer-id-persistente', peerId);
+        console.log('🆕 ID FIJO creado y guardado permanentemente:', peerId);
         
-        // Verificar que se guardó correctamente
-        const verificacion = localStorage.getItem('peer-id-persistente');
-        if (verificacion !== peerId) {
-            console.error('⚠️ Error: El ID no se guardó correctamente en localStorage');
-        }
-        
-        return peerId;
+        // Mostrar al usuario su ID fijo
+        setTimeout(() => {
+          Swal.fire({
+            title: '¡ID Fijo Creado!',
+            html: `
+              <p>Tu ID personal es:</p>
+              <strong style="font-size: 18px; color: #2196F3;">${peerId}</strong>
+              <p style="margin-top: 10px; color: #666;">Este ID nunca cambiará. Guárdalo para reconectar tus dispositivos.</p>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Copiar ID',
+            showCancelButton: true,
+            cancelButtonText: 'Entendido'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              navigator.clipboard.writeText(peerId).then(() => {
+                Swal.fire({
+                  icon: 'success',
+                  title: 'ID Copiado',
+                  text: 'Tu ID ha sido copiado al portapapeles',
+                  timer: 2000,
+                  showConfirmButton: false
+                });
+              });
+            }
+          });
+        }, 1000);
+      } else {
+        console.log('♻️ ID FIJO recuperado de localStorage:', peerId);
+      }
+
+      return peerId;
     }
 
     // MEJORA: Configurar inputs para mejor rendimiento
     function configurarInputsParaSincronizacion() {
-        const inputs = document.querySelectorAll('input[type="tel"], input.cantidad, input.cantidad2, input.cantidad4, .venta, .input1, .input2, .input3, .input4, .input5, .input6, .input7, .input8, .input9, .input10, .input11, .input12, .input13, .input14, .input15, .input16, .input17, .input18, .input19, .input20, .input21, .input22, .input23, .input24, .input25, .input26, .input27, .input28, .input29, .input30, .input31, .input32, .input33, .input34, .input35, .input36, .input37, .input38, .input39, .input40, .input41, .input42, .input43, .input44, .input45, .input46, .input47, .input48, .input49, .input50, .input51, .input52, .input53, .input54, .input55, .input56, .input57, .input58, .input59, .input60');
-        
-        inputs.forEach(input => {
-            input.addEventListener('input', function(e) {
-                setTimeout(() => {
-                    if (sincronizacionActiva && conexion && conexion.open) {
-                        enviarDatosDebounced();
-                    }
-                }, 100);
-            });
-            
-            input.addEventListener('paste', function(e) {
-                setTimeout(() => {
-                    if (sincronizacionActiva && conexion && conexion.open) {
-                        setTimeout(() => {
-                            enviarDatos();
-                        }, 300);
-                    }
-                }, 50);
-            });
-            
-            input.addEventListener('blur', function() {
-                if (sincronizacionActiva && conexion && conexion.open) {
-                    enviarDatos();
-                }
-            });
+      const inputs = document.querySelectorAll('input[type="tel"], input.cantidad, input.cantidad2, input.cantidad4, .venta, .input1, .input2, .input3, .input4, .input5, .input6, .input7, .input8, .input9, .input10, .input11, .input12, .input13, .input14, .input15, .input16, .input17, .input18, .input19, .input20, .input21, .input22, .input23, .input24, .input25, .input26, .input27, .input28, .input29, .input30, .input31, .input32, .input33, .input34, .input35, .input36, .input37, .input38, .input39, .input40, .input41, .input42, .input43, .input44, .input45, .input46, .input47, .input48, .input49, .input50, .input51, .input52, .input53, .input54, .input55, .input56, .input57, .input58, .input59, .input60');
+
+      inputs.forEach(input => {
+        input.addEventListener('input', function (e) {
+          setTimeout(() => {
+            if (sincronizacionActiva && conexion && conexion.open) {
+              enviarDatosDebounced();
+            }
+          }, 100);
         });
+
+        input.addEventListener('paste', function (e) {
+          setTimeout(() => {
+            if (sincronizacionActiva && conexion && conexion.open) {
+              setTimeout(() => {
+                enviarDatos();
+              }, 300);
+            }
+          }, 50);
+        });
+
+        input.addEventListener('blur', function () {
+          if (sincronizacionActiva && conexion && conexion.open) {
+            enviarDatos();
+          }
+        });
+      });
     }
 
     // MEJORA: Debounce mejorado para envío de datos
     let timeoutEnvio = null;
     function enviarDatosDebounced() {
-        clearTimeout(timeoutEnvio);
-        timeoutEnvio = setTimeout(() => {
-            if (conexion && conexion.open) {
-                enviarDatos();
-            }
-        }, 1500);
+      clearTimeout(timeoutEnvio);
+      timeoutEnvio = setTimeout(() => {
+        if (conexion && conexion.open) {
+          enviarDatos();
+        }
+      }, 1500);
     }
 
     // MEJORA: Función para suspender temporalmente la sincronización
     function suspenderSincronizacion(tiempoMs = 1000) {
-        sincronizacionActiva = false;
-        setTimeout(() => {
-            sincronizacionActiva = true;
-        }, tiempoMs);
+      sincronizacionActiva = false;
+      setTimeout(() => {
+        sincronizacionActiva = true;
+      }, tiempoMs);
     }
 
     // NUEVA FUNCIÓN: Guardar cambios confirmados
     function guardarCambiosConfirmados() {
-        if (conexion && conexion.open) {
-            Swal.fire({
-                title: '¿Guardar cambios confirmados?',
-                text: 'Esta acción garantizará que los cambios se sincronicen permanentemente en ambos dispositivos.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, guardar cambios',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#9C27B0'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Forzar guardado en localStorage de ambos dispositivos
-                    guardarLocalmente();
-                    
-                    // Enviar datos con flag especial de confirmación
-                    const datos = obtenerTodosLosDatos();
-                    datos.tipo = 'confirmacion_cambios';
-                    datos.timestampConfirmacion = Date.now();
-                    datos.mensaje = 'Cambios confirmados y guardados permanentemente';
-                    
-                    try {
-                        conexion.send(datos);
-                        console.log('✅ Cambios confirmados enviados:', datos);
-                        
-                        // Guardar estado confirmado en localStorage
-                        localStorage.setItem('ultima-confirmacion', Date.now().toString());
-                        localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-                        
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Cambios Guardados',
-                            text: 'Los cambios han sido confirmados y sincronizados permanentemente en ambos dispositivos.',
-                            timer: 2500,
-                            showConfirmButton: false
-                        });
-                    } catch (error) {
-                        console.error('Error al enviar confirmación:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'No se pudieron guardar los cambios. Verifica la conexión.'
-                        });
-                    }
-                }
-            });
-        } else {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Sin conexión',
-                text: 'Debes estar conectado a otro dispositivo para guardar cambios confirmados.'
-            });
-        }
+      if (conexion && conexion.open) {
+        Swal.fire({
+          title: '¿Guardar cambios confirmados?',
+          text: 'Esta acción garantizará que los cambios se sincronicen permanentemente en ambos dispositivos.',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, guardar cambios',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#9C27B0'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Forzar guardado en localStorage de ambos dispositivos
+            guardarLocalmente();
+
+            // Enviar datos con flag especial de confirmación
+            const datos = obtenerTodosLosDatos();
+            datos.tipo = 'confirmacion_cambios';
+            datos.timestampConfirmacion = Date.now();
+            datos.mensaje = 'Cambios confirmados y guardados permanentemente';
+
+            try {
+              conexion.send(datos);
+              console.log('✅ Cambios confirmados enviados:', datos);
+
+              // Guardar estado confirmado en localStorage
+              localStorage.setItem('ultima-confirmacion', Date.now().toString());
+              localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+
+              Swal.fire({
+                icon: 'success',
+                title: 'Cambios Guardados',
+                text: 'Los cambios han sido confirmados y sincronizados permanentemente en ambos dispositivos.',
+                timer: 2500,
+                showConfirmButton: false
+              });
+            } catch (error) {
+              console.error('Error al enviar confirmación:', error);
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudieron guardar los cambios. Verifica la conexión.'
+              });
+            }
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin conexión',
+          text: 'Debes estar conectado a otro dispositivo para guardar cambios confirmados.'
+        });
+      }
     }
 
     // Inicializar PeerJS con ID persistente
     function inicializarPeerJS() {
-        const peerId = obtenerPeerIdPersistente();
+      const peerId = obtenerPeerIdPersistente();
 
-        peer = new Peer(peerId, {
-            debug: 1,
-            config: {
-                'iceServers': [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' }
-                ]
-            }
-        });
+      peer = new Peer(peerId, {
+        debug: 1,
+        config: {
+          'iceServers': [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' }
+          ]
+        }
+      });
 
-        peer.on('open', (id) => {
-            miID = id;
-            console.log('Mi ID persistente:', id);
+      peer.on('open', (id) => {
+        miID = id;
+        console.log('Mi ID persistente:', id);
 
-            const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
-            document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
-            document.getElementById('miIDBtn').style.display = 'block';
+        const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
+        document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
+        document.getElementById('miIDBtn').style.display = 'block';
 
-            configurarInputsParaSincronizacion();
+        configurarInputsParaSincronizacion();
 
-            const idRemotoGuardado = localStorage.getItem('peer-remote-id');
-            if (idRemotoGuardado && idRemotoGuardado !== id) {
-                setTimeout(() => {
-                    conectarAutomaticamente(idRemotoGuardado);
-                }, 1500);
-            }
+        const idRemotoGuardado = localStorage.getItem('peer-remote-id');
+        if (idRemotoGuardado && idRemotoGuardado !== id) {
+          setTimeout(() => {
+            conectarAutomaticamente(idRemotoGuardado);
+          }, 1500);
+        }
 
-            actualizarEstadoConexion();
-        });
+        actualizarEstadoConexion();
+      });
 
-        peer.on('connection', (conn) => {
-            console.log('📲 Conexión entrante recibida de:', conn.peer);
-            esAnfitrion = true;
-            manejarNuevaConexion(conn);
+      peer.on('connection', (conn) => {
+        console.log('📲 Conexión entrante recibida de:', conn.peer);
+        esAnfitrion = true;
+        manejarNuevaConexion(conn);
 
-            localStorage.setItem('peer-remote-id', conn.peer);
-        });
+        localStorage.setItem('peer-remote-id', conn.peer);
+      });
 
-        peer.on('error', (err) => {
-            console.error('Error en PeerJS:', err);
-            if (err.type === 'peer-unavailable') {
-                intentarReconexion();
-            }
-        });
+      peer.on('error', (err) => {
+        console.error('Error en PeerJS:', err);
+        if (err.type === 'peer-unavailable') {
+          intentarReconexion();
+        }
+      });
 
-        peer.on('disconnected', () => {
-            console.log('Peer desconectado, intentando reconectar...');
-            peer.reconnect();
-        });
+      peer.on('disconnected', () => {
+        console.log('Peer desconectado, intentando reconectar...');
+        peer.reconnect();
+      });
 
-        peer.on('close', () => {
-            console.log('Peer cerrado');
-            actualizarEstadoConexion();
-        });
+      peer.on('close', () => {
+        console.log('Peer cerrado');
+        actualizarEstadoConexion();
+      });
     }
 
     // Conectar automáticamente
     function conectarAutomaticamente(idRemoto) {
-        if (!peer || !peer.open) {
-            setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
-            return;
-        }
+      if (!peer || !peer.open) {
+        setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
+        return;
+      }
 
-        console.log('Intentando reconexión automática a:', idRemoto);
-        intentandoReconectar = true;
+      console.log('Intentando reconexión automática a:', idRemoto);
+      intentandoReconectar = true;
 
-        conexion = peer.connect(idRemoto, {
-            reliable: true,
-            serialization: 'json'
-        });
+      conexion = peer.connect(idRemoto, {
+        reliable: true,
+        serialization: 'json'
+      });
 
-        configurarEventosConexion(conexion);
+      configurarEventosConexion(conexion);
 
-        localStorage.setItem('peer-remote-id', idRemoto);
-        esAnfitrion = false;
+      localStorage.setItem('peer-remote-id', idRemoto);
+      esAnfitrion = false;
     }
 
     // Conectar manualmente
     function conectarDispositivo() {
-        const idRemoto = prompt('Ingresa el ID del otro dispositivo:');
-        if (!idRemoto || idRemoto === miID) return;
+      const idRemoto = prompt('Ingresa el ID del otro dispositivo:');
+      if (!idRemoto || idRemoto === miID) return;
 
-        Swal.fire({
-            title: 'Conectando...',
-            text: 'Estableciendo conexión con el otro dispositivo',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+      Swal.fire({
+        title: 'Conectando...',
+        text: 'Estableciendo conexión con el otro dispositivo',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
 
-        conexion = peer.connect(idRemoto, {
-            reliable: true,
-            serialization: 'json'
-        });
+      conexion = peer.connect(idRemoto, {
+        reliable: true,
+        serialization: 'json'
+      });
 
-        configurarEventosConexion(conexion);
+      configurarEventosConexion(conexion);
 
-        localStorage.setItem('peer-remote-id', idRemoto);
-        esAnfitrion = false;
+      localStorage.setItem('peer-remote-id', idRemoto);
+      esAnfitrion = false;
     }
 
     // Configurar eventos de conexión
     function configurarEventosConexion(conn) {
-        conn.on('open', () => {
-            console.log('✅ Conexión establecida exitosamente!');
-            conexion = conn;
-            intentandoReconectar = false;
+      conn.on('open', () => {
+        console.log('✅ Conexión establecida exitosamente!');
+        conexion = conn;
+        intentandoReconectar = false;
 
-            Swal.close();
-            Swal.fire({
-                icon: 'success',
-                title: '¡Conectado!',
-                text: 'Conexión establecida exitosamente',
-                timer: 2000,
-                showConfirmButton: false
-            });
-
-            setTimeout(() => {
-                enviarDatos();
-            }, 800);
-
-            actualizarEstadoConexion();
-
-            conn.on('close', () => {
-                console.log('Conexión cerrada');
-                actualizarEstadoConexion();
-                intentarReconexion();
-            });
-
-            conn.on('error', (err) => {
-                console.error('Error en la conexión:', err);
-            });
+        Swal.close();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Conectado!',
+          text: 'Conexión establecida exitosamente',
+          timer: 2000,
+          showConfirmButton: false
         });
 
-        conn.on('data', (datos) => {
-            console.log('📥 Datos recibidos:', datos);
-            
-            // Verificar si es una confirmación especial
-            if (datos.tipo === 'confirmacion_cambios') {
-                console.log('✅ Confirmación de cambios recibida:', datos.mensaje);
-                
-                // Aplicar datos confirmados
-                aplicarDatosRecibidos(datos);
-                
-                // Guardar confirmación en localStorage
-                localStorage.setItem('ultima-confirmacion', Date.now().toString());
-                localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-                
-                // Mostrar notificación
-                if (datos.esAnfitrion !== esAnfitrion) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Cambios Confirmados',
-                        text: 'El otro dispositivo ha confirmado y guardado los cambios permanentemente.',
-                        timer: 2500,
-                        showConfirmButton: false
-                    });
-                }
-            } else {
-                aplicarDatosRecibidos(datos);
-            }
+        setTimeout(() => {
+          enviarDatos();
+        }, 800);
+
+        actualizarEstadoConexion();
+
+        conn.on('close', () => {
+          console.log('Conexión cerrada');
+          actualizarEstadoConexion();
+          intentarReconexion();
         });
 
         conn.on('error', (err) => {
-            console.error('❌ Error al conectar:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de conexión',
-                text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
-            });
-            intentarReconexion();
+          console.error('Error en la conexión:', err);
         });
+      });
+
+      conn.on('data', (datos) => {
+        console.log('📥 Datos recibidos:', datos);
+
+        // Verificar si es una confirmación especial
+        if (datos.tipo === 'confirmacion_cambios') {
+          console.log('✅ Confirmación de cambios recibida:', datos.mensaje);
+
+          // Aplicar datos confirmados
+          aplicarDatosRecibidos(datos);
+
+          // Guardar confirmación en localStorage
+          localStorage.setItem('ultima-confirmacion', Date.now().toString());
+          localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+
+          // Mostrar notificación
+          if (datos.esAnfitrion !== esAnfitrion) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Cambios Confirmados',
+              text: 'El otro dispositivo ha confirmado y guardado los cambios permanentemente.',
+              timer: 2500,
+              showConfirmButton: false
+            });
+          }
+        } else {
+          aplicarDatosRecibidos(datos);
+        }
+      });
+
+      conn.on('error', (err) => {
+        console.error('❌ Error al conectar:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de conexión',
+          text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
+        });
+        intentarReconexion();
+      });
     }
 
     // Manejar nueva conexión entrante
     function manejarNuevaConexion(conn) {
-        conexion = conn;
+      conexion = conn;
 
-        conn.on('open', () => {
-            console.log('✅ Cliente conectado:', conn.peer);
-            actualizarEstadoConexion();
+      conn.on('open', () => {
+        console.log('✅ Cliente conectado:', conn.peer);
+        actualizarEstadoConexion();
 
-            setTimeout(() => {
-                enviarDatos();
-            }, 1000);
-        });
+        setTimeout(() => {
+          enviarDatos();
+        }, 1000);
+      });
 
-        conn.on('data', (datos) => {
-            console.log('📥 Datos recibidos del cliente:', datos);
-            
-            if (datos.tipo === 'confirmacion_cambios') {
-                console.log('✅ Confirmación de cambios recibida del cliente');
-                
-                aplicarDatosRecibidos(datos);
-                guardarLocalmente();
-                
-                localStorage.setItem('ultima-confirmacion', Date.now().toString());
-                localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-            } else {
-                aplicarDatosRecibidos(datos);
-                guardarLocalmente();
-            }
-        });
+      conn.on('data', (datos) => {
+        console.log('📥 Datos recibidos del cliente:', datos);
 
-        conn.on('close', () => {
-            console.log('Cliente desconectado');
-            actualizarEstadoConexion();
-        });
+        if (datos.tipo === 'confirmacion_cambios') {
+          console.log('✅ Confirmación de cambios recibida del cliente');
 
-        conn.on('error', (err) => {
-            console.error('Error en conexión entrante:', err);
-        });
+          aplicarDatosRecibidos(datos);
+          guardarLocalmente();
+
+          localStorage.setItem('ultima-confirmacion', Date.now().toString());
+          localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+        } else {
+          aplicarDatosRecibidos(datos);
+          guardarLocalmente();
+        }
+      });
+
+      conn.on('close', () => {
+        console.log('Cliente desconectado');
+        actualizarEstadoConexion();
+      });
+
+      conn.on('error', (err) => {
+        console.error('Error en conexión entrante:', err);
+      });
     }
 
     // Enviar datos a través de la conexión P2P
     function enviarDatos() {
-        if (!conexion || !conexion.open) return;
+      if (!conexion || !conexion.open) return;
 
-        const datos = obtenerTodosLosDatos();
+      const datos = obtenerTodosLosDatos();
 
-        try {
-            conexion.send(datos);
-            console.log('📤 Datos enviados:', datos);
-        } catch (error) {
-            console.error('Error al enviar datos:', error);
-        }
+      try {
+        conexion.send(datos);
+        console.log('📤 Datos enviados:', datos);
+      } catch (error) {
+        console.error('Error al enviar datos:', error);
+      }
     }
 
     // Obtener todos los datos de la página
     function obtenerTodosLosDatos() {
-        const datos = {
-            campos: {},
-            celdas: {},
-            divs: {},
-            localStorage: {},
-            timestamp: Date.now(),
-            esAnfitrion: esAnfitrion
-        };
+      const datos = {
+        campos: {},
+        celdas: {},
+        divs: {},
+        localStorage: {},
+        timestamp: Date.now(),
+        esAnfitrion: esAnfitrion
+      };
 
-        document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
-            const clave = campo.id || campo.name || `campo-${index}`;
-            datos.campos[clave] = campo.value;
+      document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
+        const clave = campo.id || campo.name || `campo-${index}`;
+        datos.campos[clave] = campo.value;
 
-            if (campo.dataset.valor !== undefined) {
-                datos.campos[clave + '_dataset'] = campo.dataset.valor;
-            }
-        });
+        if (campo.dataset.valor !== undefined) {
+          datos.campos[clave + '_dataset'] = campo.dataset.valor;
+        }
+      });
 
-        document.querySelectorAll("td[class^='r'], td.resultado, td.valor-fijo").forEach((celda, index) => {
-            const clave = celda.className || `celda-${index}`;
-            datos.celdas[clave] = celda.textContent;
-        });
+      document.querySelectorAll("td[class^='r'], td.resultado, td.valor-fijo").forEach((celda, index) => {
+        const clave = celda.className || `celda-${index}`;
+        datos.celdas[clave] = celda.textContent;
+      });
 
-        const divsEspeciales = document.querySelectorAll('.cantidad3, .cantidad5, .resultado-adicionales');
-        divsEspeciales.forEach((div, index) => {
-            const clave = div.className || `div-${index}`;
-            datos.divs[clave] = div.textContent;
-            if (div.dataset.valor) {
-                datos.divs[clave + '_dataset'] = div.dataset.valor;
-            }
-        });
+      const divsEspeciales = document.querySelectorAll('.cantidad3, .cantidad5, .resultado-adicionales');
+      divsEspeciales.forEach((div, index) => {
+        const clave = div.className || `div-${index}`;
+        datos.divs[clave] = div.textContent;
+        if (div.dataset.valor) {
+          datos.divs[clave + '_dataset'] = div.dataset.valor;
+        }
+      });
 
-        const keysToSync = ['premios-total', 'peer-remote-id', 'ultima-confirmacion'];
-        keysToSync.forEach(key => {
-            datos.localStorage[key] = localStorage.getItem(key);
-        });
+      const keysToSync = ['premios-total', 'peer-remote-id', 'ultima-confirmacion'];
+      keysToSync.forEach(key => {
+        datos.localStorage[key] = localStorage.getItem(key);
+      });
 
-        return datos;
+      return datos;
     }
 
     // MEJORA: Optimizar la aplicación de datos recibidos
     function aplicarDatosRecibidos(datos) {
-        if (datos.timestamp && ultimoTimestampRecibido &&
-            datos.timestamp <= ultimoTimestampRecibido) {
-            return;
-        }
-        ultimoTimestampRecibido = datos.timestamp;
-        
-        sincronizacionActiva = false;
+      if (datos.timestamp && ultimoTimestampRecibido &&
+        datos.timestamp <= ultimoTimestampRecibido) {
+        return;
+      }
+      ultimoTimestampRecibido = datos.timestamp;
 
-        if (datos.campos) {
-            Object.keys(datos.campos).forEach(clave => {
-                if (clave.endsWith('_dataset')) return;
+      sincronizacionActiva = false;
 
-                const valor = datos.campos[clave];
+      if (datos.campos) {
+        Object.keys(datos.campos).forEach(clave => {
+          if (clave.endsWith('_dataset')) return;
 
-                let campo = document.getElementById(clave) ||
-                    document.querySelector(`[name="${clave}"]`);
+          const valor = datos.campos[clave];
 
-                if (!campo && clave.startsWith('campo-')) {
-                    const index = parseInt(clave.replace('campo-', ''));
-                    const campos = document.querySelectorAll("input, textarea, select");
-                    if (campos[index]) campo = campos[index];
-                }
+          let campo = document.getElementById(clave) ||
+            document.querySelector(`[name="${clave}"]`);
 
-                if (campo && campo.value !== valor) {
-                    const estaEnfocado = (document.activeElement === campo);
-                    
-                    if (!estaEnfocado) {
-                        campo.value = valor;
+          if (!campo && clave.startsWith('campo-')) {
+            const index = parseInt(clave.replace('campo-', ''));
+            const campos = document.querySelectorAll("input, textarea, select");
+            if (campos[index]) campo = campos[index];
+          }
 
-                        const datasetKey = clave + '_dataset';
-                        if (datos.campos[datasetKey] && campo.dataset.valor !== undefined) {
-                            campo.dataset.valor = datos.campos[datasetKey];
-                        }
+          if (campo && campo.value !== valor) {
+            const estaEnfocado = (document.activeElement === campo);
 
-                        const event = new Event('input', { bubbles: true });
-                        campo.dispatchEvent(event);
-                    }
-                }
-            });
-        }
+            if (!estaEnfocado) {
+              campo.value = valor;
 
-        if (datos.celdas) {
-            Object.keys(datos.celdas).forEach(clave => {
-                const celdas = document.querySelectorAll(`.${clave}`);
-                celdas.forEach(celda => {
-                    if (celda.textContent !== datos.celdas[clave]) {
-                        celda.textContent = datos.celdas[clave];
-                    }
-                });
-            });
-        }
+              const datasetKey = clave + '_dataset';
+              if (datos.campos[datasetKey] && campo.dataset.valor !== undefined) {
+                campo.dataset.valor = datos.campos[datasetKey];
+              }
 
-        if (datos.divs) {
-            Object.keys(datos.divs).forEach(clave => {
-                if (clave.endsWith('_dataset')) return;
+              const event = new Event('input', { bubbles: true });
+              campo.dispatchEvent(event);
+            }
+          }
+        });
+      }
 
-                const div = document.querySelector(`.${clave}`);
-                if (div && div.textContent !== datos.divs[clave]) {
-                    div.textContent = datos.divs[clave];
+      if (datos.celdas) {
+        Object.keys(datos.celdas).forEach(clave => {
+          const celdas = document.querySelectorAll(`.${clave}`);
+          celdas.forEach(celda => {
+            if (celda.textContent !== datos.celdas[clave]) {
+              celda.textContent = datos.celdas[clave];
+            }
+          });
+        });
+      }
 
-                    const datasetKey = clave + '_dataset';
-                    if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
-                        div.dataset.valor = datos.divs[datasetKey];
-                    }
-                }
-            });
-        }
+      if (datos.divs) {
+        Object.keys(datos.divs).forEach(clave => {
+          if (clave.endsWith('_dataset')) return;
 
-        if (datos.localStorage) {
-            Object.keys(datos.localStorage).forEach(key => {
-                if (datos.localStorage[key] !== null) {
-                    localStorage.setItem(key, datos.localStorage[key]);
-                }
-            });
-        }
+          const div = document.querySelector(`.${clave}`);
+          if (div && div.textContent !== datos.divs[clave]) {
+            div.textContent = datos.divs[clave];
+
+            const datasetKey = clave + '_dataset';
+            if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
+              div.dataset.valor = datos.divs[datasetKey];
+            }
+          }
+        });
+      }
+
+      if (datos.localStorage) {
+        Object.keys(datos.localStorage).forEach(key => {
+          if (datos.localStorage[key] !== null) {
+            localStorage.setItem(key, datos.localStorage[key]);
+          }
+        });
+      }
+
+      setTimeout(() => {
+        if (typeof calcularTotales === 'function') calcularTotales();
+        if (typeof verificarCamposVacios === 'function') verificarCamposVacios();
+        if (typeof sumarInputsImpares === 'function') sumarInputsImpares();
+        if (typeof sumarResultados === 'function') sumarResultados();
+        if (typeof sumarConteoBilletes === 'function') sumarConteoBilletes();
 
         setTimeout(() => {
-            if (typeof calcularTotales === 'function') calcularTotales();
-            if (typeof verificarCamposVacios === 'function') verificarCamposVacios();
-            if (typeof sumarInputsImpares === 'function') sumarInputsImpares();
-            if (typeof sumarResultados === 'function') sumarResultados();
-            if (typeof sumarConteoBilletes === 'function') sumarConteoBilletes();
-            
-            setTimeout(() => {
-                sincronizacionActiva = true;
-            }, 500);
-        }, 100);
+          sincronizacionActiva = true;
+        }, 500);
+      }, 100);
     }
 
     // Intentar reconexión automática
     function intentarReconexion() {
-        if (intentandoReconectar) return;
+      if (intentandoReconectar) return;
 
-        const idRemoto = localStorage.getItem('peer-remote-id');
-        if (!idRemoto || idRemoto === miID) return;
+      const idRemoto = localStorage.getItem('peer-remote-id');
+      if (!idRemoto || idRemoto === miID) return;
 
-        intentandoReconectar = true;
+      intentandoReconectar = true;
 
-        console.log('Intentando reconexión en 5 segundos...');
+      console.log('Intentando reconexión en 5 segundos...');
 
-        if (reconnectInterval) clearInterval(reconnectInterval);
+      if (reconnectInterval) clearInterval(reconnectInterval);
 
-        reconnectInterval = setInterval(() => {
-            if (!conexion || !conexion.open) {
-                conectarAutomaticamente(idRemoto);
-            } else {
-                clearInterval(reconnectInterval);
-                intentandoReconectar = false;
-            }
-        }, 5000);
+      reconnectInterval = setInterval(() => {
+        if (!conexion || !conexion.open) {
+          conectarAutomaticamente(idRemoto);
+        } else {
+          clearInterval(reconnectInterval);
+          intentandoReconectar = false;
+        }
+      }, 5000);
     }
 
     // Actualizar estado de conexión en UI (MODIFICADA PARA INCLUIR BOTÓN GUARDAR)
     function actualizarEstadoConexion() {
-        const statusEl = document.getElementById('peerStatus');
-        const disconnectBtn = document.getElementById('disconnectBtn');
-        const connectBtn = document.getElementById('connectBtn');
-        const guardarBtn = document.getElementById('guardarCambiosBtn'); // NUEVO
+      const statusEl = document.getElementById('peerStatus');
+      const disconnectBtn = document.getElementById('disconnectBtn');
+      const connectBtn = document.getElementById('connectBtn');
+      const guardarBtn = document.getElementById('guardarCambiosBtn'); // NUEVO
 
-        if (conexion && conexion.open) {
-            statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
-            statusEl.className = 'peer-status connected';
-            disconnectBtn.style.display = 'block';
-            connectBtn.style.display = 'none';
-            guardarBtn.style.display = 'block'; // MOSTRAR BOTÓN GUARDAR
-        } else {
-            statusEl.textContent = 'Sin conexión';
-            statusEl.className = 'peer-status disconnected';
-            disconnectBtn.style.display = 'none';
-            connectBtn.style.display = 'block';
-            guardarBtn.style.display = 'none'; // OCULTAR BOTÓN GUARDAR
-        }
+      if (conexion && conexion.open) {
+        statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
+        statusEl.className = 'peer-status connected';
+        disconnectBtn.style.display = 'block';
+        connectBtn.style.display = 'none';
+        guardarBtn.style.display = 'block'; // MOSTRAR BOTÓN GUARDAR
+      } else {
+        statusEl.textContent = 'Sin conexión';
+        statusEl.className = 'peer-status disconnected';
+        disconnectBtn.style.display = 'none';
+        connectBtn.style.display = 'block';
+        guardarBtn.style.display = 'none'; // OCULTAR BOTÓN GUARDAR
+      }
     }
 
     // Desconectar
     function desconectar() {
-        if (conexion) {
-            conexion.close();
-            conexion = null;
-        }
+      if (conexion) {
+        conexion.close();
+        conexion = null;
+      }
 
-        if (peer) {
-            peer.disconnect();
-        }
+      if (peer) {
+        peer.disconnect();
+      }
 
-        localStorage.removeItem('peer-remote-id');
-        esAnfitrion = false;
+      localStorage.removeItem('peer-remote-id');
+      esAnfitrion = false;
 
-        Swal.fire({
-            icon: 'info',
-            title: 'Desconectado',
-            text: 'Se ha cerrado la conexión',
-            timer: 1500,
-            showConfirmButton: false
-        });
+      Swal.fire({
+        icon: 'info',
+        title: 'Desconectado',
+        text: 'Se ha cerrado la conexión',
+        timer: 1500,
+        showConfirmButton: false
+      });
 
-        actualizarEstadoConexion();
+      actualizarEstadoConexion();
     }
 
     // Copiar mi ID
     function copiarMiID() {
-        Swal.fire({
-            title: 'Mi ID',
-            text: `ID actual: ${miID}`,
-            icon: 'info',
+      Swal.fire({
+        title: 'Mi ID',
+        text: `ID actual: ${miID}`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Copiar',
+        cancelButtonText: 'Cambiar ID',
+        showDenyButton: true,
+        denyButtonText: 'Cerrar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigator.clipboard.writeText(miID).then(() => {
+            Swal.fire({
+              icon: 'success',
+              title: 'ID copiado',
+              text: 'ID copiado al portapapeles',
+              timer: 1500,
+              showConfirmButton: false
+            });
+          }).catch(() => {
+            prompt('Copia este ID manualmente:', miID);
+          });
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          Swal.fire({
+            title: 'Cambiar ID',
+            input: 'text',
+            inputLabel: 'Nuevo ID',
+            inputValue: miID,
             showCancelButton: true,
-            confirmButtonText: 'Copiar',
-            cancelButtonText: 'Cambiar ID',
-            showDenyButton: true,
-            denyButtonText: 'Cerrar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                navigator.clipboard.writeText(miID).then(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'ID copiado',
-                        text: 'ID copiado al portapapeles',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                }).catch(() => {
-                    prompt('Copia este ID manualmente:', miID);
-                });
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-                Swal.fire({
-                    title: 'Cambiar ID',
-                    input: 'text',
-                    inputLabel: 'Nuevo ID',
-                    inputValue: miID,
-                    showCancelButton: true,
-                    confirmButtonText: 'Guardar',
-                    cancelButtonText: 'Cancelar',
-                    inputValidator: (value) => {
-                        if (!value) {
-                            return 'Debes ingresar un ID';
-                        }
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const nuevoId = result.value;
-                        localStorage.setItem('peer-id-persistente', nuevoId);
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'ID guardado',
-                            text: 'El ID ha sido cambiado. La página se recargará para aplicar los cambios.',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            location.reload();
-                        });
-                    }
-                });
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            inputValidator: (value) => {
+              if (!value) {
+                return 'Debes ingresar un ID';
+              }
             }
-        });
+          }).then((result) => {
+            if (result.isConfirmed) {
+              const nuevoId = result.value;
+              localStorage.setItem('peer-id-persistente', nuevoId);
+              Swal.fire({
+                icon: 'success',
+                title: 'ID guardado',
+                text: 'El ID ha sido cambiado. La página se recargará para aplicar los cambios.',
+                timer: 2000,
+                showConfirmButton: false
+              }).then(() => {
+                location.reload();
+              });
+            }
+          });
+        }
+      });
     }
 
     // Guardar datos localmente
     function guardarLocalmente() {
-        document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
-            const key = campo.id || campo.name || `campo-${index}`;
-            localStorage.setItem(key, campo.value);
+      document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
+        const key = campo.id || campo.name || `campo-${index}`;
+        localStorage.setItem(key, campo.value);
 
-            if (campo.dataset.valor) {
-                localStorage.setItem(`${key}-dataset`, campo.dataset.valor);
-            }
-        });
+        if (campo.dataset.valor) {
+          localStorage.setItem(`${key}-dataset`, campo.dataset.valor);
+        }
+      });
 
-        document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
-            localStorage.setItem(`td-${index}`, celda.textContent.trim());
-        });
+      document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
+        localStorage.setItem(`td-${index}`, celda.textContent.trim());
+      });
 
-        localStorage.setItem('ultima-sincronizacion', Date.now());
+      localStorage.setItem('ultima-sincronizacion', Date.now());
     }
 
     // ============================================
@@ -2232,475 +2260,475 @@
 
     // Calcular totales
     function calcularTotales() {
-        let totalBilteles = 0;
-        let totalMonedas = 0;
-        let totalAdicionales = 0;
-        let totalPremios = 0;
-        let totalVenta = 0;
+      let totalBilteles = 0;
+      let totalMonedas = 0;
+      let totalAdicionales = 0;
+      let totalPremios = 0;
+      let totalVenta = 0;
 
-        const filas = document.querySelectorAll("tbody tr");
+      const filas = document.querySelectorAll("tbody tr");
 
-        filas.forEach(fila => {
-            const valores = fila.querySelectorAll(".valor-fijo");
-            const cantidades = fila.querySelectorAll(".cantidad");
-            const resultados = fila.querySelectorAll(".resultado");
+      filas.forEach(fila => {
+        const valores = fila.querySelectorAll(".valor-fijo");
+        const cantidades = fila.querySelectorAll(".cantidad");
+        const resultados = fila.querySelectorAll(".resultado");
 
-            for (let i = 0; i < valores.length; i++) {
-                const valorTexto = valores[i]?.innerText?.replace(/[^\d.]/g, "") || "0";
-                const valor = parseFloat(valorTexto) || 0;
-                const cantidad = parseFloat(cantidades[i]?.value) || 0;
-                const total = valor * cantidad;
+        for (let i = 0; i < valores.length; i++) {
+          const valorTexto = valores[i]?.innerText?.replace(/[^\d.]/g, "") || "0";
+          const valor = parseFloat(valorTexto) || 0;
+          const cantidad = parseFloat(cantidades[i]?.value) || 0;
+          const total = valor * cantidad;
 
-                if (resultados[i]) {
-                    resultados[i].innerText = total.toLocaleString("es-CO");
-                }
+          if (resultados[i]) {
+            resultados[i].innerText = total.toLocaleString("es-CO");
+          }
 
-                if (resultados[i]?.classList.contains("resultado-bilteles")) {
-                    totalBilteles += total;
-                }
-                if (resultados[i]?.classList.contains("resultado-monedas")) {
-                    totalMonedas += total;
-                }
-            }
-        });
-
-        const adicionalesInputs = document.querySelectorAll("input.cantidad2");
-        adicionalesInputs.forEach(input => {
-            const val = parseFloat(input.dataset.valor || "0");
-            totalAdicionales += val;
-        });
-
-        const premiosDiv = document.querySelector(".cantidad3");
-        if (premiosDiv) {
-            const valorPremio = parseFloat(premiosDiv.dataset.valor || "0");
-            totalPremios = valorPremio;
+          if (resultados[i]?.classList.contains("resultado-bilteles")) {
+            totalBilteles += total;
+          }
+          if (resultados[i]?.classList.contains("resultado-monedas")) {
+            totalMonedas += total;
+          }
         }
+      });
 
-        const ventaInput = document.querySelector("input.venta");
-        if (ventaInput) {
-            const valorVenta = parseFloat(ventaInput.dataset.valor || "0");
-            totalVenta = valorVenta;
+      const adicionalesInputs = document.querySelectorAll("input.cantidad2");
+      adicionalesInputs.forEach(input => {
+        const val = parseFloat(input.dataset.valor || "0");
+        totalAdicionales += val;
+      });
+
+      const premiosDiv = document.querySelector(".cantidad3");
+      if (premiosDiv) {
+        const valorPremio = parseFloat(premiosDiv.dataset.valor || "0");
+        totalPremios = valorPremio;
+      }
+
+      const ventaInput = document.querySelector("input.venta");
+      if (ventaInput) {
+        const valorVenta = parseFloat(ventaInput.dataset.valor || "0");
+        totalVenta = valorVenta;
+      }
+
+      const totalBiltelesEl = document.getElementById("total-general-bilteles");
+      if (totalBiltelesEl) totalBiltelesEl.innerText = totalBilteles.toLocaleString("es-CO");
+
+      const totalMonedasEl = document.getElementById("total-general-monedas");
+      if (totalMonedasEl) totalMonedasEl.innerText = totalMonedas.toLocaleString("es-CO");
+
+      const adicionalesEl = document.querySelector(".resultado-adicionales");
+      if (adicionalesEl) adicionalesEl.innerText = totalAdicionales.toLocaleString("es-CO");
+
+      const sumaTotal = totalBilteles + totalMonedas + totalAdicionales + totalPremios;
+      const sumaTotalEl = document.getElementById("suma-total");
+      if (sumaTotalEl) sumaTotalEl.innerText = sumaTotal.toLocaleString("es-CO");
+
+      const resultadoResta = sumaTotal - totalVenta;
+      const resulEl = document.getElementById("resul");
+      const sobraEl = document.getElementById("sobra");
+
+      if (resulEl) {
+        resulEl.innerText = resultadoResta.toLocaleString("es-CO");
+        resulEl.classList.remove("exacto", "sobra", "falta");
+        if (resultadoResta > 0) {
+          resulEl.classList.add("sobra");
+        } else if (resultadoResta < 0) {
+          resulEl.classList.add("falta");
+        } else {
+          resulEl.classList.add("exacto");
         }
+      }
 
-        const totalBiltelesEl = document.getElementById("total-general-bilteles");
-        if (totalBiltelesEl) totalBiltelesEl.innerText = totalBilteles.toLocaleString("es-CO");
-
-        const totalMonedasEl = document.getElementById("total-general-monedas");
-        if (totalMonedasEl) totalMonedasEl.innerText = totalMonedas.toLocaleString("es-CO");
-
-        const adicionalesEl = document.querySelector(".resultado-adicionales");
-        if (adicionalesEl) adicionalesEl.innerText = totalAdicionales.toLocaleString("es-CO");
-
-        const sumaTotal = totalBilteles + totalMonedas + totalAdicionales + totalPremios;
-        const sumaTotalEl = document.getElementById("suma-total");
-        if (sumaTotalEl) sumaTotalEl.innerText = sumaTotal.toLocaleString("es-CO");
-
-        const resultadoResta = sumaTotal - totalVenta;
-        const resulEl = document.getElementById("resul");
-        const sobraEl = document.getElementById("sobra");
-
-        if (resulEl) {
-            resulEl.innerText = resultadoResta.toLocaleString("es-CO");
-            resulEl.classList.remove("exacto", "sobra", "falta");
-            if (resultadoResta > 0) {
-                resulEl.classList.add("sobra");
-            } else if (resultadoResta < 0) {
-                resulEl.classList.add("falta");
-            } else {
-                resulEl.classList.add("exacto");
-            }
+      if (sobraEl) {
+        sobraEl.classList.remove("exacto", "sobra", "falta");
+        if (resultadoResta > 0) {
+          sobraEl.innerText = "Sobra";
+          sobraEl.classList.add("sobra");
+        } else if (resultadoResta < 0) {
+          sobraEl.innerText = "Falta";
+          sobraEl.classList.add("falta");
+        } else {
+          sobraEl.innerText = "Exacto";
+          sobraEl.classList.add("exacto");
         }
+      }
 
-        if (sobraEl) {
-            sobraEl.classList.remove("exacto", "sobra", "falta");
-            if (resultadoResta > 0) {
-                sobraEl.innerText = "Sobra";
-                sobraEl.classList.add("sobra");
-            } else if (resultadoResta < 0) {
-                sobraEl.innerText = "Falta";
-                sobraEl.classList.add("falta");
-            } else {
-                sobraEl.innerText = "Exacto";
-                sobraEl.classList.add("exacto");
-            }
-        }
-
-        verificarCamposVacios();
+      verificarCamposVacios();
     }
 
     // Verificar campos vacíos
     function verificarCamposVacios() {
-        const verificaciones = [
-            { inputId: "nequi1", celdaId: "nequi" },
-            { inputId: "alfonso1", celdaId: "alfonso" },
-            { inputId: "descuadre1", celdaId: "descuadre" },
-            { inputId: "mio1", celdaId: "mio" },
-            { inputId: "Avances1", celdaId: "Avances" }
-        ];
+      const verificaciones = [
+        { inputId: "nequi1", celdaId: "nequi" },
+        { inputId: "alfonso1", celdaId: "alfonso" },
+        { inputId: "descuadre1", celdaId: "descuadre" },
+        { inputId: "mio1", celdaId: "mio" },
+        { inputId: "Avances1", celdaId: "Avances" }
+      ];
 
-        verificaciones.forEach(({ inputId, celdaId }) => {
-            const input = document.getElementById(inputId);
-            const celda = document.getElementById(celdaId);
+      verificaciones.forEach(({ inputId, celdaId }) => {
+        const input = document.getElementById(inputId);
+        const celda = document.getElementById(celdaId);
 
-            if (input && celda) {
-                if (input.value.trim() === "") {
-                    celda.style.backgroundColor = "red";
-                } else {
-                    celda.style.backgroundColor = "";
-                }
-            }
-        });
+        if (input && celda) {
+          if (input.value.trim() === "") {
+            celda.style.backgroundColor = "red";
+          } else {
+            celda.style.backgroundColor = "";
+          }
+        }
+      });
 
-        const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
-        inputsCantidad4.forEach(input => {
-            const valorNumerico = input.value.replace(/\D/g, "");
-            if (valorNumerico !== "") {
-                input.style.backgroundColor = "#d6b3f8";
-            } else {
-                input.style.backgroundColor = "";
-            }
-        });
+      const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
+      inputsCantidad4.forEach(input => {
+        const valorNumerico = input.value.replace(/\D/g, "");
+        if (valorNumerico !== "") {
+          input.style.backgroundColor = "#d6b3f8";
+        } else {
+          input.style.backgroundColor = "";
+        }
+      });
     }
 
     // Lista de loterías para autocompletado
     const loterias = [
-        "Lote Cundi", "Lote Tolima", "Lote Cruz Roja", "Lote Huila", "Lote Meta", "Lote Valle",
-        "Lote Manizales", "Lote Bogota", "Lote Quindio", "Lote Risaralda", "Lote Medellin",
-        "Lote Santander", "Lote Boyaca", "Lote Cauca", "Extra Colombia", "Quinta", "Astro",
-        "Miloto", "Baloto", "Colorloto", "Pagamillonario", "Chancemillonario", "RaspaTodo",
-        "Pagatón", "Maxichance", "Betplay", "Paga Triple", "Linea Cundi", "Linea Tolima",
-        "Linea Cruz Roja", "Linea Huila", "Linea Meta", "Linea Valle", "Linea Manizales",
-        "Linea Bogota", "Linea Quindio", "Linea Risaralda", "Linea Medellin", "Linea Santander",
-        "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas"
+      "Lote Cundi", "Lote Tolima", "Lote Cruz Roja", "Lote Huila", "Lote Meta", "Lote Valle",
+      "Lote Manizales", "Lote Bogota", "Lote Quindio", "Lote Risaralda", "Lote Medellin",
+      "Lote Santander", "Lote Boyaca", "Lote Cauca", "Extra Colombia", "Quinta", "Astro",
+      "Miloto", "Baloto", "Colorloto", "Pagamillonario", "Chancemillonario", "RaspaTodo",
+      "Pagatón", "Maxichance", "Betplay", "Paga Triple", "Linea Cundi", "Linea Tolima",
+      "Linea Cruz Roja", "Linea Huila", "Linea Meta", "Linea Valle", "Linea Manizales",
+      "Linea Bogota", "Linea Quindio", "Linea Risaralda", "Linea Medellin", "Linea Santander",
+      "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas"
     ];
 
     // Configurar autocompletado
     function setupAutoComplete(inputId, sugerenciasId) {
-        const input = document.getElementById(inputId);
-        const sugerencias = document.getElementById(sugerenciasId);
+      const input = document.getElementById(inputId);
+      const sugerencias = document.getElementById(sugerenciasId);
 
-        if (!input || !sugerencias) return;
+      if (!input || !sugerencias) return;
 
-        input.addEventListener('input', () => {
-            const valor = input.value.toLowerCase();
-            sugerencias.innerHTML = '';
-            sugerencias.style.display = 'none';
+      input.addEventListener('input', () => {
+        const valor = input.value.toLowerCase();
+        sugerencias.innerHTML = '';
+        sugerencias.style.display = 'none';
 
-            if (valor) {
-                const coincidencias = loterias.filter(dep =>
-                    dep.toLowerCase().includes(valor)
-                );
+        if (valor) {
+          const coincidencias = loterias.filter(dep =>
+            dep.toLowerCase().includes(valor)
+          );
 
-                if (coincidencias.length > 0) {
-                    sugerencias.style.display = 'block';
-                    coincidencias.forEach(dep => {
-                        const li = document.createElement('li');
-                        li.textContent = dep;
-                        li.style.cursor = 'pointer';
-                        li.onclick = () => {
-                            input.value = dep;
-                            localStorage.setItem(input.id || input.name, dep);
-                            sugerencias.style.display = 'none';
-                            input.dispatchEvent(new Event('input'));
-                        };
-                        sugerencias.appendChild(li);
-                    });
-                }
-            }
-        });
-
-        document.addEventListener('click', e => {
-            if (!sugerencias.contains(e.target) && e.target !== input) {
+          if (coincidencias.length > 0) {
+            sugerencias.style.display = 'block';
+            coincidencias.forEach(dep => {
+              const li = document.createElement('li');
+              li.textContent = dep;
+              li.style.cursor = 'pointer';
+              li.onclick = () => {
+                input.value = dep;
+                localStorage.setItem(input.id || input.name, dep);
                 sugerencias.style.display = 'none';
-            }
-        });
+                input.dispatchEvent(new Event('input'));
+              };
+              sugerencias.appendChild(li);
+            });
+          }
+        }
+      });
+
+      document.addEventListener('click', e => {
+        if (!sugerencias.contains(e.target) && e.target !== input) {
+          sugerencias.style.display = 'none';
+        }
+      });
     }
 
     // Calcular resultado por input
     function calcularResultadoPorInput(input) {
-        const clases = Array.from(input.classList);
-        const claseInput = clases.find(c => /^input\d+$/.test(c));
-        if (!claseInput) return;
+      const clases = Array.from(input.classList);
+      const claseInput = clases.find(c => /^input\d+$/.test(c));
+      if (!claseInput) return;
 
-        const numeroClase = parseInt(claseInput.replace('input', ''));
-        const fila = Math.ceil(numeroClase / 2);
-        calcularResultado(fila);
+      const numeroClase = parseInt(claseInput.replace('input', ''));
+      const fila = Math.ceil(numeroClase / 2);
+      calcularResultado(fila);
     }
 
     // Calcular resultado de una fila
     function calcularResultado(fila) {
-        const claseA = `input${((fila - 1) * 2) + 1}`;
-        const claseB = `input${((fila - 1) * 2) + 2}`;
+      const claseA = `input${((fila - 1) * 2) + 1}`;
+      const claseB = `input${((fila - 1) * 2) + 2}`;
 
-        const inputA = document.querySelector(`input.${claseA}`);
-        const inputB = document.querySelector(`input.${claseB}`);
-        const celdaResultado = document.querySelector(`.r${fila}`);
+      const inputA = document.querySelector(`input.${claseA}`);
+      const inputB = document.querySelector(`input.${claseB}`);
+      const celdaResultado = document.querySelector(`.r${fila}`);
 
-        if (!inputA || !inputB || !celdaResultado) return;
+      if (!inputA || !inputB || !celdaResultado) return;
 
-        const valA = inputA.value.replace(/\./g, '').replace(',', '.');
-        const valB = inputB.value.replace(/\./g, '').replace(',', '.');
+      const valA = inputA.value.replace(/\./g, '').replace(',', '.');
+      const valB = inputB.value.replace(/\./g, '').replace(',', '.');
 
-        const numA = parseFloat(valA) || 0;
-        const numB = parseFloat(valB) || 0;
+      const numA = parseFloat(valA) || 0;
+      const numB = parseFloat(valB) || 0;
 
-        if (!isNaN(numA) && !isNaN(numB)) {
-            const resultado = (numA * numB);
-            celdaResultado.textContent = resultado.toLocaleString('es-CO');
-            celdaResultado.dataset.valor = resultado.toString();
-        } else {
-            celdaResultado.textContent = '';
-            celdaResultado.dataset.valor = '0';
-        }
+      if (!isNaN(numA) && !isNaN(numB)) {
+        const resultado = (numA * numB);
+        celdaResultado.textContent = resultado.toLocaleString('es-CO');
+        celdaResultado.dataset.valor = resultado.toString();
+      } else {
+        celdaResultado.textContent = '';
+        celdaResultado.dataset.valor = '0';
+      }
 
-        sumarResultados();
+      sumarResultados();
     }
 
     // Sumar todos los resultados
     function sumarResultados() {
-        let total = 0;
+      let total = 0;
 
-        for (let i = 1; i <= 30; i++) {
-            const celda = document.querySelector(`.r${i}`);
-            if (!celda) continue;
+      for (let i = 1; i <= 30; i++) {
+        const celda = document.querySelector(`.r${i}`);
+        if (!celda) continue;
 
-            const texto = celda.textContent.replace(/\./g, '').replace(',', '.');
-            const numero = parseFloat(texto) || 0;
+        const texto = celda.textContent.replace(/\./g, '').replace(',', '.');
+        const numero = parseFloat(texto) || 0;
 
-            total += numero;
-        }
+        total += numero;
+      }
 
-        const divCantidad3 = document.querySelector('.cantidad3');
-        if (divCantidad3) {
-            divCantidad3.textContent = total.toLocaleString('es-CO');
-            divCantidad3.dataset.valor = total.toString();
-            localStorage.setItem("premios-total", total.toString());
-        }
+      const divCantidad3 = document.querySelector('.cantidad3');
+      if (divCantidad3) {
+        divCantidad3.textContent = total.toLocaleString('es-CO');
+        divCantidad3.dataset.valor = total.toString();
+        localStorage.setItem("premios-total", total.toString());
+      }
 
-        calcularTotales();
+      calcularTotales();
     }
 
     // Función para detectar fila desde input
     function detectarFila(input) {
-        const clases = Array.from(input.classList);
-        const claseInput = clases.find(c => /^input\d+$/.test(c));
-        if (!claseInput) return;
+      const clases = Array.from(input.classList);
+      const claseInput = clases.find(c => /^input\d+$/.test(c));
+      if (!claseInput) return;
 
-        const numeroClase = parseInt(claseInput.replace('input', ''));
-        const fila = Math.ceil(numeroClase / 2);
-        calcularResultado(fila);
+      const numeroClase = parseInt(claseInput.replace('input', ''));
+      const fila = Math.ceil(numeroClase / 2);
+      calcularResultado(fila);
     }
 
     // Formatear miles
     function formatearMiles(input) {
-        const valor = input.value.replace(/\D/g, "");
-        if (valor === "") {
-            input.value = "";
-            input.dataset.valor = "0";
-        } else {
-            const numero = parseInt(valor);
-            input.dataset.valor = numero;
-            input.value = numero.toLocaleString("es-CO");
-        }
+      const valor = input.value.replace(/\D/g, "");
+      if (valor === "") {
+        input.value = "";
+        input.dataset.valor = "0";
+      } else {
+        const numero = parseInt(valor);
+        input.dataset.valor = numero;
+        input.value = numero.toLocaleString("es-CO");
+      }
 
-        if (input.classList.contains('input1') || input.classList.contains('input2') ||
-            /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
-            detectarFila(input);
-        }
+      if (input.classList.contains('input1') || input.classList.contains('input2') ||
+        /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
+        detectarFila(input);
+      }
 
-        calcularTotales();
-        verificarCamposVacios();
+      calcularTotales();
+      verificarCamposVacios();
     }
 
     // Sumar inputs impares
     function sumarInputsImpares() {
-        let suma = 0;
+      let suma = 0;
 
-        for (let i = 1; i <= 60; i += 2) {
-            const input = document.querySelector(`input.input${i}`);
-            if (input) {
-                const valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
-                suma += valor;
-            }
+      for (let i = 1; i <= 60; i += 2) {
+        const input = document.querySelector(`input.input${i}`);
+        if (input) {
+          const valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+          suma += valor;
         }
+      }
 
-        const campoCantidad5 = document.querySelector(".cantidad5");
-        if (campoCantidad5) {
-            campoCantidad5.textContent = suma.toLocaleString("es-CO");
-            campoCantidad5.dataset.valor = suma.toString();
-        }
+      const campoCantidad5 = document.querySelector(".cantidad5");
+      if (campoCantidad5) {
+        campoCantidad5.textContent = suma.toLocaleString("es-CO");
+        campoCantidad5.dataset.valor = suma.toString();
+      }
     }
 
     // Sumar conteo de billetes
     function sumarConteoBilletes() {
-        let total = 0;
+      let total = 0;
 
-        const ids = ["b1", "b2", "b3", "b4", "b5", "b6"];
+      const ids = ["b1", "b2", "b3", "b4", "b5", "b6"];
 
-        ids.forEach(id => {
-            const input = document.getElementById(id);
-            if (input) {
-                const valor = parseInt(input.value) || 0;
-                total += valor;
-            }
-        });
-
-        const celdaResultado = document.querySelector(".resultado-conteo-billetes");
-        if (celdaResultado) {
-            celdaResultado.textContent = total;
+      ids.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+          const valor = parseInt(input.value) || 0;
+          total += valor;
         }
+      });
+
+      const celdaResultado = document.querySelector(".resultado-conteo-billetes");
+      if (celdaResultado) {
+        celdaResultado.textContent = total;
+      }
     }
 
     // Configurar autocompletado para todos los inputs de lotería
     function configurarTodosLosAutocompletados() {
-        console.log('Configurando autocompletados...');
+      console.log('Configurando autocompletados...');
 
-        if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
-            setupAutoComplete('loteria', 'sugerencias');
-            console.log('Configurado loteria');
+      if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
+        setupAutoComplete('loteria', 'sugerencias');
+        console.log('Configurado loteria');
+      }
+
+      for (let i = 1; i <= 30; i++) {
+        const inputId = `loteria${i}`;
+        const sugerenciasId = `sugerencias${i}`;
+
+        if (document.getElementById(inputId) && document.getElementById(sugerenciasId)) {
+          setupAutoComplete(inputId, sugerenciasId);
+          console.log(`Configurado ${inputId}`);
         }
-
-        for (let i = 1; i <= 30; i++) {
-            const inputId = `loteria${i}`;
-            const sugerenciasId = `sugerencias${i}`;
-
-            if (document.getElementById(inputId) && document.getElementById(sugerenciasId)) {
-                setupAutoComplete(inputId, sugerenciasId);
-                console.log(`Configurado ${inputId}`);
-            }
-        }
+      }
     }
 
     // Confirmar borrado
     function confirmarBorrado() {
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Se borrarán todos los datos y no se podrán recuperar.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, borrar todo',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                borrarTodo();
-            }
-        });
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Se borrarán todos los datos y no se podrán recuperar.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, borrar todo',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          borrarTodo();
+        }
+      });
     }
 
     // Borrar todo
     function borrarTodo() {
-        localStorage.clear();
+      localStorage.clear();
 
-        document.querySelectorAll("input, textarea").forEach(el => {
-            el.value = "";
-            if (el.dataset.valor) el.dataset.valor = "0";
-        });
+      document.querySelectorAll("input, textarea").forEach(el => {
+        el.value = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
 
-        document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
-            el.textContent = "";
-            if (el.dataset.valor) el.dataset.valor = "0";
-        });
+      document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
+        el.textContent = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
 
-        document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-            el.textContent = "";
-            if (el.dataset.valor) el.dataset.valor = "0";
-        });
+      document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+        el.textContent = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
 
-        document.getElementById("total-general-bilteles").textContent = "";
-        document.getElementById("total-general-monedas").textContent = "";
-        document.getElementById("suma-total").textContent = "";
-        document.getElementById("resul").textContent = "";
-        document.getElementById("sobra").textContent = "";
+      document.getElementById("total-general-bilteles").textContent = "";
+      document.getElementById("total-general-monedas").textContent = "";
+      document.getElementById("suma-total").textContent = "";
+      document.getElementById("resul").textContent = "";
+      document.getElementById("sobra").textContent = "";
 
-        calcularTotales();
-        verificarCamposVacios();
-        sumarResultados();
-        sumarInputsImpares();
-        sumarConteoBilletes();
+      calcularTotales();
+      verificarCamposVacios();
+      sumarResultados();
+      sumarInputsImpares();
+      sumarConteoBilletes();
 
-        Swal.fire({
-            icon: 'success',
-            title: '¡Borrado!',
-            text: 'Todos los datos han sido borrados.',
-            timer: 1500,
-            showConfirmButton: false
-        });
+      Swal.fire({
+        icon: 'success',
+        title: '¡Borrado!',
+        text: 'Todos los datos han sido borrados.',
+        timer: 1500,
+        showConfirmButton: false
+      });
     }
 
     // Exportar a Excel
     function confirmarEnvioExcel() {
-        Swal.fire({
-            title: '¿Exportar a Excel?',
-            text: 'Se generará un archivo con los datos actuales.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, exportar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                exportarAExcelReal();
-                Swal.fire({
-                    title: '¡Exportado!',
-                    text: 'El archivo fue generado correctamente.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            }
-        });
+      Swal.fire({
+        title: '¿Exportar a Excel?',
+        text: 'Se generará un archivo con los datos actuales.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, exportar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          exportarAExcelReal();
+          Swal.fire({
+            title: '¡Exportado!',
+            text: 'El archivo fue generado correctamente.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+      });
     }
 
     // Exportar a Excel real
     function exportarAExcelReal() {
-        const tabla = document.getElementById("miTabla");
+      const tabla = document.getElementById("miTabla");
 
-        if (!tabla) {
-            alert("No se encontró la tabla.");
-            return;
+      if (!tabla) {
+        alert("No se encontró la tabla.");
+        return;
+      }
+
+      const tablaClon = tabla.cloneNode(true);
+
+      const campos = tablaClon.querySelectorAll("input, textarea");
+      campos.forEach(el => {
+        const td = el.closest("td");
+        if (td) {
+          const span = document.createElement("span");
+          span.textContent = el.value.trim();
+          td.replaceChild(span, el);
         }
+      });
 
-        const tablaClon = tabla.cloneNode(true);
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
 
-        const campos = tablaClon.querySelectorAll("input, textarea");
-        campos.forEach(el => {
-            const td = el.closest("td");
-            if (td) {
-                const span = document.createElement("span");
-                span.textContent = el.value.trim();
-                td.replaceChild(span, el);
-            }
-        });
-
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
-
-        XLSX.utils.book_append_sheet(wb, ws, "Datos");
-        XLSX.writeFile(wb, "contador_pagatodo.xlsx");
+      XLSX.utils.book_append_sheet(wb, ws, "Datos");
+      XLSX.writeFile(wb, "contador_pagatodo.xlsx");
     }
 
     // Mostrar fecha y hora actual
     function ponerFechaHora() {
-        const ahora = new Date();
+      const ahora = new Date();
 
-        const opciones = {
-            weekday: "short",
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true
-        };
+      const opciones = {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      };
 
-        const fechaHora = ahora.toLocaleString("es-CO", opciones);
-        const elemento = document.getElementById("fechaHoraActual");
-        if (elemento) {
-            elemento.textContent = fechaHora;
-        }
+      const fechaHora = ahora.toLocaleString("es-CO", opciones);
+      const elemento = document.getElementById("fechaHoraActual");
+      if (elemento) {
+        elemento.textContent = fechaHora;
+      }
     }
 
     // ============================================
@@ -2708,101 +2736,101 @@
     // ============================================
 
     document.addEventListener("DOMContentLoaded", () => {
-        console.log('Inicializando aplicación...');
+      console.log('Inicializando aplicación...');
 
-        // 1. Cargar datos desde localStorage
-        const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
-        const premiosDiv = document.querySelector(".cantidad3");
-        const premiosGuardado = localStorage.getItem("premios-total");
+      // 1. Cargar datos desde localStorage
+      const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
+      const premiosDiv = document.querySelector(".cantidad3");
+      const premiosGuardado = localStorage.getItem("premios-total");
 
-        if (premiosDiv && premiosGuardado !== null) {
-            premiosDiv.textContent = parseFloat(premiosGuardado).toLocaleString('es-CO');
-            premiosDiv.dataset.valor = premiosGuardado;
+      if (premiosDiv && premiosGuardado !== null) {
+        premiosDiv.textContent = parseFloat(premiosGuardado).toLocaleString('es-CO');
+        premiosDiv.dataset.valor = premiosGuardado;
+      }
+
+      campos.forEach((campo, index) => {
+        const key = `input-${index}`;
+        const valorGuardado = localStorage.getItem(key);
+        if (valorGuardado !== null) {
+          campo.value = valorGuardado;
+
+          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
+            campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
+          }
         }
 
-        campos.forEach((campo, index) => {
-            const key = `input-${index}`;
-            const valorGuardado = localStorage.getItem(key);
-            if (valorGuardado !== null) {
-                campo.value = valorGuardado;
+        campo.addEventListener("input", () => {
+          localStorage.setItem(key, campo.value);
+          sumarInputsImpares();
+          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
+            campo.dataset.valor = campo.value.replace(/\D/g, "") || "0";
+          }
 
-                if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
-                    campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
-                }
-            }
-
-            campo.addEventListener("input", () => {
-                localStorage.setItem(key, campo.value);
-                sumarInputsImpares();
-                if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
-                    campo.dataset.valor = campo.value.replace(/\D/g, "") || "0";
-                }
-
-                calcularTotales?.();
-                verificarCamposVacios?.();
-                guardarCeldasTd();
-            });
+          calcularTotales?.();
+          verificarCamposVacios?.();
+          guardarCeldasTd();
         });
+      });
 
-        // Restaurar celdas <td class="rX">
-        const celdas = document.querySelectorAll("td[class^='r']");
+      // Restaurar celdas <td class="rX">
+      const celdas = document.querySelectorAll("td[class^='r']");
+      celdas.forEach((celda, index) => {
+        const valor = localStorage.getItem(`td-${index}`);
+        if (valor !== null) {
+          celda.textContent = valor;
+        }
+      });
+
+      function guardarCeldasTd() {
         celdas.forEach((celda, index) => {
-            const valor = localStorage.getItem(`td-${index}`);
-            if (valor !== null) {
-                celda.textContent = valor;
-            }
+          localStorage.setItem(`td-${index}`, celda.textContent.trim());
         });
+      }
 
-        function guardarCeldasTd() {
-            celdas.forEach((celda, index) => {
-                localStorage.setItem(`td-${index}`, celda.textContent.trim());
-            });
+      // 2. Inicializar PeerJS
+      inicializarPeerJS();
+
+      // 3. Configurar autocompletado
+      configurarTodosLosAutocompletados();
+
+      // 4. Configurar eventos de input para cálculos
+      document.addEventListener("input", (e) => {
+        if (e.target.classList.contains('cantidad')) {
+          calcularTotales();
+          sumarConteoBilletes();
         }
 
-        // 2. Inicializar PeerJS
-        inicializarPeerJS();
+        if (e.target.classList.contains('cantidad2') || e.target.classList.contains('cantidad4')) {
+          calcularTotales();
+        }
 
-        // 3. Configurar autocompletado
-        configurarTodosLosAutocompletados();
+        if (e.target.classList.contains('input')) {
+          calcularResultadoPorInput(e.target);
+          sumarInputsImpares();
+        }
+      });
 
-        // 4. Configurar eventos de input para cálculos
-        document.addEventListener("input", (e) => {
-            if (e.target.classList.contains('cantidad')) {
-                calcularTotales();
-                sumarConteoBilletes();
-            }
+      // 5. Inicializar cálculos
+      setTimeout(() => {
+        calcularTotales();
+        verificarCamposVacios();
+        sumarInputsImpares();
+        sumarResultados();
+        sumarConteoBilletes();
+      }, 500);
 
-            if (e.target.classList.contains('cantidad2') || e.target.classList.contains('cantidad4')) {
-                calcularTotales();
-            }
+      // 6. Iniciar reloj
+      ponerFechaHora();
+      setInterval(ponerFechaHora, 1000);
 
-            if (e.target.classList.contains('input')) {
-                calcularResultadoPorInput(e.target);
-                sumarInputsImpares();
-            }
-        });
-
-        // 5. Inicializar cálculos
-        setTimeout(() => {
-            calcularTotales();
-            verificarCamposVacios();
-            sumarInputsImpares();
-            sumarResultados();
-            sumarConteoBilletes();
-        }, 500);
-
-        // 6. Iniciar reloj
-        ponerFechaHora();
-        setInterval(ponerFechaHora, 1000);
-
-        console.log('Aplicación inicializada correctamente');
+      console.log('Aplicación inicializada correctamente');
     });
 
     // Configurar eventos para inputs de billetes
     document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6").forEach(input => {
-            input.addEventListener("input", sumarConteoBilletes);
-        });
+      document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6").forEach(input => {
+        input.addEventListener("input", sumarConteoBilletes);
+      });
     });
   </script>
 </body>
