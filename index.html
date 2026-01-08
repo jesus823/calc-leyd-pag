@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 
@@ -51,6 +50,10 @@
 
     .peer-button.disconnect {
       background: #f44336;
+    }
+
+    .peer-button.sync {
+      background: #9C27B0;
     }
 
     .peer-status {
@@ -172,6 +175,9 @@
     </button>
     <button id="connectBtn" class="peer-button connect" onclick="conectarDispositivo()">
       🔗 Conectar a otro dispositivo
+    </button>
+    <button id="syncBtn" class="peer-button sync" onclick="sincronizarManual()">
+      🔄 Sincronizar Ahora
     </button>
     <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none;">
       🚫 Desconectar
@@ -1709,10 +1715,32 @@
           enviarDatos();
         }, 500);
 
-        // Configurar envío automático
+        // Configurar envío automático solo para cambios importantes
+        // NO para cada tecla presionada en inputs numéricos
         if (!document.syncListenerAdded) {
-          document.addEventListener("input", enviarDatosConThrottle);
+          // Solo sincronizar para inputs que NO sean numéricos
+          document.addEventListener("input", (e) => {
+            const target = e.target;
+            const isNumericInput = target.type === 'tel' || 
+                                  target.inputmode === 'numeric' || 
+                                  target.classList.contains('cantidad') ||
+                                  target.classList.contains('cantidad2') ||
+                                  target.classList.contains('cantidad4') ||
+                                  target.classList.contains('venta');
+            
+            if (!isNumericInput) {
+              enviarDatosConThrottle();
+            }
+          });
+          
+          // Para inputs numéricos, sincronizar solo al perder el foco
+          document.querySelectorAll('input[type="tel"], input[inputmode="numeric"], input.cantidad, input.cantidad2, input.cantidad4, input.venta').forEach(input => {
+            input.addEventListener('blur', enviarDatosConThrottle);
+          });
+          
+          // Sincronizar otros cambios
           document.addEventListener("change", enviarDatosConThrottle);
+          
           document.syncListenerAdded = true;
         }
 
@@ -1759,10 +1787,31 @@
           enviarDatos();
         }, 1000);
 
-        // Configurar envío automático
+        // Configurar envío automático solo para cambios importantes
         if (!document.syncListenerAdded) {
-          document.addEventListener("input", enviarDatosConThrottle);
+          // Solo sincronizar para inputs que NO sean numéricos
+          document.addEventListener("input", (e) => {
+            const target = e.target;
+            const isNumericInput = target.type === 'tel' || 
+                                  target.inputmode === 'numeric' || 
+                                  target.classList.contains('cantidad') ||
+                                  target.classList.contains('cantidad2') ||
+                                  target.classList.contains('cantidad4') ||
+                                  target.classList.contains('venta');
+            
+            if (!isNumericInput) {
+              enviarDatosConThrottle();
+            }
+          });
+          
+          // Para inputs numéricos, sincronizar solo al perder el foco
+          document.querySelectorAll('input[type="tel"], input[inputmode="numeric"], input.cantidad, input.cantidad2, input.cantidad4, input.venta').forEach(input => {
+            input.addEventListener('blur', enviarDatosConThrottle);
+          });
+          
+          // Sincronizar otros cambios
           document.addEventListener("change", enviarDatosConThrottle);
+          
           document.syncListenerAdded = true;
         }
       });
@@ -1785,15 +1834,41 @@
       });
     }
 
-    // Throttle para evitar demasiados envíos
-    let ultimoEnvio = 0;
-    const throttleDelay = 1000;
+    // Throttle mejorado para evitar demasiados envíos
+    let timeoutEnvio = null;
+    const throttleDelay = 300; // Reducido de 1000ms a 300ms
 
     function enviarDatosConThrottle() {
-      const ahora = Date.now();
-      if (ahora - ultimoEnvio > throttleDelay) {
+      if (timeoutEnvio) clearTimeout(timeoutEnvio);
+      
+      // Usar un delay mayor para eventos de input de teclado
+      const esInputDeTeclado = event && event.type === 'input';
+      const delay = esInputDeTeclado ? 500 : 200;
+      
+      timeoutEnvio = setTimeout(() => {
+        if (conexion && conexion.open) {
+          enviarDatos();
+        }
+      }, delay);
+    }
+
+    // Función de sincronización manual
+    function sincronizarManual() {
+      if (conexion && conexion.open) {
         enviarDatos();
-        ultimoEnvio = ahora;
+        Swal.fire({
+          icon: 'success',
+          title: 'Datos sincronizados',
+          text: 'Los datos se han enviado al otro dispositivo',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Sin conexión',
+          text: 'No hay ningún dispositivo conectado'
+        });
       }
     }
 
@@ -1947,26 +2022,6 @@
       }, 100);
     }
 
-    // Función de sincronización manual
-    function sincronizarDatos() {
-      if (conexion && conexion.open) {
-        enviarDatos();
-        Swal.fire({
-          icon: 'success',
-          title: 'Datos sincronizados',
-          text: 'Los datos se han enviado al otro dispositivo',
-          timer: 1500,
-          showConfirmButton: false
-        });
-      } else {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Sin conexión',
-          text: 'No hay ningún dispositivo conectado'
-        });
-      }
-    }
-
     // Intentar reconexión automática
     function intentarReconexion() {
       if (intentandoReconectar) return;
@@ -1995,17 +2050,20 @@
       const statusEl = document.getElementById('peerStatus');
       const disconnectBtn = document.getElementById('disconnectBtn');
       const connectBtn = document.getElementById('connectBtn');
+      const syncBtn = document.getElementById('syncBtn');
 
       if (conexion && conexion.open) {
         statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
         statusEl.className = 'peer-status connected';
         disconnectBtn.style.display = 'block';
         connectBtn.style.display = 'none';
+        syncBtn.style.display = 'block';
       } else {
         statusEl.textContent = 'Sin conexión';
         statusEl.className = 'peer-status disconnected';
         disconnectBtn.style.display = 'none';
         connectBtn.style.display = 'block';
+        syncBtn.style.display = 'none';
       }
     }
 
@@ -2102,7 +2160,7 @@
     // Guardar datos localmente
     function guardarLocalmente() {
       // Guardar todos los campos
-      document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
+      document.querySelectorAll("input, textarea").forEach((campo, index) => {
         const key = campo.id || campo.name || `campo-${index}`;
         localStorage.setItem(key, campo.value);
 
@@ -2448,7 +2506,6 @@
       }
     }
 
-    // Configurar autocompletado para todos los inputs de lotería
     // Configurar autocompletado para todos los inputs de lotería
     function configurarTodosLosAutocompletados() {
       console.log('Configurando autocompletados...');
