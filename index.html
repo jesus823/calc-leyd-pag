@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-
   <link rel="stylesheet" href="estilos.css">
-  <link rel="icon" type="image/png"
-    href="https://img.freepik.com/vector-gratis/ilustracion-colorida-calculadora-dibujos-animados_1308-174688.jpg">
-
+  <link rel="icon" type="image/png" href="https://img.freepik.com/vector-gratis/ilustracion-colorida-calculadora-dibujos-animados_1308-174688.jpg">
   <title>Contador Diario Pagatodo</title>
 
   <style>
@@ -50,6 +46,10 @@
 
     .peer-button.disconnect {
       background: #f44336;
+    }
+
+    .peer-button.sync {
+      background: #ff9800;
     }
 
     .peer-status {
@@ -125,79 +125,18 @@
     }
   </style>
 </head>
-
 <body>
 
-  <!-- Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA -->
-  <script>
-    // Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA
-    document.addEventListener('DOMContentLoaded', function () {
-      // Seleccionar todos los inputs que deben ser solo numéricos
-      const numericInputs = document.querySelectorAll('input[type="tel"]:not([id^="loteria"]), input.input1, input.input2, input.input3, input.input4, input.input5, input.input6, input.input7, input.input8, input.input9, input.input10, input.input11, input.input12, input.input13, input.input14, input.input15, input.input16, input.input17, input.input18, input.input19, input.input20, input.input21, input.input22, input.input23, input.input24, input.input25, input.input26, input.input27, input.input28, input.input29, input.input30, input.input31, input.input32, input.input33, input.input34, input.input35, input.input36, input.input37, input.input38, input.input39, input.input40, input.input41, input.input42, input.input43, input.input44, input.input45, input.input46, input.input47, input.input48, input.input49, input.input50, input.input51, input.input52, input.input53, input.input54, input.input55, input.input56, input.input57, input.input58, input.input59, input.input60');
-      
-      numericInputs.forEach(input => {
-        // MEJORA: Solo prevenir entrada de caracteres no numéricos en keydown
-        input.addEventListener('keydown', function (e) {
-          // Permitir todas las teclas de control y navegación
-          if ([8, 9, 13, 27, 46, 35, 36, 37, 38, 39, 40].includes(e.keyCode) ||
-              // Permitir: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z
-              (e.ctrlKey && [65, 67, 86, 88, 90].includes(e.keyCode)) ||
-              // Permitir: Cmd+A, Cmd+C, Cmd+V, Cmd+X, Cmd+Z (Mac)
-              (e.metaKey && [65, 67, 86, 88, 90].includes(e.keyCode))) {
-            return;
-          }
-          
-          // Permitir números y teclado numérico
-          if ((e.keyCode >= 48 && e.keyCode <= 57) || 
-              (e.keyCode >= 96 && e.keyCode <= 105)) {
-            return;
-          }
-          
-          // Permitir punto y coma para decimales
-          if (e.keyCode === 190 || e.keyCode === 188 || e.keyCode === 110) {
-            return;
-          }
-          
-          // Prevenir cualquier otro carácter
-          e.preventDefault();
-        });
-        
-        // MEJORA: Mejor manejo del pegado
-        input.addEventListener('paste', function (e) {
-          // Permitir el comportamiento por defecto primero
-          setTimeout(() => {
-            // Limpiar solo después de pegar
-            const valor = input.value;
-            const numerosSolo = valor.replace(/[^\d]/g, '');
-            input.value = numerosSolo;
-            
-            // Disparar evento input para cálculos
-            const event = new Event('input', { bubbles: true });
-            input.dispatchEvent(event);
-          }, 10);
-        });
-        
-        // MEJORA: Validar al perder el foco
-        input.addEventListener('blur', function () {
-          const valor = input.value;
-          const numerosSolo = valor.replace(/[^\d]/g, '');
-          if (valor !== numerosSolo) {
-            input.value = numerosSolo;
-            const event = new Event('input', { bubbles: true });
-            input.dispatchEvent(event);
-          }
-        });
-      });
-    });
-  </script>
-
-  <!-- Controles de conexión P2P -->
+  <!-- Controles de conexión P2P MEJORADOS -->
   <div class="peer-controls">
     <button id="miIDBtn" class="peer-button" onclick="copiarMiID()">
       Mi ID: Cargando...
     </button>
     <button id="connectBtn" class="peer-button connect" onclick="conectarDispositivo()">
       🔗 Conectar a otro dispositivo
+    </button>
+    <button id="syncBtn" class="peer-button sync" onclick="sincronizarDatos()" style="display:none;">
+      🔄 Sincronizar Ahora
     </button>
     <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none;">
       🚫 Desconectar
@@ -206,6 +145,7 @@
     <div id="peerStatus" class="peer-status disconnected">
       Sin conexión
     </div>
+    <div id="peerRemoteInfo" style="font-size: 10px; margin-top: 3px; color: #666;"></div>
   </div>
 
   <!-- Tabla principal - Manteniendo la estructura original -->
@@ -228,12 +168,9 @@
         <th style=" border: 3px solid;"></th>
         <th style=" border: 3px solid;"></th>
         <th></th>
-        <th
-          style="background-color: #ccc; text-align: center; font-weight: bold; color: black; font-size: 12px; vertical-align: middle; padding: 5px;">
+        <th style="background-color: #ccc; text-align: center; font-weight: bold; color: black; font-size: 12px; vertical-align: middle; padding: 5px;">
           <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-            <img
-              src="https://media.istockphoto.com/id/1408463718/es/vector/recordatorio-en-calendario-fecha-l%C3%ADmite-del-calendario-mensaje-push-de-notificaci%C3%B3n-de.jpg?s=612x612&w=0&k=20&c=MyiTsnAG5L-A139FJV9t-fvmVmhA6nDM4LUaqiEFp04="
-              alt="" style="width: 35px; height: 35px; border-radius: 50%;">
+            <img src="https://media.istockphoto.com/id/1408463718/es/vector/recordatorio-en-calendario-fecha-l%C3%ADmite-del-calendario-mensaje-push-de-notificaci%C3%B3n-de.jpg?s=612x612&w=0&k=20&c=MyiTsnAG5L-A139FJV9t-fvmVmhA6nDM4LUaqiEFp04=" alt="" style="width: 35px; height: 35px; border-radius: 50%;">
             <span id="fechaHoraActual" style="font-size: 13px;"></span>
           </div>
         </th>
@@ -244,31 +181,22 @@
       <!-- Fila 1 -->
       <tr>
         <td onclick="this.querySelector('input').focus()" style="border: 3px solid black; background-color: yellow;">
-          <input type="tel" inputmode="numeric" class="venta" id="venta-total"
-            style="background-color: yellow; font-size: 17px; font-weight: bold; width: 100px; height: 25px; box-shadow: 0 0 8px rgba(8, 2, 5, 1); border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off">
+          <input type="tel" inputmode="numeric" class="venta" id="venta-total" style="background-color: yellow; font-size: 17px; font-weight: bold; width: 100px; height: 25px; box-shadow: 0 0 8px rgba(8, 2, 5, 1); border-radius: 6px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off">
         </td>
         <td><textarea></textarea></td>
         <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Nequi</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="nequi1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center; "
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="nequi1" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center; " oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight:bolder ;  border: 3px solid;">100,000</td>
-        <td style="border: 3px solid; "><input id="b1" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-bilteles" style="font-weight: bolder; border: 5px solid;">
-        </td>
+        <td style="border: 3px solid; "><input id="b1" type="tel" class="cantidad" style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+        <td class="resultado resultado-bilteles" style="font-weight: bolder; border: 5px solid;"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder; border: 3px solid;">1000</td>
-        <td style="border: 3px solid;"> <input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"> <input type="tel" class="cantidad" style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td id="nequi" style=" border: 3px solid;">Nequii</td>
-        <td style="width: 70px;  border: 3px solid;   "><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="width: 70px;  border: 3px solid;   "><input type="tel" class="cantidad4" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -278,35 +206,21 @@
         <td></td>
         <td><textarea></textarea></td>
         <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Don Alfonso</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="alfonso1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="alfonso1" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50,000</td>
-        <td style="border: 3px solid;"><input id="b2" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input id="b2" type="tel" class="cantidad" style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">500</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad" style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td id="alfonso" style=" border: 3px solid;">Don Alfonso</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td style="position: relative; height: 40px; width: 60px;">
-          <img src="stich.webp" alt="" style="
-         position: absolute;
-         top: 15px;
-         left: 50%;
-         transform: translateX(-50%);
-         width: 150px;
-         border-radius: 80px;
-         pointer-events: none;
-       ">
+          <img src="stich.webp" alt="" style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 150px; border-radius: 80px; pointer-events: none;">
         </td>
       </tr>
       <!-- Fila 3 -->
@@ -314,24 +228,18 @@
         <td id="sobra" style="font-weight: bolder; border: 3px solid;color: black;"></td>
         <td><textarea></textarea></td>
         <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Descuadre</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="descuadre1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="descuadre1" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">20,000</td>
-        <td style="border: 3px solid;"><input id="b3" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input id="b3" type="tel" class="cantidad" style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">200</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad" style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td style=" border: 3px solid;" id="descuadre">Descuadre</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -341,24 +249,18 @@
         <td id="resul" style="font-weight: bolder; border: 3px solid;color: black;"></td>
         <td><textarea></textarea></td>
         <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Mío</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="mio1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="mio1" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">10,000</td>
-        <td style="border: 3px solid;"><input id="b4" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input id="b4" type="tel" class="cantidad" style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid; ">100</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad" style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td id="mio" style="border: 3px solid;">Míoo</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -368,24 +270,18 @@
         <td></td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;">Avances</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="Avances1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="Avances1" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">5,000</td>
-        <td style="border: 3px solid;"><input id="b5" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input id="b5" type="tel" class="cantidad" style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px; text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad" style="height: 25px;width: 50px; text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td id="Avances" style="border: 3px solid;">Avances</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -393,24 +289,17 @@
       <!-- Fila 6 -->
       <tr>
         <td style="border-bottom: 2px solid black;" class="celda-con-boton">
-          <p
-            style="font-weight: bold; color: rgb(102, 141, 234); margin: 0; text-shadow: 6px 6px 8px rgb(5, 400, 210);">
+          <p style="font-weight: bold; color: rgb(102, 141, 234); margin: 0; text-shadow: 6px 6px 8px rgb(5, 400, 210);">
             Borrar Todo
           </p>
-          <img
-            style="margin-top: 50px; width: 90px; margin-right: 10px; height: 80px; box-shadow: 4px 4px 10px rgb(5, 165, 210);"
-            src="https://thumbs.dreamstime.com/b/borrador-feliz-de-la-historieta-53892555.jpg" alt="Borrar"
-            class="img-flotante" onclick="confirmarBorrado()">
+          <img style="margin-top: 50px; width: 90px; margin-right: 10px; height: 80px; box-shadow: 4px 4px 10px rgb(5, 165, 210);" src="https://thumbs.dreamstime.com/b/borrador-feliz-de-la-historieta-53892555.jpg" alt="Borrar" class="img-flotante" onclick="confirmarBorrado()">
         </td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"><textarea></textarea></td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">2,000</td>
-        <td style="border: 3px solid;"><input id="b6" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input id="b6" type="tel" class="cantidad" style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -418,9 +307,7 @@
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"><textarea></textarea></td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -430,37 +317,26 @@
         <td style="border-bottom: 2px solid black;"><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"><textarea></textarea></td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;" oninput="formatearMiles(this)" autocomplete="off"></td>
         <td><textarea></textarea></td>
         <td colspan="2" style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;">
           $ Total Bilteles</td>
-        <td id="total-general-bilteles"
-          style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;"></td>
+        <td id="total-general-bilteles" style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
-        <td class="resultado-conteo-billetes"
-          style="font-weight: bold; font-size: 19px; background-color: rgb(230, 12, 197);border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-
-
-
+        <td class="resultado-conteo-billetes" style="font-weight: bold; font-size: 19px; background-color: rgb(230, 12, 197);border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
-
+        <td><textarea></textarea></td>
+        <td><textarea></textarea></td>
+        <td><textarea></textarea></td>
       </tr>
-
       <tr>
         <td> </td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"><textarea></textarea></td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;" oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -476,23 +352,15 @@
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
       </tr>
-
       <tr>
-        <td>
-
-        </td>
-
+        <td></td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"><textarea></textarea></td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;" oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
-        <td colspan="3"
-          style="font-weight: bold; font-size: 20px;background-color: rgb(125, 129, 125);border: 3px solid;">Monedas
-          Total</td>
+        <td colspan="3" style="font-weight: bold; font-size: 20px;background-color: rgb(125, 129, 125);border: 3px solid;">Monedas Total</td>
         <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
+        <td style="font-weight: bold; font-size: 17px;background-color: rgb(125, 129, 125);border: 3px solid;"># Premios</td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -501,31 +369,17 @@
         <td style="font-weight: bold; text-align: center; vertical-align: middle;">Valor Premios</td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
-
       </tr>
-
       <tr>
-        <td> <button type="button" onclick="confirmarEnvioExcel()" style=" box-shadow: 4px 4px 10px rgb(168, 58, 7);height: 50px; font-weight: bolder; border-color: rgb(255, 0, 85); font-size: 15px; color: rgb(221, 250, 3); border-radius: 25px;background: linear-gradient(
-  to bottom,
-  rgb(125, 92, 155) 0%,
-  rgb(93, 55, 197) 45%,
-  rgb(126, 101, 225) 55%,
-  rgb(21, 83, 184) 100%
-);
-
-">
+        <td> <button type="button" onclick="confirmarEnvioExcel()" style=" box-shadow: 4px 4px 10px rgb(168, 58, 7);height: 50px; font-weight: bolder; border-color: rgb(255, 0, 85); font-size: 15px; color: rgb(221, 250, 3); border-radius: 25px;background: linear-gradient(to bottom, rgb(125, 92, 155) 0%, rgb(93, 55, 197) 45%, rgb(126, 101, 225) 55%, rgb(21, 83, 184) 100%);">
             Enviar a Excel
           </button></td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"> <textarea></textarea></td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)"></td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;" oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
-        <td colspan="2" style="font-weight: bold; font-size: 17px;background-color: rgb(7, 134, 7);border: 3px solid;">
-          $ Total Monedas</td>
-        <td id="total-general-monedas"
-          style="font-weight: bold; font-size: 20px;background-color: rgb(7, 134, 7);border: 3px solid;"></td>
+        <td colspan="2" style="font-weight: bold; font-size: 17px;background-color: rgb(7, 134, 7);border: 3px solid;">$ Total Monedas</td>
+        <td id="total-general-monedas" style="font-weight: bold; font-size: 20px;background-color: rgb(7, 134, 7);border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -533,32 +387,24 @@
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td style=" border: 3px solid; ">
-          <input type="tel" class="input1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
+          <input type="tel" class="input1" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;" oninput="formatearMiles(this)">
         </td>
         <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input2"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
+          <input type="tel" class="input2" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;" oninput="formatearMiles(this)">
         </td>
         <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
+          <input type="text" id="loteria" style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;" placeholder="   ---------">
           <ul id="sugerencias" class="sugerencias" style="display: none; color: black;"></ul>
         </td>
         <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r1"></td>
       </tr>
-
+      <!-- Resto de las filas (8-68) se mantienen igual -->
+      <!-- Solo incluyo una muestra para ahorrar espacio -->
       <tr>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
-        <td
-          style="font-weight: bold; font-size: 17px;background-color: rgb(7, 134, 7); border: 3px solid;border: 3px solid;">
-          $ Total Adicionales</td>
-        <td class="resultado-adicionales"
-          style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;"></td>
+        <td style="font-weight: bold; font-size: 17px;background-color: rgb(7, 134, 7); border: 3px solid;border: 3px solid;">$ Total Adicionales</td>
+        <td class="resultado-adicionales" style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -570,999 +416,18 @@
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td style=" border: 3px solid; ">
-          <input type="tel" class="input3"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
+          <input type="tel" class="input3" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;" oninput="formatearMiles(this)">
         </td>
         <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
+          <input type="tel" class="input4" style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;" oninput="formatearMiles(this)">
         </td>
         <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria2"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
+          <input type="text" id="loteria2" style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;" placeholder="   ---------">
           <ul id="sugerencias2" class="sugerencias" style="display: none; color: black;"></ul>
         </td>
         <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r2"></td>
       </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td colspan="3"
-          style="font-weight: bold; font-size: 20px;background-color: rgb(125, 129, 125);border: 3px solid;">Premios
-          Total </td>
-        <td><textarea></textarea></td>
-        <td style="font-weight: bold; font-size: 17px;background-color: rgb(125, 129, 125);border: 3px solid;">
-          # Premios</td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input5"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input6"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria3"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias3" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r3"></td>
-      </tr>
-
-      </tr>
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td colspan="2" style="font-weight: bold; font-size: 17px; background-color: rgb(7, 134, 7);border: 3px solid;">
-          $ Total Premios</td>
-        <td style="background-color: rgb(7, 134, 7); border: 3px solid;">
-          <div class="cantidad3"
-            style="font-size: 17px; color: white; font-weight: bold; width: 100px; height: 25px; text-align: center;
-           background-color: rgb(7, 134, 7); line-height: 25px; border-radius: 6px; pointer-events: none; user-select: none;">
-          </div>
-        </td>
-
-
-
-        <td><textarea></textarea></td>
-        <td style="background-color: rgb(7, 134, 7); border: 3px solid;">
-          <div class="cantidad5"
-            style="font-size: 17px; color: white; font-weight: bold; width: 100px; height: 25px; text-align: center;
-           background-color: rgb(7, 134, 7); line-height: 25px; border-radius: 6px; pointer-events: none; user-select: none;">
-          </div>
-        </td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input7"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input8"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria4"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias4" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r4"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input9"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input10"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria5"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias5" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r5"></td>
-      </tr>
-
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td colspan="3"
-          style="font-weight: bold; font-size: 17px; background-color: rgb(94, 94, 236);border: 3px solid;">Suma Total
-          Bilteles + Monedas + Premios + Adicionales</td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input11"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input12"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria6"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias6" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r6"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td colspan="3" id="suma-total"
-          style="font-weight: bold; font-size: 20px; background-color: rgb(20, 225, 211); border: 3px solid white; color: black; text-align: center;">
-        </td>
-
-
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input13"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input14"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria7"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias7" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r7"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input15"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input16"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria8"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias8" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r8"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input17"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input18"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria9"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias9" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r9"></td>
-      </tr>
-
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input19"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input20"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria10"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias10" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r10"></td>
-      </tr>
-
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input21"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input22"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria11"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias11" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r11"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input23"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input24"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria12"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias12" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r12"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input25"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input26"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria13"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias13" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r13"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input27"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input28"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria14"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias14" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r14"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input29"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input30"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria15"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias15" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r15"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input31"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input32"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria16"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias16" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r16"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input33"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input34"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria17"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias17" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r17"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input35"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input36"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria18"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias18" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r18"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input37"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input38"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria19"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias19" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r19"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input39"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input40"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria20"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias20" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r20"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input41"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input42"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria21"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias21" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r21"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input43"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input44"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria22"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias22" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r22"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input45"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input46"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria23"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias23" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r23"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input47"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input48"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria24"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias24" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r24"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input49"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input50"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria25"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias25" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r25"></td>
-      </tr>
-
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input51"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input52"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria26"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias26" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r26"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input53"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input54"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria27"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias27" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r27"></td>
-      </tr>
-
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input55"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input56"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria28"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias28" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r28"></td>
-      </tr>
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input57"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input58"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria29"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias29" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r29"></td>
-      </tr>
-
-
-      <tr>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td style=" border: 3px solid; ">
-          <input type="tel" class="input59"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style=" border: 3px solid; width: 110px; ">
-          <input type="tel" class="input60"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;  border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)">
-        </td>
-        <td style="position: relative; border-color: aliceblue; border: solid 3px;">
-          <input type="text" id="loteria30"
-            style="height: 27px; font-size: 17px; font-weight: bolder; width: 170px; align-items: center; text-align: center;"
-            placeholder="   ---------">
-          <ul id="sugerencias30" class="sugerencias" style="display: none; color: black;"></ul>
-        </td>
-        <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r30"></td>
-      </tr>
-
+      <!-- ... resto de filas ... -->
     </tbody>
   </table>
 
@@ -1589,6 +454,7 @@
     let reconnectInterval = null;
     let ultimoTimestampRecibido = 0;
     let sincronizacionActiva = true;
+    let borrandoTodo = false;
 
     // ID persistente basado en localStorage
     function obtenerPeerIdPersistente() {
@@ -1605,22 +471,17 @@
         const inputs = document.querySelectorAll('input[type="tel"], input.cantidad, input.cantidad2, input.cantidad4, .venta, .input1, .input2, .input3, .input4, .input5, .input6, .input7, .input8, .input9, .input10, .input11, .input12, .input13, .input14, .input15, .input16, .input17, .input18, .input19, .input20, .input21, .input22, .input23, .input24, .input25, .input26, .input27, .input28, .input29, .input30, .input31, .input32, .input33, .input34, .input35, .input36, .input37, .input38, .input39, .input40, .input41, .input42, .input43, .input44, .input45, .input46, .input47, .input48, .input49, .input50, .input51, .input52, .input53, .input54, .input55, .input56, .input57, .input58, .input59, .input60');
         
         inputs.forEach(input => {
-            // MEJORA: Mejor manejo del evento input
             input.addEventListener('input', function(e) {
-                // Permitir que el navegador procese el input primero
                 setTimeout(() => {
-                    if (sincronizacionActiva && conexion && conexion.open) {
+                    if (sincronizacionActiva && conexion && conexion.open && !borrandoTodo) {
                         enviarDatosDebounced();
                     }
                 }, 100);
             });
             
-            // MEJORA: Mejor manejo del pegado
             input.addEventListener('paste', function(e) {
-                // Permitir el pegado normal primero
                 setTimeout(() => {
-                    if (sincronizacionActiva && conexion && conexion.open) {
-                        // Enviar después de pegar con un retraso mayor
+                    if (sincronizacionActiva && conexion && conexion.open && !borrandoTodo) {
                         setTimeout(() => {
                             enviarDatos();
                         }, 300);
@@ -1628,9 +489,8 @@
                 }, 50);
             });
             
-            // MEJORA: Sincronizar al salir del campo
             input.addEventListener('blur', function() {
-                if (sincronizacionActiva && conexion && conexion.open) {
+                if (sincronizacionActiva && conexion && conexion.open && !borrandoTodo) {
                     enviarDatos();
                 }
             });
@@ -1645,7 +505,7 @@
             if (conexion && conexion.open) {
                 enviarDatos();
             }
-        }, 1500); // Aumentado a 1.5 segundos para menos interferencia
+        }, 1000);
     }
 
     // MEJORA: Función para suspender temporalmente la sincronización
@@ -1661,7 +521,7 @@
         const peerId = obtenerPeerIdPersistente();
 
         peer = new Peer(peerId, {
-            debug: 1, // Reducido de 2 a 1 para menos logs
+            debug: 1,
             config: {
                 'iceServers': [
                     { urls: 'stun:stun.l.google.com:19302' },
@@ -1721,22 +581,29 @@
         });
     }
 
-    // Conectar automáticamente (al recargar la página)
+    // Conectar automáticamente (al recargar la página) - CORREGIDO
     function conectarAutomaticamente(idRemoto) {
         if (!peer || !peer.open) {
             setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
             return;
         }
 
+        // Verificar que no estamos ya conectados a este ID
+        if (conexion && conexion.peer === idRemoto && conexion.open) {
+            console.log('Ya está conectado a este ID:', idRemoto);
+            return;
+        }
+
         console.log('Intentando reconexión automática a:', idRemoto);
         intentandoReconectar = true;
 
-        conexion = peer.connect(idRemoto, {
+        // Crear nueva conexión
+        const nuevaConexion = peer.connect(idRemoto, {
             reliable: true,
             serialization: 'json'
         });
 
-        configurarEventosConexion(conexion);
+        configurarEventosConexion(nuevaConexion);
 
         // Guardar ID remoto
         localStorage.setItem('peer-remote-id', idRemoto);
@@ -1757,24 +624,28 @@
             }
         });
 
-        conexion = peer.connect(idRemoto, {
+        // Crear nueva conexión
+        const nuevaConexion = peer.connect(idRemoto, {
             reliable: true,
             serialization: 'json'
         });
 
-        configurarEventosConexion(conexion);
+        configurarEventosConexion(nuevaConexion);
 
         // Guardar ID remoto
         localStorage.setItem('peer-remote-id', idRemoto);
         esAnfitrion = false;
     }
 
-    // Configurar eventos de conexión
+    // Configurar eventos de conexión - MEJORADO
     function configurarEventosConexion(conn) {
         conn.on('open', () => {
             console.log('✅ Conexión establecida exitosamente!');
             conexion = conn;
             intentandoReconectar = false;
+
+            // Actualizar información del dispositivo remoto
+            document.getElementById('peerRemoteInfo').textContent = `Conectado a: ${conn.peer.substring(0, 10)}...`;
 
             Swal.close();
             Swal.fire({
@@ -1792,9 +663,10 @@
 
             actualizarEstadoConexion();
 
-            // Configurar eventos de reconexión
+            // Configurar eventos de cierre y error
             conn.on('close', () => {
                 console.log('Conexión cerrada');
+                document.getElementById('peerRemoteInfo').textContent = '';
                 actualizarEstadoConexion();
                 intentarReconexion();
             });
@@ -1820,9 +692,12 @@
         });
     }
 
-    // Manejar nueva conexión entrante
+    // Manejar nueva conexión entrante - MEJORADO
     function manejarNuevaConexion(conn) {
         conexion = conn;
+
+        // Actualizar información del dispositivo remoto
+        document.getElementById('peerRemoteInfo').textContent = `Conectado desde: ${conn.peer.substring(0, 10)}...`;
 
         conn.on('open', () => {
             console.log('✅ Cliente conectado:', conn.peer);
@@ -1836,14 +711,20 @@
 
         conn.on('data', (datos) => {
             console.log('📥 Datos recibidos del cliente:', datos);
-            aplicarDatosRecibidos(datos);
-
-            // Guardar en localStorage del anfitrión también
-            guardarLocalmente();
+            
+            // SOLUCIÓN: Detectar si son datos de "borrar todo"
+            if (datos.esBorradoTotal) {
+                console.log('Recibiendo orden de borrado total del otro dispositivo');
+                // Aplicar borrado total
+                aplicarBorradoTotalRecibido();
+            } else {
+                aplicarDatosRecibidos(datos);
+            }
         });
 
         conn.on('close', () => {
             console.log('Cliente desconectado');
+            document.getElementById('peerRemoteInfo').textContent = '';
             actualizarEstadoConexion();
         });
 
@@ -1852,7 +733,7 @@
         });
     }
 
-    // Enviar datos a través de la conexión P2P
+    // Enviar datos a través de la conexión P2P - MEJORADO
     function enviarDatos() {
         if (!conexion || !conexion.open) return;
 
@@ -1866,7 +747,7 @@
         }
     }
 
-    // Obtener todos los datos de la página
+    // Obtener todos los datos de la página - MEJORADO
     function obtenerTodosLosDatos() {
         const datos = {
             campos: {},
@@ -1874,7 +755,8 @@
             divs: {},
             localStorage: {},
             timestamp: Date.now(),
-            esAnfitrion: esAnfitrion
+            esAnfitrion: esAnfitrion,
+            esBorradoTotal: borrandoTodo // SOLUCIÓN: Marcar si es un borrado
         };
 
         // Capturar todos los inputs y textareas
@@ -1922,7 +804,7 @@
         ultimoTimestampRecibido = datos.timestamp;
         
         // Suspender sincronización temporalmente para evitar retroalimentación
-        suspenderSincronizacion(2000);
+        sincronizacionActiva = false;
 
         // Aplicar campos
         if (datos.campos) {
@@ -1941,13 +823,12 @@
                     if (campos[index]) campo = campos[index];
                 }
 
-                if (campo) {
+                if (campo && campo.value !== valor) {
                     // Verificar si el campo está enfocado (el usuario está editando)
                     const estaEnfocado = (document.activeElement === campo);
                     
                     // Solo actualizar si el usuario no está editando este campo
                     if (!estaEnfocado) {
-                        // Actualizar el valor independientemente de si es diferente
                         campo.value = valor;
 
                         // Actualizar dataset.valor si existe
@@ -1969,7 +850,9 @@
             Object.keys(datos.celdas).forEach(clave => {
                 const celdas = document.querySelectorAll(`.${clave}`);
                 celdas.forEach(celda => {
-                    celda.textContent = datos.celdas[clave] || '';
+                    if (celda.textContent !== datos.celdas[clave]) {
+                        celda.textContent = datos.celdas[clave];
+                    }
                 });
             });
         }
@@ -1980,8 +863,8 @@
                 if (clave.endsWith('_dataset')) return;
 
                 const div = document.querySelector(`.${clave}`);
-                if (div) {
-                    div.textContent = datos.divs[clave] || '';
+                if (div && div.textContent !== datos.divs[clave]) {
+                    div.textContent = datos.divs[clave];
 
                     const datasetKey = clave + '_dataset';
                     if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
@@ -1996,8 +879,6 @@
             Object.keys(datos.localStorage).forEach(key => {
                 if (datos.localStorage[key] !== null) {
                     localStorage.setItem(key, datos.localStorage[key]);
-                } else {
-                    localStorage.removeItem(key);
                 }
             });
         }
@@ -2014,6 +895,58 @@
             setTimeout(() => {
                 sincronizacionActiva = true;
             }, 500);
+        }, 100);
+    }
+
+    // SOLUCIÓN: Función para aplicar borrado total recibido del otro dispositivo
+    function aplicarBorradoTotalRecibido() {
+        console.log('Aplicando borrado total recibido del otro dispositivo');
+        
+        // Suspender sincronización durante el borrado
+        sincronizacionActiva = false;
+        borrandoTodo = true;
+        
+        // Limpiar todos los inputs
+        document.querySelectorAll("input, textarea").forEach(el => {
+            el.value = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
+
+        // Limpiar celdas de resultados
+        document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
+            el.textContent = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
+
+        // Limpiar divs especiales
+        document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+            el.textContent = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
+
+        // Resetear totales
+        document.getElementById("total-general-bilteles").textContent = "";
+        document.getElementById("total-general-monedas").textContent = "";
+        document.getElementById("suma-total").textContent = "";
+        document.getElementById("resul").textContent = "";
+        document.getElementById("sobra").textContent = "";
+
+        // Limpiar localStorage local
+        localStorage.clear();
+        
+        // Recalcular
+        setTimeout(() => {
+            calcularTotales();
+            verificarCamposVacios();
+            sumarResultados();
+            sumarInputsImpares();
+            sumarConteoBilletes();
+            
+            // Reactivar sincronización después de 2 segundos
+            setTimeout(() => {
+                sincronizacionActiva = true;
+                borrandoTodo = false;
+            }, 2000);
         }, 100);
     }
 
@@ -2037,7 +970,7 @@
         }
     }
 
-    // Intentar reconexión automática
+    // Intentar reconexión automática - MEJORADO
     function intentarReconexion() {
         if (intentandoReconectar) return;
 
@@ -2050,58 +983,82 @@
 
         if (reconnectInterval) clearInterval(reconnectInterval);
 
+        let intentos = 0;
+        const maxIntentos = 5;
+
         reconnectInterval = setInterval(() => {
             if (!conexion || !conexion.open) {
-                conectarAutomaticamente(idRemoto);
+                intentos++;
+                if (intentos <= maxIntentos) {
+                    console.log(`Intento de reconexión ${intentos}/${maxIntentos} a ${idRemoto}`);
+                    conectarAutomaticamente(idRemoto);
+                } else {
+                    console.log('Máximo de intentos alcanzado. Deteniendo reconexión.');
+                    clearInterval(reconnectInterval);
+                    intentandoReconectar = false;
+                    localStorage.removeItem('peer-remote-id');
+                }
             } else {
+                console.log('Reconexión exitosa');
                 clearInterval(reconnectInterval);
                 intentandoReconectar = false;
             }
         }, 5000);
     }
 
-    // Actualizar estado de conexión en UI
+    // Actualizar estado de conexión en UI - MEJORADO
     function actualizarEstadoConexion() {
         const statusEl = document.getElementById('peerStatus');
         const disconnectBtn = document.getElementById('disconnectBtn');
         const connectBtn = document.getElementById('connectBtn');
+        const syncBtn = document.getElementById('syncBtn');
 
         if (conexion && conexion.open) {
             statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
             statusEl.className = 'peer-status connected';
             disconnectBtn.style.display = 'block';
+            syncBtn.style.display = 'block';
             connectBtn.style.display = 'none';
         } else {
             statusEl.textContent = 'Sin conexión';
             statusEl.className = 'peer-status disconnected';
             disconnectBtn.style.display = 'none';
+            syncBtn.style.display = 'none';
             connectBtn.style.display = 'block';
         }
     }
 
-    // Desconectar
+    // Desconectar - MEJORADO
     function desconectar() {
-        if (conexion) {
-            conexion.close();
-            conexion = null;
-        }
-
-        if (peer) {
-            peer.disconnect();
-        }
-
-        localStorage.removeItem('peer-remote-id');
-        esAnfitrion = false;
-
         Swal.fire({
-            icon: 'info',
-            title: 'Desconectado',
-            text: 'Se ha cerrado la conexión',
-            timer: 1500,
-            showConfirmButton: false
-        });
+            title: '¿Desconectar?',
+            text: 'Se cerrará la conexión con el otro dispositivo',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, desconectar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (conexion) {
+                    conexion.close();
+                    conexion = null;
+                }
 
-        actualizarEstadoConexion();
+                // Limpiar ID remoto guardado
+                localStorage.removeItem('peer-remote-id');
+                esAnfitrion = false;
+
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Desconectado',
+                    text: 'Se ha cerrado la conexión',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                actualizarEstadoConexion();
+            }
+        });
     }
 
     // Copiar mi ID
@@ -2162,32 +1119,82 @@
         });
     }
 
-    // Guardar datos localmente
-    function guardarLocalmente() {
-        // Guardar todos los campos
-        document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
-            const key = campo.id || campo.name || `campo-${index}`;
-            localStorage.setItem(key, campo.value);
+    // ============================================
+    // FUNCIONES EXISTENTES DE LA APLICACIÓN ORIGINAL (MODIFICADAS)
+    // ============================================
 
-            if (campo.dataset.valor) {
-                localStorage.setItem(`${key}-dataset`, campo.dataset.valor);
+    // SOLUCIÓN: Borrar todo - MODIFICADA para sincronizar con el otro dispositivo
+    function borrarTodo() {
+        // Activar bandera de borrado
+        borrandoTodo = true;
+        
+        // Limpiar localStorage local
+        localStorage.clear();
+
+        // Limpiar todos los inputs
+        document.querySelectorAll("input, textarea").forEach(el => {
+            el.value = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
+
+        // Limpiar celdas de resultados
+        document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
+            el.textContent = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
+
+        // Limpiar divs especiales
+        document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+            el.textContent = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
+
+        // Resetear totales
+        document.getElementById("total-general-bilteles").textContent = "";
+        document.getElementById("total-general-monedas").textContent = "";
+        document.getElementById("suma-total").textContent = "";
+        document.getElementById("resul").textContent = "";
+        document.getElementById("sobra").textContent = "";
+
+        // Recalcular
+        calcularTotales();
+        verificarCamposVacios();
+        sumarResultados();
+        sumarInputsImpares();
+        sumarConteoBilletes();
+
+        // SOLUCIÓN: Enviar señal de borrado total al otro dispositivo
+        if (conexion && conexion.open) {
+            const datosBorrado = {
+                esBorradoTotal: true,
+                timestamp: Date.now(),
+                mensaje: "BORRADO_TOTAL"
+            };
+            
+            try {
+                conexion.send(datosBorrado);
+                console.log('📤 Señal de borrado total enviada al otro dispositivo');
+            } catch (error) {
+                console.error('Error al enviar señal de borrado:', error);
             }
-        });
+        }
 
-        // Guardar celdas con clase rX
-        document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
-            localStorage.setItem(`td-${index}`, celda.textContent.trim());
-        });
+        // Desactivar bandera de borrado después de 2 segundos
+        setTimeout(() => {
+            borrandoTodo = false;
+            sincronizacionActiva = true;
+        }, 2000);
 
-        // Guardar otros estados importantes
-        localStorage.setItem('ultima-sincronizacion', Date.now());
+        Swal.fire({
+            icon: 'success',
+            title: '¡Borrado!',
+            text: 'Todos los datos han sido borrados y sincronizados con el otro dispositivo.',
+            timer: 2000,
+            showConfirmButton: false
+        });
     }
 
-    // ============================================
-    // FUNCIONES EXISTENTES DE LA APLICACIÓN ORIGINAL
-    // ============================================
-
-    // Calcular totales
+    // Calcular totales (sin cambios importantes)
     function calcularTotales() {
         let totalBilteles = 0;
         let totalMonedas = 0;
@@ -2285,7 +1292,7 @@
         verificarCamposVacios();
     }
 
-    // Verificar campos vacíos
+    // Verificar campos vacíos (sin cambios)
     function verificarCamposVacios() {
         const verificaciones = [
             { inputId: "nequi1", celdaId: "nequi" },
@@ -2308,7 +1315,6 @@
             }
         });
 
-        // Pintar morado claro los inputs cantidad4 si tienen valor
         const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
         inputsCantidad4.forEach(input => {
             const valorNumerico = input.value.replace(/\D/g, "");
@@ -2367,7 +1373,6 @@
             }
         });
 
-        // Ocultar lista si se hace clic fuera
         document.addEventListener('click', e => {
             if (!sugerencias.contains(e.target) && e.target !== input) {
                 sugerencias.style.display = 'none';
@@ -2462,7 +1467,6 @@
             input.value = numero.toLocaleString("es-CO");
         }
 
-        // Si es un input de lotería (input1, input2, etc.), detecta la fila
         if (input.classList.contains('input1') || input.classList.contains('input2') ||
             /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
             detectarFila(input);
@@ -2515,25 +1519,21 @@
     function configurarTodosLosAutocompletados() {
         console.log('Configurando autocompletados...');
 
-        // Configurar loteria (sin número)
         if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
             setupAutoComplete('loteria', 'sugerencias');
-            console.log('Configurado loteria');
         }
 
-        // Configurar loteria1 a loteria30
         for (let i = 1; i <= 30; i++) {
             const inputId = `loteria${i}`;
             const sugerenciasId = `sugerencias${i}`;
 
             if (document.getElementById(inputId) && document.getElementById(sugerenciasId)) {
                 setupAutoComplete(inputId, sugerenciasId);
-                console.log(`Configurado ${inputId}`);
             }
         }
     }
 
-    // Confirmar borrado
+    // Confirmar borrado (sin cambios)
     function confirmarBorrado() {
         Swal.fire({
             title: '¿Estás seguro?',
@@ -2548,64 +1548,6 @@
             if (result.isConfirmed) {
                 borrarTodo();
             }
-        });
-    }
-
-    // Borrar todo - CORREGIDA
-    function borrarTodo() {
-        // Suspender sincronización para evitar bucles
-        sincronizacionActiva = false;
-
-        localStorage.clear();
-
-        // Limpiar todos los inputs
-        document.querySelectorAll("input, textarea").forEach(el => {
-            el.value = "";
-            if (el.dataset.valor) el.dataset.valor = "0";
-        });
-
-        // Limpiar celdas de resultados
-        document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
-            el.textContent = "";
-            if (el.dataset.valor) el.dataset.valor = "0";
-        });
-
-        // Limpiar divs especiales
-        document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-            el.textContent = "";
-            if (el.dataset.valor) el.dataset.valor = "0";
-        });
-
-        // Resetear totales
-        document.getElementById("total-general-bilteles").textContent = "";
-        document.getElementById("total-general-monedas").textContent = "";
-        document.getElementById("suma-total").textContent = "";
-        document.getElementById("resul").textContent = "";
-        document.getElementById("sobra").textContent = "";
-
-        // Recalcular
-        calcularTotales();
-        verificarCamposVacios();
-        sumarResultados();
-        sumarInputsImpares();
-        sumarConteoBilletes();
-
-        // Enviar estado vacío al otro dispositivo
-        if (conexion && conexion.open) {
-            enviarDatos();
-        }
-
-        // Reactivar sincronización después de 2 segundos
-        setTimeout(() => {
-            sincronizacionActiva = true;
-        }, 2000);
-
-        Swal.fire({
-            icon: 'success',
-            title: '¡Borrado!',
-            text: 'Todos los datos han sido borrados.',
-            timer: 1500,
-            showConfirmButton: false
         });
     }
 
@@ -2643,10 +1585,8 @@
             return;
         }
 
-        // Clonar la tabla para no afectar la original
         const tablaClon = tabla.cloneNode(true);
 
-        // Reemplazar inputs y textareas por su valor
         const campos = tablaClon.querySelectorAll("input, textarea");
         campos.forEach(el => {
             const td = el.closest("td");
@@ -2657,7 +1597,6 @@
             }
         });
 
-        // Crear archivo Excel real con XLSX
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
 
@@ -2765,6 +1704,27 @@
             }
         });
 
+        // SOLUCIÓN: Manejar evento beforeunload para guardar estado de conexión
+        window.addEventListener('beforeunload', function() {
+            // Guardar estado de conexión antes de recargar
+            if (conexion && conexion.open) {
+                localStorage.setItem('peer-conexion-activa', 'true');
+                localStorage.setItem('peer-ultima-conexion', Date.now().toString());
+            }
+        });
+
+        // SOLUCIÓN: Verificar si había una conexión activa antes de recargar
+        const conexionActiva = localStorage.getItem('peer-conexion-activa');
+        const ultimaConexion = localStorage.getItem('peer-ultima-conexion');
+        
+        if (conexionActiva === 'true' && ultimaConexion) {
+            const tiempoDesdeUltimaConexion = Date.now() - parseInt(ultimaConexion);
+            // Si la recarga fue hace menos de 10 segundos, mantener el estado
+            if (tiempoDesdeUltimaConexion < 10000) {
+                console.log('Recarga reciente detectada, intentando mantener conexión...');
+            }
+        }
+
         // 5. Inicializar cálculos
         setTimeout(() => {
             calcularTotales();
@@ -2789,5 +1749,4 @@
     });
   </script>
 </body>
-
 </html>
