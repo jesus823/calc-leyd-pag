@@ -193,7 +193,8 @@
     <button id="connectBtn" class="peer-button connect" onclick="conectarDispositivo()">
       🔗 Conectar a otro dispositivo
     </button>
-    <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none; height: 50px;">
+    <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()"
+      style="display:none; height: 50px;">
       🚫 Desconectar
     </button>
     <!-- NUEVO BOTÓN: Guardar Cambios -->
@@ -2619,35 +2620,61 @@
     }
 
     // Borrar todo
+// Borrar todo
     function borrarTodo() {
+      // GUARDAR las claves importantes ANTES de borrar
+      const peerIdPersistente = localStorage.getItem('peer-id-persistente');
+      const peerRemoteId = localStorage.getItem('peer-remote-id');
+      
+      // Borrar todo el localStorage
       localStorage.clear();
+      
+      // RESTAURAR las claves importantes del sistema P2P
+      if (peerIdPersistente) {
+        localStorage.setItem('peer-id-persistente', peerIdPersistente);
+      }
+      if (peerRemoteId) {
+        localStorage.setItem('peer-remote-id', peerRemoteId);
+      }
 
+      // Borrar todos los inputs y textareas
       document.querySelectorAll("input, textarea").forEach(el => {
         el.value = "";
         if (el.dataset.valor) el.dataset.valor = "0";
       });
 
+      // Borrar todos los resultados y celdas
       document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
         el.textContent = "";
         if (el.dataset.valor) el.dataset.valor = "0";
       });
 
+      // Borrar divs especiales
       document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
         el.textContent = "";
         if (el.dataset.valor) el.dataset.valor = "0";
       });
 
+      // Limpiar totales
       document.getElementById("total-general-bilteles").textContent = "";
       document.getElementById("total-general-monedas").textContent = "";
       document.getElementById("suma-total").textContent = "";
       document.getElementById("resul").textContent = "";
       document.getElementById("sobra").textContent = "";
 
+      // Recalcular todo
       calcularTotales();
       verificarCamposVacios();
       sumarResultados();
       sumarInputsImpares();
       sumarConteoBilletes();
+
+      // Si hay conexión P2P activa, enviar los datos borrados al otro dispositivo
+      if (conexion && conexion.open) {
+        setTimeout(() => {
+          enviarDatos();
+        }, 300);
+      }
 
       Swal.fire({
         icon: 'success',
