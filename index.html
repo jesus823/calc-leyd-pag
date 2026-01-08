@@ -52,10 +52,6 @@
       background: #f44336;
     }
 
-    .peer-button.sync {
-      background: #9C27B0;
-    }
-
     .peer-status {
       margin-top: 5px;
       padding: 5px;
@@ -132,37 +128,64 @@
 
 <body>
 
-  <!-- Script para bloquear letras en inputs numéricos -->
+  <!-- Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA -->
   <script>
-    // Bloquear entrada de letras en todos los inputs numéricos
+    // Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA
     document.addEventListener('DOMContentLoaded', function () {
       // Seleccionar todos los inputs que deben ser solo numéricos
       const numericInputs = document.querySelectorAll('input[type="tel"]:not([id^="loteria"]), input.input1, input.input2, input.input3, input.input4, input.input5, input.input6, input.input7, input.input8, input.input9, input.input10, input.input11, input.input12, input.input13, input.input14, input.input15, input.input16, input.input17, input.input18, input.input19, input.input20, input.input21, input.input22, input.input23, input.input24, input.input25, input.input26, input.input27, input.input28, input.input29, input.input30, input.input31, input.input32, input.input33, input.input34, input.input35, input.input36, input.input37, input.input38, input.input39, input.input40, input.input41, input.input42, input.input43, input.input44, input.input45, input.input46, input.input47, input.input48, input.input49, input.input50, input.input51, input.input52, input.input53, input.input54, input.input55, input.input56, input.input57, input.input58, input.input59, input.input60');
-
+      
       numericInputs.forEach(input => {
-        // Prevenir entrada de caracteres no numéricos
+        // MEJORA: Solo prevenir entrada de caracteres no numéricos en keydown
         input.addEventListener('keydown', function (e) {
-          // Permitir teclas de control: backspace, tab, enter, escape, punto (para decimales)
-          if ([8, 9, 13, 27, 110, 190].includes(e.keyCode) ||
-            // Permitir: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-            (e.ctrlKey && [65, 67, 86, 88].includes(e.keyCode)) ||
-            // Permitir flechas
-            (e.keyCode >= 35 && e.keyCode <= 40)) {
+          // Permitir todas las teclas de control y navegación
+          if ([8, 9, 13, 27, 46, 35, 36, 37, 38, 39, 40].includes(e.keyCode) ||
+              // Permitir: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z
+              (e.ctrlKey && [65, 67, 86, 88, 90].includes(e.keyCode)) ||
+              // Permitir: Cmd+A, Cmd+C, Cmd+V, Cmd+X, Cmd+Z (Mac)
+              (e.metaKey && [65, 67, 86, 88, 90].includes(e.keyCode))) {
             return;
           }
-
-          // Asegurarse de que es un número
-          if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
-            e.preventDefault();
+          
+          // Permitir números y teclado numérico
+          if ((e.keyCode >= 48 && e.keyCode <= 57) || 
+              (e.keyCode >= 96 && e.keyCode <= 105)) {
+            return;
           }
-        });
-
-        // Limpiar entrada al pegar
-        input.addEventListener('paste', function (e) {
+          
+          // Permitir punto y coma para decimales
+          if (e.keyCode === 190 || e.keyCode === 188 || e.keyCode === 110) {
+            return;
+          }
+          
+          // Prevenir cualquier otro carácter
           e.preventDefault();
-          const pastedText = e.clipboardData.getData('text');
-          const numbersOnly = pastedText.replace(/\D/g, '');
-          document.execCommand('insertText', false, numbersOnly);
+        });
+        
+        // MEJORA: Mejor manejo del pegado
+        input.addEventListener('paste', function (e) {
+          // Permitir el comportamiento por defecto primero
+          setTimeout(() => {
+            // Limpiar solo después de pegar
+            const valor = input.value;
+            const numerosSolo = valor.replace(/[^\d]/g, '');
+            input.value = numerosSolo;
+            
+            // Disparar evento input para cálculos
+            const event = new Event('input', { bubbles: true });
+            input.dispatchEvent(event);
+          }, 10);
+        });
+        
+        // MEJORA: Validar al perder el foco
+        input.addEventListener('blur', function () {
+          const valor = input.value;
+          const numerosSolo = valor.replace(/[^\d]/g, '');
+          if (valor !== numerosSolo) {
+            input.value = numerosSolo;
+            const event = new Event('input', { bubbles: true });
+            input.dispatchEvent(event);
+          }
         });
       });
     });
@@ -175,9 +198,6 @@
     </button>
     <button id="connectBtn" class="peer-button connect" onclick="conectarDispositivo()">
       🔗 Conectar a otro dispositivo
-    </button>
-    <button id="syncBtn" class="peer-button sync" onclick="sincronizarManual()">
-      🔄 Sincronizar Ahora
     </button>
     <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()" style="display:none;">
       🚫 Desconectar
@@ -1557,7 +1577,7 @@
 
   <script>
     // ============================================
-    // SISTEMA DE PERSISTENCIA Y SINCRONIZACIÓN P2P
+    // SISTEMA DE PERSISTENCIA Y SINCRONIZACIÓN P2P MEJORADO
     // ============================================
 
     // Variables globales
@@ -1568,614 +1588,598 @@
     let intentandoReconectar = false;
     let reconnectInterval = null;
     let ultimoTimestampRecibido = 0;
+    let sincronizacionActiva = true;
 
     // ID persistente basado en localStorage
     function obtenerPeerIdPersistente() {
-      let peerId = localStorage.getItem('peer-id-persistente');
-      if (!peerId) {
-        // Pedir al usuario que ingrese un ID
-        peerId = prompt('Por favor, ingresa un ID único para este dispositivo (por ejemplo, pagatodo11):');
+        let peerId = localStorage.getItem('peer-id-persistente');
         if (!peerId) {
-          // Si no ingresa, generamos uno aleatorio
-          peerId = 'pagato' + Math.random().toString(36).substr(2, 9);
+            peerId = 'pagato' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('peer-id-persistente', peerId);
         }
-        localStorage.setItem('peer-id-persistente', peerId);
-      }
-      return peerId;
+        return peerId;
+    }
+
+    // MEJORA: Configurar inputs para mejor rendimiento
+    function configurarInputsParaSincronizacion() {
+        const inputs = document.querySelectorAll('input[type="tel"], input.cantidad, input.cantidad2, input.cantidad4, .venta, .input1, .input2, .input3, .input4, .input5, .input6, .input7, .input8, .input9, .input10, .input11, .input12, .input13, .input14, .input15, .input16, .input17, .input18, .input19, .input20, .input21, .input22, .input23, .input24, .input25, .input26, .input27, .input28, .input29, .input30, .input31, .input32, .input33, .input34, .input35, .input36, .input37, .input38, .input39, .input40, .input41, .input42, .input43, .input44, .input45, .input46, .input47, .input48, .input49, .input50, .input51, .input52, .input53, .input54, .input55, .input56, .input57, .input58, .input59, .input60');
+        
+        inputs.forEach(input => {
+            // MEJORA: Mejor manejo del evento input
+            input.addEventListener('input', function(e) {
+                // Permitir que el navegador procese el input primero
+                setTimeout(() => {
+                    if (sincronizacionActiva && conexion && conexion.open) {
+                        enviarDatosDebounced();
+                    }
+                }, 100);
+            });
+            
+            // MEJORA: Mejor manejo del pegado
+            input.addEventListener('paste', function(e) {
+                // Permitir el pegado normal primero
+                setTimeout(() => {
+                    if (sincronizacionActiva && conexion && conexion.open) {
+                        // Enviar después de pegar con un retraso mayor
+                        setTimeout(() => {
+                            enviarDatos();
+                        }, 300);
+                    }
+                }, 50);
+            });
+            
+            // MEJORA: Sincronizar al salir del campo
+            input.addEventListener('blur', function() {
+                if (sincronizacionActiva && conexion && conexion.open) {
+                    enviarDatos();
+                }
+            });
+        });
+    }
+
+    // MEJORA: Debounce mejorado para envío de datos
+    let timeoutEnvio = null;
+    function enviarDatosDebounced() {
+        clearTimeout(timeoutEnvio);
+        timeoutEnvio = setTimeout(() => {
+            if (conexion && conexion.open) {
+                enviarDatos();
+            }
+        }, 1500); // Aumentado a 1.5 segundos para menos interferencia
+    }
+
+    // MEJORA: Función para suspender temporalmente la sincronización
+    function suspenderSincronizacion(tiempoMs = 1000) {
+        sincronizacionActiva = false;
+        setTimeout(() => {
+            sincronizacionActiva = true;
+        }, tiempoMs);
     }
 
     // Inicializar PeerJS con ID persistente
     function inicializarPeerJS() {
-      const peerId = obtenerPeerIdPersistente();
+        const peerId = obtenerPeerIdPersistente();
 
-      peer = new Peer(peerId, {
-        debug: 2,
-        config: {
-          'iceServers': [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:global.stun.twilio.com:3478' }
-          ]
-        }
-      });
+        peer = new Peer(peerId, {
+            debug: 1, // Reducido de 2 a 1 para menos logs
+            config: {
+                'iceServers': [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' }
+                ]
+            }
+        });
 
-      // Eventos del Peer
-      peer.on('open', (id) => {
-        miID = id;
-        console.log('Mi ID persistente:', id);
+        // Eventos del Peer
+        peer.on('open', (id) => {
+            miID = id;
+            console.log('Mi ID persistente:', id);
 
-        // Mostrar ID en botón
-        const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
-        document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
-        document.getElementById('miIDBtn').style.display = 'block';
+            // Mostrar ID en botón
+            const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
+            document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
+            document.getElementById('miIDBtn').style.display = 'block';
 
-        // Intentar reconexión automática si hay un ID remoto guardado
-        const idRemotoGuardado = localStorage.getItem('peer-remote-id');
-        if (idRemotoGuardado && idRemotoGuardado !== id) {
-          setTimeout(() => {
-            conectarAutomaticamente(idRemotoGuardado);
-          }, 1000);
-        }
+            // Configurar inputs para sincronización
+            configurarInputsParaSincronizacion();
 
-        actualizarEstadoConexion();
-      });
+            // Intentar reconexión automática si hay un ID remoto guardado
+            const idRemotoGuardado = localStorage.getItem('peer-remote-id');
+            if (idRemotoGuardado && idRemotoGuardado !== id) {
+                setTimeout(() => {
+                    conectarAutomaticamente(idRemotoGuardado);
+                }, 1500);
+            }
 
-      peer.on('connection', (conn) => {
-        console.log('📲 Conexión entrante recibida de:', conn.peer);
-        esAnfitrion = true;
-        manejarNuevaConexion(conn);
+            actualizarEstadoConexion();
+        });
 
-        // Guardar ID del dispositivo conectado
-        localStorage.setItem('peer-remote-id', conn.peer);
-      });
+        peer.on('connection', (conn) => {
+            console.log('📲 Conexión entrante recibida de:', conn.peer);
+            esAnfitrion = true;
+            manejarNuevaConexion(conn);
 
-      peer.on('error', (err) => {
-        console.error('Error en PeerJS:', err);
-        if (err.type === 'peer-unavailable') {
-          intentarReconexion();
-        }
-      });
+            // Guardar ID del dispositivo conectado
+            localStorage.setItem('peer-remote-id', conn.peer);
+        });
 
-      peer.on('disconnected', () => {
-        console.log('Peer desconectado, intentando reconectar...');
-        peer.reconnect();
-      });
+        peer.on('error', (err) => {
+            console.error('Error en PeerJS:', err);
+            if (err.type === 'peer-unavailable') {
+                intentarReconexion();
+            }
+        });
 
-      peer.on('close', () => {
-        console.log('Peer cerrado');
-        actualizarEstadoConexion();
-      });
+        peer.on('disconnected', () => {
+            console.log('Peer desconectado, intentando reconectar...');
+            peer.reconnect();
+        });
+
+        peer.on('close', () => {
+            console.log('Peer cerrado');
+            actualizarEstadoConexion();
+        });
     }
 
     // Conectar automáticamente (al recargar la página)
     function conectarAutomaticamente(idRemoto) {
-      if (!peer || !peer.open) {
-        setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
-        return;
-      }
+        if (!peer || !peer.open) {
+            setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
+            return;
+        }
 
-      console.log('Intentando reconexión automática a:', idRemoto);
-      intentandoReconectar = true;
+        console.log('Intentando reconexión automática a:', idRemoto);
+        intentandoReconectar = true;
 
-      conexion = peer.connect(idRemoto, {
-        reliable: true,
-        serialization: 'json'
-      });
+        conexion = peer.connect(idRemoto, {
+            reliable: true,
+            serialization: 'json'
+        });
 
-      configurarEventosConexion(conexion);
+        configurarEventosConexion(conexion);
 
-      // Guardar ID remoto
-      localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = false;
+        // Guardar ID remoto
+        localStorage.setItem('peer-remote-id', idRemoto);
+        esAnfitrion = false;
     }
 
     // Conectar manualmente
     function conectarDispositivo() {
-      const idRemoto = prompt('Ingresa el ID del otro dispositivo:');
-      if (!idRemoto || idRemoto === miID) return;
+        const idRemoto = prompt('Ingresa el ID del otro dispositivo:');
+        if (!idRemoto || idRemoto === miID) return;
 
-      Swal.fire({
-        title: 'Conectando...',
-        text: 'Estableciendo conexión con el otro dispositivo',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
+        Swal.fire({
+            title: 'Conectando...',
+            text: 'Estableciendo conexión con el otro dispositivo',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
-      conexion = peer.connect(idRemoto, {
-        reliable: true,
-        serialization: 'json'
-      });
+        conexion = peer.connect(idRemoto, {
+            reliable: true,
+            serialization: 'json'
+        });
 
-      configurarEventosConexion(conexion);
+        configurarEventosConexion(conexion);
 
-      // Guardar ID remoto
-      localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = false;
+        // Guardar ID remoto
+        localStorage.setItem('peer-remote-id', idRemoto);
+        esAnfitrion = false;
     }
 
     // Configurar eventos de conexión
     function configurarEventosConexion(conn) {
-      conn.on('open', () => {
-        console.log('✅ Conexión establecida exitosamente!');
-        conexion = conn;
-        intentandoReconectar = false;
+        conn.on('open', () => {
+            console.log('✅ Conexión establecida exitosamente!');
+            conexion = conn;
+            intentandoReconectar = false;
 
-        Swal.close();
-        Swal.fire({
-          icon: 'success',
-          title: '¡Conectado!',
-          text: 'Conexión establecida exitosamente',
-          timer: 2000,
-          showConfirmButton: false
+            Swal.close();
+            Swal.fire({
+                icon: 'success',
+                title: '¡Conectado!',
+                text: 'Conexión establecida exitosamente',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            // Enviar estado actual inmediatamente
+            setTimeout(() => {
+                enviarDatos();
+            }, 800);
+
+            actualizarEstadoConexion();
+
+            // Configurar eventos de reconexión
+            conn.on('close', () => {
+                console.log('Conexión cerrada');
+                actualizarEstadoConexion();
+                intentarReconexion();
+            });
+
+            conn.on('error', (err) => {
+                console.error('Error en la conexión:', err);
+            });
         });
 
-        // Enviar estado actual inmediatamente
-        setTimeout(() => {
-          enviarDatos();
-        }, 500);
-
-        // Configurar envío automático solo para cambios importantes
-        // NO para cada tecla presionada en inputs numéricos
-        if (!document.syncListenerAdded) {
-          // Solo sincronizar para inputs que NO sean numéricos
-          document.addEventListener("input", (e) => {
-            const target = e.target;
-            const isNumericInput = target.type === 'tel' || 
-                                  target.inputmode === 'numeric' || 
-                                  target.classList.contains('cantidad') ||
-                                  target.classList.contains('cantidad2') ||
-                                  target.classList.contains('cantidad4') ||
-                                  target.classList.contains('venta');
-            
-            if (!isNumericInput) {
-              enviarDatosConThrottle();
-            }
-          });
-          
-          // Para inputs numéricos, sincronizar solo al perder el foco
-          document.querySelectorAll('input[type="tel"], input[inputmode="numeric"], input.cantidad, input.cantidad2, input.cantidad4, input.venta').forEach(input => {
-            input.addEventListener('blur', enviarDatosConThrottle);
-          });
-          
-          // Sincronizar otros cambios
-          document.addEventListener("change", enviarDatosConThrottle);
-          
-          document.syncListenerAdded = true;
-        }
-
-        actualizarEstadoConexion();
-
-        // Configurar reconexión automática si se pierde la conexión
-        conn.on('close', () => {
-          console.log('Conexión cerrada');
-          actualizarEstadoConexion();
-          intentarReconexion();
+        conn.on('data', (datos) => {
+            console.log('📥 Datos recibidos:', datos);
+            aplicarDatosRecibidos(datos);
         });
 
         conn.on('error', (err) => {
-          console.error('Error en la conexión:', err);
+            console.error('❌ Error al conectar:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de conexión',
+                text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
+            });
+            intentarReconexion();
         });
-      });
-
-      conn.on('data', (datos) => {
-        console.log('📥 Datos recibidos:', datos);
-        aplicarDatosRecibidos(datos);
-      });
-
-      conn.on('error', (err) => {
-        console.error('❌ Error al conectar:', err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error de conexión',
-          text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
-        });
-        intentarReconexion();
-      });
     }
 
     // Manejar nueva conexión entrante
     function manejarNuevaConexion(conn) {
-      conexion = conn;
+        conexion = conn;
 
-      conn.on('open', () => {
-        console.log('✅ Cliente conectado:', conn.peer);
-        actualizarEstadoConexion();
+        conn.on('open', () => {
+            console.log('✅ Cliente conectado:', conn.peer);
+            actualizarEstadoConexion();
 
-        // Enviar datos actuales al cliente
-        setTimeout(() => {
-          enviarDatos();
-        }, 1000);
-
-        // Configurar envío automático solo para cambios importantes
-        if (!document.syncListenerAdded) {
-          // Solo sincronizar para inputs que NO sean numéricos
-          document.addEventListener("input", (e) => {
-            const target = e.target;
-            const isNumericInput = target.type === 'tel' || 
-                                  target.inputmode === 'numeric' || 
-                                  target.classList.contains('cantidad') ||
-                                  target.classList.contains('cantidad2') ||
-                                  target.classList.contains('cantidad4') ||
-                                  target.classList.contains('venta');
-            
-            if (!isNumericInput) {
-              enviarDatosConThrottle();
-            }
-          });
-          
-          // Para inputs numéricos, sincronizar solo al perder el foco
-          document.querySelectorAll('input[type="tel"], input[inputmode="numeric"], input.cantidad, input.cantidad2, input.cantidad4, input.venta').forEach(input => {
-            input.addEventListener('blur', enviarDatosConThrottle);
-          });
-          
-          // Sincronizar otros cambios
-          document.addEventListener("change", enviarDatosConThrottle);
-          
-          document.syncListenerAdded = true;
-        }
-      });
-
-      conn.on('data', (datos) => {
-        console.log('📥 Datos recibidos del cliente:', datos);
-        aplicarDatosRecibidos(datos);
-
-        // Guardar en localStorage del anfitrión también
-        guardarLocalmente();
-      });
-
-      conn.on('close', () => {
-        console.log('Cliente desconectado');
-        actualizarEstadoConexion();
-      });
-
-      conn.on('error', (err) => {
-        console.error('Error en conexión entrante:', err);
-      });
-    }
-
-    // Throttle mejorado para evitar demasiados envíos
-    let timeoutEnvio = null;
-    const throttleDelay = 300; // Reducido de 1000ms a 300ms
-
-    function enviarDatosConThrottle() {
-      if (timeoutEnvio) clearTimeout(timeoutEnvio);
-      
-      // Usar un delay mayor para eventos de input de teclado
-      const esInputDeTeclado = event && event.type === 'input';
-      const delay = esInputDeTeclado ? 500 : 200;
-      
-      timeoutEnvio = setTimeout(() => {
-        if (conexion && conexion.open) {
-          enviarDatos();
-        }
-      }, delay);
-    }
-
-    // Función de sincronización manual
-    function sincronizarManual() {
-      if (conexion && conexion.open) {
-        enviarDatos();
-        Swal.fire({
-          icon: 'success',
-          title: 'Datos sincronizados',
-          text: 'Los datos se han enviado al otro dispositivo',
-          timer: 1500,
-          showConfirmButton: false
+            // Enviar datos actuales al cliente
+            setTimeout(() => {
+                enviarDatos();
+            }, 1000);
         });
-      } else {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Sin conexión',
-          text: 'No hay ningún dispositivo conectado'
+
+        conn.on('data', (datos) => {
+            console.log('📥 Datos recibidos del cliente:', datos);
+            aplicarDatosRecibidos(datos);
+
+            // Guardar en localStorage del anfitrión también
+            guardarLocalmente();
         });
-      }
+
+        conn.on('close', () => {
+            console.log('Cliente desconectado');
+            actualizarEstadoConexion();
+        });
+
+        conn.on('error', (err) => {
+            console.error('Error en conexión entrante:', err);
+        });
     }
 
     // Enviar datos a través de la conexión P2P
     function enviarDatos() {
-      if (!conexion || !conexion.open) return;
+        if (!conexion || !conexion.open) return;
 
-      const datos = obtenerTodosLosDatos();
+        const datos = obtenerTodosLosDatos();
 
-      try {
-        conexion.send(datos);
-        console.log('📤 Datos enviados:', datos);
-      } catch (error) {
-        console.error('Error al enviar datos:', error);
-      }
+        try {
+            conexion.send(datos);
+            console.log('📤 Datos enviados:', datos);
+        } catch (error) {
+            console.error('Error al enviar datos:', error);
+        }
     }
 
     // Obtener todos los datos de la página
     function obtenerTodosLosDatos() {
-      const datos = {
-        campos: {},
-        celdas: {},
-        divs: {},
-        localStorage: {},
-        timestamp: Date.now(),
-        esAnfitrion: esAnfitrion
-      };
+        const datos = {
+            campos: {},
+            celdas: {},
+            divs: {},
+            localStorage: {},
+            timestamp: Date.now(),
+            esAnfitrion: esAnfitrion
+        };
 
-      // Capturar todos los inputs y textareas
-      document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
-        const clave = campo.id || campo.name || `campo-${index}`;
-        datos.campos[clave] = campo.value;
+        // Capturar todos los inputs y textareas
+        document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
+            const clave = campo.id || campo.name || `campo-${index}`;
+            datos.campos[clave] = campo.value;
 
-        if (campo.dataset.valor !== undefined) {
-          datos.campos[clave + '_dataset'] = campo.dataset.valor;
-        }
-      });
+            if (campo.dataset.valor !== undefined) {
+                datos.campos[clave + '_dataset'] = campo.dataset.valor;
+            }
+        });
 
-      // Capturar todas las celdas con contenido
-      document.querySelectorAll("td[class^='r'], td.resultado, td.valor-fijo").forEach((celda, index) => {
-        const clave = celda.className || `celda-${index}`;
-        datos.celdas[clave] = celda.textContent;
-      });
+        // Capturar todas las celdas con contenido
+        document.querySelectorAll("td[class^='r'], td.resultado, td.valor-fijo").forEach((celda, index) => {
+            const clave = celda.className || `celda-${index}`;
+            datos.celdas[clave] = celda.textContent;
+        });
 
-      // Capturar divs especiales
-      const divsEspeciales = document.querySelectorAll('.cantidad3, .cantidad5, .resultado-adicionales');
-      divsEspeciales.forEach((div, index) => {
-        const clave = div.className || `div-${index}`;
-        datos.divs[clave] = div.textContent;
-        if (div.dataset.valor) {
-          datos.divs[clave + '_dataset'] = div.dataset.valor;
-        }
-      });
+        // Capturar divs especiales
+        const divsEspeciales = document.querySelectorAll('.cantidad3, .cantidad5, .resultado-adicionales');
+        divsEspeciales.forEach((div, index) => {
+            const clave = div.className || `div-${index}`;
+            datos.divs[clave] = div.textContent;
+            if (div.dataset.valor) {
+                datos.divs[clave + '_dataset'] = div.dataset.valor;
+            }
+        });
 
-      // Capturar algunos datos específicos de localStorage
-      const keysToSync = ['premios-total', 'peer-remote-id'];
-      keysToSync.forEach(key => {
-        datos.localStorage[key] = localStorage.getItem(key);
-      });
+        // Capturar algunos datos específicos de localStorage
+        const keysToSync = ['premios-total', 'peer-remote-id'];
+        keysToSync.forEach(key => {
+            datos.localStorage[key] = localStorage.getItem(key);
+        });
 
-      return datos;
+        return datos;
     }
 
-    // Aplicar datos recibidos
+    // MEJORA: Optimizar la aplicación de datos recibidos
     function aplicarDatosRecibidos(datos) {
-      // Evitar bucles de sincronización
-      if (datos.timestamp && ultimoTimestampRecibido &&
-        datos.timestamp <= ultimoTimestampRecibido) {
-        return;
-      }
-      ultimoTimestampRecibido = datos.timestamp;
+        // Evitar bucles de sincronización
+        if (datos.timestamp && ultimoTimestampRecibido &&
+            datos.timestamp <= ultimoTimestampRecibido) {
+            return;
+        }
+        ultimoTimestampRecibido = datos.timestamp;
+        
+        // Suspender sincronización temporalmente para evitar retroalimentación
+        sincronizacionActiva = false;
 
-      // Aplicar campos
-      if (datos.campos) {
-        Object.keys(datos.campos).forEach(clave => {
-          if (clave.endsWith('_dataset')) return;
+        // Aplicar campos
+        if (datos.campos) {
+            Object.keys(datos.campos).forEach(clave => {
+                if (clave.endsWith('_dataset')) return;
 
-          const valor = datos.campos[clave];
+                const valor = datos.campos[clave];
 
-          // Buscar campo por id, name o índice
-          let campo = document.getElementById(clave) ||
-            document.querySelector(`[name="${clave}"]`);
+                // Buscar campo por id, name o índice
+                let campo = document.getElementById(clave) ||
+                    document.querySelector(`[name="${clave}"]`);
 
-          if (!campo && clave.startsWith('campo-')) {
-            const index = parseInt(clave.replace('campo-', ''));
-            const campos = document.querySelectorAll("input, textarea, select");
-            if (campos[index]) campo = campos[index];
-          }
+                if (!campo && clave.startsWith('campo-')) {
+                    const index = parseInt(clave.replace('campo-', ''));
+                    const campos = document.querySelectorAll("input, textarea, select");
+                    if (campos[index]) campo = campos[index];
+                }
 
-          if (campo && campo.value !== valor) {
-            campo.value = valor;
+                if (campo && campo.value !== valor) {
+                    // Verificar si el campo está enfocado (el usuario está editando)
+                    const estaEnfocado = (document.activeElement === campo);
+                    
+                    // Solo actualizar si el usuario no está editando este campo
+                    if (!estaEnfocado) {
+                        campo.value = valor;
 
-            // Actualizar dataset.valor si existe
-            const datasetKey = clave + '_dataset';
-            if (datos.campos[datasetKey] && campo.dataset.valor !== undefined) {
-              campo.dataset.valor = datos.campos[datasetKey];
-            }
+                        // Actualizar dataset.valor si existe
+                        const datasetKey = clave + '_dataset';
+                        if (datos.campos[datasetKey] && campo.dataset.valor !== undefined) {
+                            campo.dataset.valor = datos.campos[datasetKey];
+                        }
 
-            // Disparar eventos si es necesario
-            const event = new Event('input', { bubbles: true });
-            campo.dispatchEvent(event);
-          }
-        });
-      }
+                        // Disparar eventos si es necesario
+                        const event = new Event('input', { bubbles: true });
+                        campo.dispatchEvent(event);
+                    }
+                }
+            });
+        }
 
-      // Aplicar celdas
-      if (datos.celdas) {
-        Object.keys(datos.celdas).forEach(clave => {
-          const celdas = document.querySelectorAll(`.${clave}`);
-          celdas.forEach(celda => {
-            if (celda.textContent !== datos.celdas[clave]) {
-              celda.textContent = datos.celdas[clave];
-            }
-          });
-        });
-      }
+        // Aplicar celdas
+        if (datos.celdas) {
+            Object.keys(datos.celdas).forEach(clave => {
+                const celdas = document.querySelectorAll(`.${clave}`);
+                celdas.forEach(celda => {
+                    if (celda.textContent !== datos.celdas[clave]) {
+                        celda.textContent = datos.celdas[clave];
+                    }
+                });
+            });
+        }
 
-      // Aplicar divs especiales
-      if (datos.divs) {
-        Object.keys(datos.divs).forEach(clave => {
-          if (clave.endsWith('_dataset')) return;
+        // Aplicar divs especiales
+        if (datos.divs) {
+            Object.keys(datos.divs).forEach(clave => {
+                if (clave.endsWith('_dataset')) return;
 
-          const div = document.querySelector(`.${clave}`);
-          if (div && div.textContent !== datos.divs[clave]) {
-            div.textContent = datos.divs[clave];
+                const div = document.querySelector(`.${clave}`);
+                if (div && div.textContent !== datos.divs[clave]) {
+                    div.textContent = datos.divs[clave];
 
-            const datasetKey = clave + '_dataset';
-            if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
-              div.dataset.valor = datos.divs[datasetKey];
-            }
-          }
-        });
-      }
+                    const datasetKey = clave + '_dataset';
+                    if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
+                        div.dataset.valor = datos.divs[datasetKey];
+                    }
+                }
+            });
+        }
 
-      // Aplicar localStorage
-      if (datos.localStorage) {
-        Object.keys(datos.localStorage).forEach(key => {
-          if (datos.localStorage[key] !== null) {
-            localStorage.setItem(key, datos.localStorage[key]);
-          }
-        });
-      }
+        // Aplicar localStorage
+        if (datos.localStorage) {
+            Object.keys(datos.localStorage).forEach(key => {
+                if (datos.localStorage[key] !== null) {
+                    localStorage.setItem(key, datos.localStorage[key]);
+                }
+            });
+        }
 
-      // Recalcular todo
-      setTimeout(() => {
-        if (typeof calcularTotales === 'function') calcularTotales();
-        if (typeof verificarCamposVacios === 'function') verificarCamposVacios();
-        if (typeof sumarInputsImpares === 'function') sumarInputsImpares();
-        if (typeof sumarResultados === 'function') sumarResultados();
-        if (typeof sumarConteoBilletes === 'function') sumarConteoBilletes();
-      }, 100);
+        // Recalcular todo después de un breve retraso
+        setTimeout(() => {
+            if (typeof calcularTotales === 'function') calcularTotales();
+            if (typeof verificarCamposVacios === 'function') verificarCamposVacios();
+            if (typeof sumarInputsImpares === 'function') sumarInputsImpares();
+            if (typeof sumarResultados === 'function') sumarResultados();
+            if (typeof sumarConteoBilletes === 'function') sumarConteoBilletes();
+            
+            // Reactivar sincronización después de procesar
+            setTimeout(() => {
+                sincronizacionActiva = true;
+            }, 500);
+        }, 100);
+    }
+
+    // Función de sincronización manual
+    function sincronizarDatos() {
+        if (conexion && conexion.open) {
+            enviarDatos();
+            Swal.fire({
+                icon: 'success',
+                title: 'Datos sincronizados',
+                text: 'Los datos se han enviado al otro dispositivo',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sin conexión',
+                text: 'No hay ningún dispositivo conectado'
+            });
+        }
     }
 
     // Intentar reconexión automática
     function intentarReconexion() {
-      if (intentandoReconectar) return;
+        if (intentandoReconectar) return;
 
-      const idRemoto = localStorage.getItem('peer-remote-id');
-      if (!idRemoto || idRemoto === miID) return;
+        const idRemoto = localStorage.getItem('peer-remote-id');
+        if (!idRemoto || idRemoto === miID) return;
 
-      intentandoReconectar = true;
+        intentandoReconectar = true;
 
-      console.log('Intentando reconexión en 5 segundos...');
+        console.log('Intentando reconexión en 5 segundos...');
 
-      if (reconnectInterval) clearInterval(reconnectInterval);
+        if (reconnectInterval) clearInterval(reconnectInterval);
 
-      reconnectInterval = setInterval(() => {
-        if (!conexion || !conexion.open) {
-          conectarAutomaticamente(idRemoto);
-        } else {
-          clearInterval(reconnectInterval);
-          intentandoReconectar = false;
-        }
-      }, 5000);
+        reconnectInterval = setInterval(() => {
+            if (!conexion || !conexion.open) {
+                conectarAutomaticamente(idRemoto);
+            } else {
+                clearInterval(reconnectInterval);
+                intentandoReconectar = false;
+            }
+        }, 5000);
     }
 
     // Actualizar estado de conexión en UI
     function actualizarEstadoConexion() {
-      const statusEl = document.getElementById('peerStatus');
-      const disconnectBtn = document.getElementById('disconnectBtn');
-      const connectBtn = document.getElementById('connectBtn');
-      const syncBtn = document.getElementById('syncBtn');
+        const statusEl = document.getElementById('peerStatus');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const connectBtn = document.getElementById('connectBtn');
 
-      if (conexion && conexion.open) {
-        statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
-        statusEl.className = 'peer-status connected';
-        disconnectBtn.style.display = 'block';
-        connectBtn.style.display = 'none';
-        syncBtn.style.display = 'block';
-      } else {
-        statusEl.textContent = 'Sin conexión';
-        statusEl.className = 'peer-status disconnected';
-        disconnectBtn.style.display = 'none';
-        connectBtn.style.display = 'block';
-        syncBtn.style.display = 'none';
-      }
+        if (conexion && conexion.open) {
+            statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
+            statusEl.className = 'peer-status connected';
+            disconnectBtn.style.display = 'block';
+            connectBtn.style.display = 'none';
+        } else {
+            statusEl.textContent = 'Sin conexión';
+            statusEl.className = 'peer-status disconnected';
+            disconnectBtn.style.display = 'none';
+            connectBtn.style.display = 'block';
+        }
     }
 
     // Desconectar
     function desconectar() {
-      if (conexion) {
-        conexion.close();
-        conexion = null;
-      }
+        if (conexion) {
+            conexion.close();
+            conexion = null;
+        }
 
-      if (peer) {
-        peer.disconnect();
-      }
+        if (peer) {
+            peer.disconnect();
+        }
 
-      localStorage.removeItem('peer-remote-id');
-      esAnfitrion = false;
+        localStorage.removeItem('peer-remote-id');
+        esAnfitrion = false;
 
-      // Remover listeners
-      if (document.syncListenerAdded) {
-        document.removeEventListener("input", enviarDatosConThrottle);
-        document.removeEventListener("change", enviarDatosConThrottle);
-        document.syncListenerAdded = false;
-      }
+        Swal.fire({
+            icon: 'info',
+            title: 'Desconectado',
+            text: 'Se ha cerrado la conexión',
+            timer: 1500,
+            showConfirmButton: false
+        });
 
-      Swal.fire({
-        icon: 'info',
-        title: 'Desconectado',
-        text: 'Se ha cerrado la conexión',
-        timer: 1500,
-        showConfirmButton: false
-      });
-
-      actualizarEstadoConexion();
+        actualizarEstadoConexion();
     }
 
     // Copiar mi ID
     function copiarMiID() {
-      Swal.fire({
-        title: 'Mi ID',
-        text: `ID actual: ${miID}`,
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Copiar',
-        cancelButtonText: 'Cambiar ID',
-        showDenyButton: true,
-        denyButtonText: 'Cerrar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigator.clipboard.writeText(miID).then(() => {
-            Swal.fire({
-              icon: 'success',
-              title: 'ID copiado',
-              text: 'ID copiado al portapapeles',
-              timer: 1500,
-              showConfirmButton: false
-            });
-          }).catch(() => {
-            prompt('Copia este ID manualmente:', miID);
-          });
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          // Cambiar ID
-          Swal.fire({
-            title: 'Cambiar ID',
-            input: 'text',
-            inputLabel: 'Nuevo ID',
-            inputValue: miID,
+        Swal.fire({
+            title: 'Mi ID',
+            text: `ID actual: ${miID}`,
+            icon: 'info',
             showCancelButton: true,
-            confirmButtonText: 'Guardar',
-            cancelButtonText: 'Cancelar',
-            inputValidator: (value) => {
-              if (!value) {
-                return 'Debes ingresar un ID';
-              }
-            }
-          }).then((result) => {
+            confirmButtonText: 'Copiar',
+            cancelButtonText: 'Cambiar ID',
+            showDenyButton: true,
+            denyButtonText: 'Cerrar'
+        }).then((result) => {
             if (result.isConfirmed) {
-              const nuevoId = result.value;
-              localStorage.setItem('peer-id-persistente', nuevoId);
-              Swal.fire({
-                icon: 'success',
-                title: 'ID guardado',
-                text: 'El ID ha sido cambiado. La página se recargará para aplicar los cambios.',
-                timer: 2000,
-                showConfirmButton: false
-              }).then(() => {
-                location.reload();
-              });
+                navigator.clipboard.writeText(miID).then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ID copiado',
+                        text: 'ID copiado al portapapeles',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }).catch(() => {
+                    prompt('Copia este ID manualmente:', miID);
+                });
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                // Cambiar ID
+                Swal.fire({
+                    title: 'Cambiar ID',
+                    input: 'text',
+                    inputLabel: 'Nuevo ID',
+                    inputValue: miID,
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'Debes ingresar un ID';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const nuevoId = result.value;
+                        localStorage.setItem('peer-id-persistente', nuevoId);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ID guardado',
+                            text: 'El ID ha sido cambiado. La página se recargará para aplicar los cambios.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                });
             }
-          });
-        }
-      });
+        });
     }
 
     // Guardar datos localmente
     function guardarLocalmente() {
-      // Guardar todos los campos
-      document.querySelectorAll("input, textarea").forEach((campo, index) => {
-        const key = campo.id || campo.name || `campo-${index}`;
-        localStorage.setItem(key, campo.value);
+        // Guardar todos los campos
+        document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
+            const key = campo.id || campo.name || `campo-${index}`;
+            localStorage.setItem(key, campo.value);
 
-        if (campo.dataset.valor) {
-          localStorage.setItem(`${key}-dataset`, campo.dataset.valor);
-        }
-      });
+            if (campo.dataset.valor) {
+                localStorage.setItem(`${key}-dataset`, campo.dataset.valor);
+            }
+        });
 
-      // Guardar celdas con clase rX
-      document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
-        localStorage.setItem(`td-${index}`, celda.textContent.trim());
-      });
+        // Guardar celdas con clase rX
+        document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
+            localStorage.setItem(`td-${index}`, celda.textContent.trim());
+        });
 
-      // Guardar otros estados importantes
-      localStorage.setItem('ultima-sincronizacion', Date.now());
+        // Guardar otros estados importantes
+        localStorage.setItem('ultima-sincronizacion', Date.now());
     }
 
     // ============================================
@@ -2184,487 +2188,488 @@
 
     // Calcular totales
     function calcularTotales() {
-      let totalBilteles = 0;
-      let totalMonedas = 0;
-      let totalAdicionales = 0;
-      let totalPremios = 0;
-      let totalVenta = 0;
+        let totalBilteles = 0;
+        let totalMonedas = 0;
+        let totalAdicionales = 0;
+        let totalPremios = 0;
+        let totalVenta = 0;
 
-      const filas = document.querySelectorAll("tbody tr");
+        const filas = document.querySelectorAll("tbody tr");
 
-      filas.forEach(fila => {
-        const valores = fila.querySelectorAll(".valor-fijo");
-        const cantidades = fila.querySelectorAll(".cantidad");
-        const resultados = fila.querySelectorAll(".resultado");
+        filas.forEach(fila => {
+            const valores = fila.querySelectorAll(".valor-fijo");
+            const cantidades = fila.querySelectorAll(".cantidad");
+            const resultados = fila.querySelectorAll(".resultado");
 
-        for (let i = 0; i < valores.length; i++) {
-          const valorTexto = valores[i]?.innerText?.replace(/[^\d.]/g, "") || "0";
-          const valor = parseFloat(valorTexto) || 0;
-          const cantidad = parseFloat(cantidades[i]?.value) || 0;
-          const total = valor * cantidad;
+            for (let i = 0; i < valores.length; i++) {
+                const valorTexto = valores[i]?.innerText?.replace(/[^\d.]/g, "") || "0";
+                const valor = parseFloat(valorTexto) || 0;
+                const cantidad = parseFloat(cantidades[i]?.value) || 0;
+                const total = valor * cantidad;
 
-          if (resultados[i]) {
-            resultados[i].innerText = total.toLocaleString("es-CO");
-          }
+                if (resultados[i]) {
+                    resultados[i].innerText = total.toLocaleString("es-CO");
+                }
 
-          if (resultados[i]?.classList.contains("resultado-bilteles")) {
-            totalBilteles += total;
-          }
-          if (resultados[i]?.classList.contains("resultado-monedas")) {
-            totalMonedas += total;
-          }
+                if (resultados[i]?.classList.contains("resultado-bilteles")) {
+                    totalBilteles += total;
+                }
+                if (resultados[i]?.classList.contains("resultado-monedas")) {
+                    totalMonedas += total;
+                }
+            }
+        });
+
+        const adicionalesInputs = document.querySelectorAll("input.cantidad2");
+        adicionalesInputs.forEach(input => {
+            const val = parseFloat(input.dataset.valor || "0");
+            totalAdicionales += val;
+        });
+
+        const premiosDiv = document.querySelector(".cantidad3");
+        if (premiosDiv) {
+            const valorPremio = parseFloat(premiosDiv.dataset.valor || "0");
+            totalPremios = valorPremio;
         }
-      });
 
-      const adicionalesInputs = document.querySelectorAll("input.cantidad2");
-      adicionalesInputs.forEach(input => {
-        const val = parseFloat(input.dataset.valor || "0");
-        totalAdicionales += val;
-      });
-
-      const premiosDiv = document.querySelector(".cantidad3");
-      if (premiosDiv) {
-        const valorPremio = parseFloat(premiosDiv.dataset.valor || "0");
-        totalPremios = valorPremio;
-      }
-
-      const ventaInput = document.querySelector("input.venta");
-      if (ventaInput) {
-        const valorVenta = parseFloat(ventaInput.dataset.valor || "0");
-        totalVenta = valorVenta;
-      }
-
-      const totalBiltelesEl = document.getElementById("total-general-bilteles");
-      if (totalBiltelesEl) totalBiltelesEl.innerText = totalBilteles.toLocaleString("es-CO");
-
-      const totalMonedasEl = document.getElementById("total-general-monedas");
-      if (totalMonedasEl) totalMonedasEl.innerText = totalMonedas.toLocaleString("es-CO");
-
-      const adicionalesEl = document.querySelector(".resultado-adicionales");
-      if (adicionalesEl) adicionalesEl.innerText = totalAdicionales.toLocaleString("es-CO");
-
-      const sumaTotal = totalBilteles + totalMonedas + totalAdicionales + totalPremios;
-      const sumaTotalEl = document.getElementById("suma-total");
-      if (sumaTotalEl) sumaTotalEl.innerText = sumaTotal.toLocaleString("es-CO");
-
-      const resultadoResta = sumaTotal - totalVenta;
-      const resulEl = document.getElementById("resul");
-      const sobraEl = document.getElementById("sobra");
-
-      if (resulEl) {
-        resulEl.innerText = resultadoResta.toLocaleString("es-CO");
-        resulEl.classList.remove("exacto", "sobra", "falta");
-        if (resultadoResta > 0) {
-          resulEl.classList.add("sobra");
-        } else if (resultadoResta < 0) {
-          resulEl.classList.add("falta");
-        } else {
-          resulEl.classList.add("exacto");
+        const ventaInput = document.querySelector("input.venta");
+        if (ventaInput) {
+            const valorVenta = parseFloat(ventaInput.dataset.valor || "0");
+            totalVenta = valorVenta;
         }
-      }
 
-      if (sobraEl) {
-        sobraEl.classList.remove("exacto", "sobra", "falta");
-        if (resultadoResta > 0) {
-          sobraEl.innerText = "Sobra";
-          sobraEl.classList.add("sobra");
-        } else if (resultadoResta < 0) {
-          sobraEl.innerText = "Falta";
-          sobraEl.classList.add("falta");
-        } else {
-          sobraEl.innerText = "Exacto";
-          sobraEl.classList.add("exacto");
+        const totalBiltelesEl = document.getElementById("total-general-bilteles");
+        if (totalBiltelesEl) totalBiltelesEl.innerText = totalBilteles.toLocaleString("es-CO");
+
+        const totalMonedasEl = document.getElementById("total-general-monedas");
+        if (totalMonedasEl) totalMonedasEl.innerText = totalMonedas.toLocaleString("es-CO");
+
+        const adicionalesEl = document.querySelector(".resultado-adicionales");
+        if (adicionalesEl) adicionalesEl.innerText = totalAdicionales.toLocaleString("es-CO");
+
+        const sumaTotal = totalBilteles + totalMonedas + totalAdicionales + totalPremios;
+        const sumaTotalEl = document.getElementById("suma-total");
+        if (sumaTotalEl) sumaTotalEl.innerText = sumaTotal.toLocaleString("es-CO");
+
+        const resultadoResta = sumaTotal - totalVenta;
+        const resulEl = document.getElementById("resul");
+        const sobraEl = document.getElementById("sobra");
+
+        if (resulEl) {
+            resulEl.innerText = resultadoResta.toLocaleString("es-CO");
+            resulEl.classList.remove("exacto", "sobra", "falta");
+            if (resultadoResta > 0) {
+                resulEl.classList.add("sobra");
+            } else if (resultadoResta < 0) {
+                resulEl.classList.add("falta");
+            } else {
+                resulEl.classList.add("exacto");
+            }
         }
-      }
 
-      verificarCamposVacios();
+        if (sobraEl) {
+            sobraEl.classList.remove("exacto", "sobra", "falta");
+            if (resultadoResta > 0) {
+                sobraEl.innerText = "Sobra";
+                sobraEl.classList.add("sobra");
+            } else if (resultadoResta < 0) {
+                sobraEl.innerText = "Falta";
+                sobraEl.classList.add("falta");
+            } else {
+                sobraEl.innerText = "Exacto";
+                sobraEl.classList.add("exacto");
+            }
+        }
+
+        verificarCamposVacios();
     }
-
-
 
     // Verificar campos vacíos
     function verificarCamposVacios() {
-      const verificaciones = [
-        { inputId: "nequi1", celdaId: "nequi" },
-        { inputId: "alfonso1", celdaId: "alfonso" },
-        { inputId: "descuadre1", celdaId: "descuadre" },
-        { inputId: "mio1", celdaId: "mio" },
-        { inputId: "Avances1", celdaId: "Avances" }
-      ];
+        const verificaciones = [
+            { inputId: "nequi1", celdaId: "nequi" },
+            { inputId: "alfonso1", celdaId: "alfonso" },
+            { inputId: "descuadre1", celdaId: "descuadre" },
+            { inputId: "mio1", celdaId: "mio" },
+            { inputId: "Avances1", celdaId: "Avances" }
+        ];
 
-      verificaciones.forEach(({ inputId, celdaId }) => {
-        const input = document.getElementById(inputId);
-        const celda = document.getElementById(celdaId);
+        verificaciones.forEach(({ inputId, celdaId }) => {
+            const input = document.getElementById(inputId);
+            const celda = document.getElementById(celdaId);
 
-        if (input && celda) {
-          if (input.value.trim() === "") {
-            celda.style.backgroundColor = "red";
-          } else {
-            celda.style.backgroundColor = "";
-          }
-        }
-      });
+            if (input && celda) {
+                if (input.value.trim() === "") {
+                    celda.style.backgroundColor = "red";
+                } else {
+                    celda.style.backgroundColor = "";
+                }
+            }
+        });
 
-      // Pintar morado claro los inputs cantidad4 si tienen valor
-      const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
-      inputsCantidad4.forEach(input => {
-        const valorNumerico = input.value.replace(/\D/g, "");
-        if (valorNumerico !== "") {
-          input.style.backgroundColor = "#d6b3f8";
-        } else {
-          input.style.backgroundColor = "";
-        }
-      });
+        // Pintar morado claro los inputs cantidad4 si tienen valor
+        const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
+        inputsCantidad4.forEach(input => {
+            const valorNumerico = input.value.replace(/\D/g, "");
+            if (valorNumerico !== "") {
+                input.style.backgroundColor = "#d6b3f8";
+            } else {
+                input.style.backgroundColor = "";
+            }
+        });
     }
 
     // Lista de loterías para autocompletado
     const loterias = [
-      "Lote Cundi", "Lote Tolima", "Lote Cruz Roja", "Lote Huila", "Lote Meta", "Lote Valle",
-      "Lote Manizales", "Lote Bogota", "Lote Quindio", "Lote Risaralda", "Lote Medellin",
-      "Lote Santander", "Lote Boyaca", "Lote Cauca", "Extra Colombia", "Quinta", "Astro",
-      "Miloto", "Baloto", "Colorloto", "Pagamillonario", "Chancemillonario", "RaspaTodo",
-      "Pagatón", "Maxichance", "Betplay", "Paga Triple", "Linea Cundi", "Linea Tolima",
-      "Linea Cruz Roja", "Linea Huila", "Linea Meta", "Linea Valle", "Linea Manizales",
-      "Linea Bogota", "Linea Quindio", "Linea Risaralda", "Linea Medellin", "Linea Santander",
-      "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas"
+        "Lote Cundi", "Lote Tolima", "Lote Cruz Roja", "Lote Huila", "Lote Meta", "Lote Valle",
+        "Lote Manizales", "Lote Bogota", "Lote Quindio", "Lote Risaralda", "Lote Medellin",
+        "Lote Santander", "Lote Boyaca", "Lote Cauca", "Extra Colombia", "Quinta", "Astro",
+        "Miloto", "Baloto", "Colorloto", "Pagamillonario", "Chancemillonario", "RaspaTodo",
+        "Pagatón", "Maxichance", "Betplay", "Paga Triple", "Linea Cundi", "Linea Tolima",
+        "Linea Cruz Roja", "Linea Huila", "Linea Meta", "Linea Valle", "Linea Manizales",
+        "Linea Bogota", "Linea Quindio", "Linea Risaralda", "Linea Medellin", "Linea Santander",
+        "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas"
     ];
 
     // Configurar autocompletado
     function setupAutoComplete(inputId, sugerenciasId) {
-      const input = document.getElementById(inputId);
-      const sugerencias = document.getElementById(sugerenciasId);
+        const input = document.getElementById(inputId);
+        const sugerencias = document.getElementById(sugerenciasId);
 
-      if (!input || !sugerencias) return;
+        if (!input || !sugerencias) return;
 
-      input.addEventListener('input', () => {
-        const valor = input.value.toLowerCase();
-        sugerencias.innerHTML = '';
-        sugerencias.style.display = 'none';
+        input.addEventListener('input', () => {
+            const valor = input.value.toLowerCase();
+            sugerencias.innerHTML = '';
+            sugerencias.style.display = 'none';
 
-        if (valor) {
-          const coincidencias = loterias.filter(dep =>
-            dep.toLowerCase().includes(valor)
-          );
+            if (valor) {
+                const coincidencias = loterias.filter(dep =>
+                    dep.toLowerCase().includes(valor)
+                );
 
-          if (coincidencias.length > 0) {
-            sugerencias.style.display = 'block';
-            coincidencias.forEach(dep => {
-              const li = document.createElement('li');
-              li.textContent = dep;
-              li.style.cursor = 'pointer';
-              li.onclick = () => {
-                input.value = dep;
-                localStorage.setItem(input.id || input.name, dep);
+                if (coincidencias.length > 0) {
+                    sugerencias.style.display = 'block';
+                    coincidencias.forEach(dep => {
+                        const li = document.createElement('li');
+                        li.textContent = dep;
+                        li.style.cursor = 'pointer';
+                        li.onclick = () => {
+                            input.value = dep;
+                            localStorage.setItem(input.id || input.name, dep);
+                            sugerencias.style.display = 'none';
+                            input.dispatchEvent(new Event('input'));
+                        };
+                        sugerencias.appendChild(li);
+                    });
+                }
+            }
+        });
+
+        // Ocultar lista si se hace clic fuera
+        document.addEventListener('click', e => {
+            if (!sugerencias.contains(e.target) && e.target !== input) {
                 sugerencias.style.display = 'none';
-                input.dispatchEvent(new Event('input'));
-              };
-              sugerencias.appendChild(li);
-            });
-          }
-        }
-      });
-
-      // Ocultar lista si se hace clic fuera
-      document.addEventListener('click', e => {
-        if (!sugerencias.contains(e.target) && e.target !== input) {
-          sugerencias.style.display = 'none';
-        }
-      });
+            }
+        });
     }
 
     // Calcular resultado por input
     function calcularResultadoPorInput(input) {
-      const clases = Array.from(input.classList);
-      const claseInput = clases.find(c => /^input\d+$/.test(c));
-      if (!claseInput) return;
+        const clases = Array.from(input.classList);
+        const claseInput = clases.find(c => /^input\d+$/.test(c));
+        if (!claseInput) return;
 
-      const numeroClase = parseInt(claseInput.replace('input', ''));
-      const fila = Math.ceil(numeroClase / 2);
-      calcularResultado(fila);
+        const numeroClase = parseInt(claseInput.replace('input', ''));
+        const fila = Math.ceil(numeroClase / 2);
+        calcularResultado(fila);
     }
 
     // Calcular resultado de una fila
     function calcularResultado(fila) {
-      const claseA = `input${((fila - 1) * 2) + 1}`;
-      const claseB = `input${((fila - 1) * 2) + 2}`;
+        const claseA = `input${((fila - 1) * 2) + 1}`;
+        const claseB = `input${((fila - 1) * 2) + 2}`;
 
-      const inputA = document.querySelector(`input.${claseA}`);
-      const inputB = document.querySelector(`input.${claseB}`);
-      const celdaResultado = document.querySelector(`.r${fila}`);
+        const inputA = document.querySelector(`input.${claseA}`);
+        const inputB = document.querySelector(`input.${claseB}`);
+        const celdaResultado = document.querySelector(`.r${fila}`);
 
-      if (!inputA || !inputB || !celdaResultado) return;
+        if (!inputA || !inputB || !celdaResultado) return;
 
-      const valA = inputA.value.replace(/\./g, '').replace(',', '.');
-      const valB = inputB.value.replace(/\./g, '').replace(',', '.');
+        const valA = inputA.value.replace(/\./g, '').replace(',', '.');
+        const valB = inputB.value.replace(/\./g, '').replace(',', '.');
 
-      const numA = parseFloat(valA) || 0;
-      const numB = parseFloat(valB) || 0;
+        const numA = parseFloat(valA) || 0;
+        const numB = parseFloat(valB) || 0;
 
-      if (!isNaN(numA) && !isNaN(numB)) {
-        const resultado = (numA * numB);
-        celdaResultado.textContent = resultado.toLocaleString('es-CO');
-        celdaResultado.dataset.valor = resultado.toString();
-      } else {
-        celdaResultado.textContent = '';
-        celdaResultado.dataset.valor = '0';
-      }
+        if (!isNaN(numA) && !isNaN(numB)) {
+            const resultado = (numA * numB);
+            celdaResultado.textContent = resultado.toLocaleString('es-CO');
+            celdaResultado.dataset.valor = resultado.toString();
+        } else {
+            celdaResultado.textContent = '';
+            celdaResultado.dataset.valor = '0';
+        }
 
-      sumarResultados();
+        sumarResultados();
     }
 
     // Sumar todos los resultados
     function sumarResultados() {
-      let total = 0;
+        let total = 0;
 
-      for (let i = 1; i <= 30; i++) {
-        const celda = document.querySelector(`.r${i}`);
-        if (!celda) continue;
+        for (let i = 1; i <= 30; i++) {
+            const celda = document.querySelector(`.r${i}`);
+            if (!celda) continue;
 
-        const texto = celda.textContent.replace(/\./g, '').replace(',', '.');
-        const numero = parseFloat(texto) || 0;
+            const texto = celda.textContent.replace(/\./g, '').replace(',', '.');
+            const numero = parseFloat(texto) || 0;
 
-        total += numero;
-      }
+            total += numero;
+        }
 
-      const divCantidad3 = document.querySelector('.cantidad3');
-      if (divCantidad3) {
-        divCantidad3.textContent = total.toLocaleString('es-CO');
-        divCantidad3.dataset.valor = total.toString();
-        localStorage.setItem("premios-total", total.toString());
-      }
+        const divCantidad3 = document.querySelector('.cantidad3');
+        if (divCantidad3) {
+            divCantidad3.textContent = total.toLocaleString('es-CO');
+            divCantidad3.dataset.valor = total.toString();
+            localStorage.setItem("premios-total", total.toString());
+        }
 
-      calcularTotales();
+        calcularTotales();
     }
-    // Añade esta función que falta:
+
+    // Función para detectar fila desde input
     function detectarFila(input) {
-      const clases = Array.from(input.classList);
-      const claseInput = clases.find(c => /^input\d+$/.test(c));
-      if (!claseInput) return;
+        const clases = Array.from(input.classList);
+        const claseInput = clases.find(c => /^input\d+$/.test(c));
+        if (!claseInput) return;
 
-      const numeroClase = parseInt(claseInput.replace('input', ''));
-      const fila = Math.ceil(numeroClase / 2);
-      calcularResultado(fila);
+        const numeroClase = parseInt(claseInput.replace('input', ''));
+        const fila = Math.ceil(numeroClase / 2);
+        calcularResultado(fila);
     }
 
-    // Modifica la función formatearMiles para los inputs de lotería:
+    // Formatear miles
     function formatearMiles(input) {
-      const valor = input.value.replace(/\D/g, "");
-      if (valor === "") {
-        input.value = "";
-        input.dataset.valor = "0";
-      } else {
-        const numero = parseInt(valor);
-        input.dataset.valor = numero;
-        input.value = numero.toLocaleString("es-CO");
-      }
+        const valor = input.value.replace(/\D/g, "");
+        if (valor === "") {
+            input.value = "";
+            input.dataset.valor = "0";
+        } else {
+            const numero = parseInt(valor);
+            input.dataset.valor = numero;
+            input.value = numero.toLocaleString("es-CO");
+        }
 
-      // Si es un input de lotería (input1, input2, etc.), detecta la fila
-      if (input.classList.contains('input1') || input.classList.contains('input2') ||
-        /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
-        detectarFila(input);
-      }
+        // Si es un input de lotería (input1, input2, etc.), detecta la fila
+        if (input.classList.contains('input1') || input.classList.contains('input2') ||
+            /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
+            detectarFila(input);
+        }
 
-      calcularTotales();
-      verificarCamposVacios();
+        calcularTotales();
+        verificarCamposVacios();
     }
+
     // Sumar inputs impares
     function sumarInputsImpares() {
-      let suma = 0;
+        let suma = 0;
 
-      for (let i = 1; i <= 60; i += 2) {
-        const input = document.querySelector(`input.input${i}`);
-        if (input) {
-          const valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
-          suma += valor;
+        for (let i = 1; i <= 60; i += 2) {
+            const input = document.querySelector(`input.input${i}`);
+            if (input) {
+                const valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+                suma += valor;
+            }
         }
-      }
 
-      const campoCantidad5 = document.querySelector(".cantidad5");
-      if (campoCantidad5) {
-        campoCantidad5.textContent = suma.toLocaleString("es-CO");
-        campoCantidad5.dataset.valor = suma.toString();
-      }
+        const campoCantidad5 = document.querySelector(".cantidad5");
+        if (campoCantidad5) {
+            campoCantidad5.textContent = suma.toLocaleString("es-CO");
+            campoCantidad5.dataset.valor = suma.toString();
+        }
     }
 
     // Sumar conteo de billetes
     function sumarConteoBilletes() {
-      let total = 0;
+        let total = 0;
 
-      const ids = ["b1", "b2", "b3", "b4", "b5", "b6"];
+        const ids = ["b1", "b2", "b3", "b4", "b5", "b6"];
 
-      ids.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-          const valor = parseInt(input.value) || 0;
-          total += valor;
+        ids.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                const valor = parseInt(input.value) || 0;
+                total += valor;
+            }
+        });
+
+        const celdaResultado = document.querySelector(".resultado-conteo-billetes");
+        if (celdaResultado) {
+            celdaResultado.textContent = total;
         }
-      });
-
-      const celdaResultado = document.querySelector(".resultado-conteo-billetes");
-      if (celdaResultado) {
-        celdaResultado.textContent = total;
-      }
     }
 
     // Configurar autocompletado para todos los inputs de lotería
     function configurarTodosLosAutocompletados() {
-      console.log('Configurando autocompletados...');
+        console.log('Configurando autocompletados...');
 
-      // Configurar loteria (sin número)
-      if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
-        setupAutoComplete('loteria', 'sugerencias');
-        console.log('Configurado loteria');
-      }
-
-      // Configurar loteria1 a loteria30
-      for (let i = 1; i <= 30; i++) {
-        const inputId = `loteria${i}`;
-        const sugerenciasId = `sugerencias${i}`;
-
-        if (document.getElementById(inputId) && document.getElementById(sugerenciasId)) {
-          setupAutoComplete(inputId, sugerenciasId);
-          console.log(`Configurado ${inputId}`);
+        // Configurar loteria (sin número)
+        if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
+            setupAutoComplete('loteria', 'sugerencias');
+            console.log('Configurado loteria');
         }
-      }
+
+        // Configurar loteria1 a loteria30
+        for (let i = 1; i <= 30; i++) {
+            const inputId = `loteria${i}`;
+            const sugerenciasId = `sugerencias${i}`;
+
+            if (document.getElementById(inputId) && document.getElementById(sugerenciasId)) {
+                setupAutoComplete(inputId, sugerenciasId);
+                console.log(`Configurado ${inputId}`);
+            }
+        }
     }
+
     // Confirmar borrado
     function confirmarBorrado() {
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: "Se borrarán todos los datos y no se podrán recuperar.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, borrar todo',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          borrarTodo();
-        }
-      });
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Se borrarán todos los datos y no se podrán recuperar.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, borrar todo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                borrarTodo();
+            }
+        });
     }
 
     // Borrar todo
     function borrarTodo() {
-      localStorage.clear();
+        localStorage.clear();
 
-      // Limpiar todos los inputs
-      document.querySelectorAll("input, textarea").forEach(el => {
-        el.value = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
+        // Limpiar todos los inputs
+        document.querySelectorAll("input, textarea").forEach(el => {
+            el.value = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
 
-      // Limpiar celdas de resultados
-      document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
+        // Limpiar celdas de resultados
+        document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
+            el.textContent = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
 
-      // Limpiar divs especiales
-      document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
+        // Limpiar divs especiales
+        document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+            el.textContent = "";
+            if (el.dataset.valor) el.dataset.valor = "0";
+        });
 
-      // Resetear totales
-      document.getElementById("total-general-bilteles").textContent = "";
-      document.getElementById("total-general-monedas").textContent = "";
-      document.getElementById("suma-total").textContent = "";
-      document.getElementById("resul").textContent = "";
-      document.getElementById("sobra").textContent = "";
+        // Resetear totales
+        document.getElementById("total-general-bilteles").textContent = "";
+        document.getElementById("total-general-monedas").textContent = "";
+        document.getElementById("suma-total").textContent = "";
+        document.getElementById("resul").textContent = "";
+        document.getElementById("sobra").textContent = "";
 
-      // Recalcular
-      calcularTotales();
-      verificarCamposVacios();
-      sumarResultados();
-      sumarInputsImpares();
-      sumarConteoBilletes();
+        // Recalcular
+        calcularTotales();
+        verificarCamposVacios();
+        sumarResultados();
+        sumarInputsImpares();
+        sumarConteoBilletes();
 
-      Swal.fire({
-        icon: 'success',
-        title: '¡Borrado!',
-        text: 'Todos los datos han sido borrados.',
-        timer: 1500,
-        showConfirmButton: false
-      });
+        Swal.fire({
+            icon: 'success',
+            title: '¡Borrado!',
+            text: 'Todos los datos han sido borrados.',
+            timer: 1500,
+            showConfirmButton: false
+        });
     }
 
     // Exportar a Excel
     function confirmarEnvioExcel() {
-      Swal.fire({
-        title: '¿Exportar a Excel?',
-        text: 'Se generará un archivo con los datos actuales.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, exportar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          exportarAExcelReal();
-          Swal.fire({
-            title: '¡Exportado!',
-            text: 'El archivo fue generado correctamente.',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        }
-      });
+        Swal.fire({
+            title: '¿Exportar a Excel?',
+            text: 'Se generará un archivo con los datos actuales.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, exportar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                exportarAExcelReal();
+                Swal.fire({
+                    title: '¡Exportado!',
+                    text: 'El archivo fue generado correctamente.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        });
     }
 
     // Exportar a Excel real
     function exportarAExcelReal() {
-      const tabla = document.getElementById("miTabla");
+        const tabla = document.getElementById("miTabla");
 
-      if (!tabla) {
-        alert("No se encontró la tabla.");
-        return;
-      }
-
-      // Clonar la tabla para no afectar la original
-      const tablaClon = tabla.cloneNode(true);
-
-      // Reemplazar inputs y textareas por su valor
-      const campos = tablaClon.querySelectorAll("input, textarea");
-      campos.forEach(el => {
-        const td = el.closest("td");
-        if (td) {
-          const span = document.createElement("span");
-          span.textContent = el.value.trim();
-          td.replaceChild(span, el);
+        if (!tabla) {
+            alert("No se encontró la tabla.");
+            return;
         }
-      });
 
-      // Crear archivo Excel real con XLSX
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
+        // Clonar la tabla para no afectar la original
+        const tablaClon = tabla.cloneNode(true);
 
-      XLSX.utils.book_append_sheet(wb, ws, "Datos");
-      XLSX.writeFile(wb, "contador_pagatodo.xlsx");
+        // Reemplazar inputs y textareas por su valor
+        const campos = tablaClon.querySelectorAll("input, textarea");
+        campos.forEach(el => {
+            const td = el.closest("td");
+            if (td) {
+                const span = document.createElement("span");
+                span.textContent = el.value.trim();
+                td.replaceChild(span, el);
+            }
+        });
+
+        // Crear archivo Excel real con XLSX
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
+
+        XLSX.utils.book_append_sheet(wb, ws, "Datos");
+        XLSX.writeFile(wb, "contador_pagatodo.xlsx");
     }
 
     // Mostrar fecha y hora actual
     function ponerFechaHora() {
-      const ahora = new Date();
+        const ahora = new Date();
 
-      const opciones = {
-        weekday: "short",
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true
-      };
+        const opciones = {
+            weekday: "short",
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true
+        };
 
-      const fechaHora = ahora.toLocaleString("es-CO", opciones);
-      const elemento = document.getElementById("fechaHoraActual");
-      if (elemento) {
-        elemento.textContent = fechaHora;
-      }
+        const fechaHora = ahora.toLocaleString("es-CO", opciones);
+        const elemento = document.getElementById("fechaHoraActual");
+        if (elemento) {
+            elemento.textContent = fechaHora;
+        }
     }
 
     // ============================================
@@ -2672,101 +2677,101 @@
     // ============================================
 
     document.addEventListener("DOMContentLoaded", () => {
-      console.log('Inicializando aplicación...');
+        console.log('Inicializando aplicación...');
 
-      // 1. Cargar datos desde localStorage
-      const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
-      const premiosDiv = document.querySelector(".cantidad3");
-      const premiosGuardado = localStorage.getItem("premios-total");
+        // 1. Cargar datos desde localStorage
+        const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
+        const premiosDiv = document.querySelector(".cantidad3");
+        const premiosGuardado = localStorage.getItem("premios-total");
 
-      if (premiosDiv && premiosGuardado !== null) {
-        premiosDiv.textContent = parseFloat(premiosGuardado).toLocaleString('es-CO');
-        premiosDiv.dataset.valor = premiosGuardado;
-      }
-
-      campos.forEach((campo, index) => {
-        const key = `input-${index}`;
-        const valorGuardado = localStorage.getItem(key);
-        if (valorGuardado !== null) {
-          campo.value = valorGuardado;
-
-          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
-            campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
-          }
+        if (premiosDiv && premiosGuardado !== null) {
+            premiosDiv.textContent = parseFloat(premiosGuardado).toLocaleString('es-CO');
+            premiosDiv.dataset.valor = premiosGuardado;
         }
 
-        campo.addEventListener("input", () => {
-          localStorage.setItem(key, campo.value);
-          sumarInputsImpares();
-          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
-            campo.dataset.valor = campo.value.replace(/\D/g, "") || "0";
-          }
+        campos.forEach((campo, index) => {
+            const key = `input-${index}`;
+            const valorGuardado = localStorage.getItem(key);
+            if (valorGuardado !== null) {
+                campo.value = valorGuardado;
 
-          calcularTotales?.();
-          verificarCamposVacios?.();
-          guardarCeldasTd();
+                if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
+                    campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
+                }
+            }
+
+            campo.addEventListener("input", () => {
+                localStorage.setItem(key, campo.value);
+                sumarInputsImpares();
+                if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
+                    campo.dataset.valor = campo.value.replace(/\D/g, "") || "0";
+                }
+
+                calcularTotales?.();
+                verificarCamposVacios?.();
+                guardarCeldasTd();
+            });
         });
-      });
 
-      // Restaurar celdas <td class="rX">
-      const celdas = document.querySelectorAll("td[class^='r']");
-      celdas.forEach((celda, index) => {
-        const valor = localStorage.getItem(`td-${index}`);
-        if (valor !== null) {
-          celda.textContent = valor;
-        }
-      });
-
-      function guardarCeldasTd() {
+        // Restaurar celdas <td class="rX">
+        const celdas = document.querySelectorAll("td[class^='r']");
         celdas.forEach((celda, index) => {
-          localStorage.setItem(`td-${index}`, celda.textContent.trim());
+            const valor = localStorage.getItem(`td-${index}`);
+            if (valor !== null) {
+                celda.textContent = valor;
+            }
         });
-      }
 
-      // 2. Inicializar PeerJS
-      inicializarPeerJS();
-
-      // 3. Configurar autocompletado
-      configurarTodosLosAutocompletados();
-
-      // 4. Configurar eventos de input para cálculos
-      document.addEventListener("input", (e) => {
-        if (e.target.classList.contains('cantidad')) {
-          calcularTotales();
-          sumarConteoBilletes();
+        function guardarCeldasTd() {
+            celdas.forEach((celda, index) => {
+                localStorage.setItem(`td-${index}`, celda.textContent.trim());
+            });
         }
 
-        if (e.target.classList.contains('cantidad2') || e.target.classList.contains('cantidad4')) {
-          calcularTotales();
-        }
+        // 2. Inicializar PeerJS
+        inicializarPeerJS();
 
-        if (e.target.classList.contains('input')) {
-          calcularResultadoPorInput(e.target);
-          sumarInputsImpares();
-        }
-      });
+        // 3. Configurar autocompletado
+        configurarTodosLosAutocompletados();
 
-      // 5. Inicializar cálculos
-      setTimeout(() => {
-        calcularTotales();
-        verificarCamposVacios();
-        sumarInputsImpares();
-        sumarResultados();
-        sumarConteoBilletes();
-      }, 500);
+        // 4. Configurar eventos de input para cálculos
+        document.addEventListener("input", (e) => {
+            if (e.target.classList.contains('cantidad')) {
+                calcularTotales();
+                sumarConteoBilletes();
+            }
 
-      // 6. Iniciar reloj
-      ponerFechaHora();
-      setInterval(ponerFechaHora, 1000);
+            if (e.target.classList.contains('cantidad2') || e.target.classList.contains('cantidad4')) {
+                calcularTotales();
+            }
 
-      console.log('Aplicación inicializada correctamente');
+            if (e.target.classList.contains('input')) {
+                calcularResultadoPorInput(e.target);
+                sumarInputsImpares();
+            }
+        });
+
+        // 5. Inicializar cálculos
+        setTimeout(() => {
+            calcularTotales();
+            verificarCamposVacios();
+            sumarInputsImpares();
+            sumarResultados();
+            sumarConteoBilletes();
+        }, 500);
+
+        // 6. Iniciar reloj
+        ponerFechaHora();
+        setInterval(ponerFechaHora, 1000);
+
+        console.log('Aplicación inicializada correctamente');
     });
 
     // Configurar eventos para inputs de billetes
     document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6").forEach(input => {
-        input.addEventListener("input", sumarConteoBilletes);
-      });
+        document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6").forEach(input => {
+            input.addEventListener("input", sumarConteoBilletes);
+        });
     });
   </script>
 </body>
