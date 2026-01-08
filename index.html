@@ -1588,12 +1588,24 @@
     let sincronizacionActiva = true;
 
     // ID persistente basado en localStorage
-    function obtenerPeerIdPersistente() {
+ function obtenerPeerIdPersistente() {
         let peerId = localStorage.getItem('peer-id-persistente');
+        
+        // Si no existe, crear uno nuevo
         if (!peerId) {
-            peerId = 'pagato' + Math.random().toString(36).substr(2, 9);
+            peerId = 'pagato' + Date.now() + Math.random().toString(36).substr(2, 6);
             localStorage.setItem('peer-id-persistente', peerId);
+            console.log('🆕 Nuevo ID creado y guardado:', peerId);
+        } else {
+            console.log('♻️ ID recuperado de localStorage:', peerId);
         }
+        
+        // Verificar que se guardó correctamente
+        const verificacion = localStorage.getItem('peer-id-persistente');
+        if (verificacion !== peerId) {
+            console.error('⚠️ Error: El ID no se guardó correctamente en localStorage');
+        }
+        
         return peerId;
     }
 
