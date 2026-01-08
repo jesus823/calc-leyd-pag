@@ -1922,7 +1922,7 @@
         ultimoTimestampRecibido = datos.timestamp;
         
         // Suspender sincronización temporalmente para evitar retroalimentación
-        sincronizacionActiva = false;
+        suspenderSincronizacion(2000);
 
         // Aplicar campos
         if (datos.campos) {
@@ -1941,12 +1941,13 @@
                     if (campos[index]) campo = campos[index];
                 }
 
-                if (campo && campo.value !== valor) {
+                if (campo) {
                     // Verificar si el campo está enfocado (el usuario está editando)
                     const estaEnfocado = (document.activeElement === campo);
                     
                     // Solo actualizar si el usuario no está editando este campo
                     if (!estaEnfocado) {
+                        // Actualizar el valor independientemente de si es diferente
                         campo.value = valor;
 
                         // Actualizar dataset.valor si existe
@@ -1968,9 +1969,7 @@
             Object.keys(datos.celdas).forEach(clave => {
                 const celdas = document.querySelectorAll(`.${clave}`);
                 celdas.forEach(celda => {
-                    if (celda.textContent !== datos.celdas[clave]) {
-                        celda.textContent = datos.celdas[clave];
-                    }
+                    celda.textContent = datos.celdas[clave] || '';
                 });
             });
         }
@@ -1981,8 +1980,8 @@
                 if (clave.endsWith('_dataset')) return;
 
                 const div = document.querySelector(`.${clave}`);
-                if (div && div.textContent !== datos.divs[clave]) {
-                    div.textContent = datos.divs[clave];
+                if (div) {
+                    div.textContent = datos.divs[clave] || '';
 
                     const datasetKey = clave + '_dataset';
                     if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
@@ -1997,6 +1996,8 @@
             Object.keys(datos.localStorage).forEach(key => {
                 if (datos.localStorage[key] !== null) {
                     localStorage.setItem(key, datos.localStorage[key]);
+                } else {
+                    localStorage.removeItem(key);
                 }
             });
         }
@@ -2550,8 +2551,11 @@
         });
     }
 
-    // Borrar todo
+    // Borrar todo - CORREGIDA
     function borrarTodo() {
+        // Suspender sincronización para evitar bucles
+        sincronizacionActiva = false;
+
         localStorage.clear();
 
         // Limpiar todos los inputs
@@ -2585,6 +2589,16 @@
         sumarResultados();
         sumarInputsImpares();
         sumarConteoBilletes();
+
+        // Enviar estado vacío al otro dispositivo
+        if (conexion && conexion.open) {
+            enviarDatos();
+        }
+
+        // Reactivar sincronización después de 2 segundos
+        setTimeout(() => {
+            sincronizacionActiva = true;
+        }, 2000);
 
         Swal.fire({
             icon: 'success',
