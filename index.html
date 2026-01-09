@@ -11,131 +11,15 @@
 
   <title>Contador Diario Pagatodo</title>
 
-  <style>
-    /* Estilos para los controles P2P */
-    .peer-controls {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 10000;
-      background: rgb(251, 247, 247);
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      max-width: 300px;
-      border: 2px solid #4CAF50;
-    }
 
-    .peer-button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-bottom: 5px;
-      font-weight: bold;
-      width: 100%;
-      transition: all 0.3s;
-    }
-
-    .peer-button:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
-
-    .peer-button.connect {
-      background: #2196F3;
-    }
-
-    .peer-button.disconnect {
-      background: #f44336;
-    }
-
-    .peer-button.guardar {
-      background: #9C27B0;
-    }
-
-    .peer-button.guardar:hover {
-      background: #7B1FA2;
-    }
-
-    .peer-status {
-      margin-top: 5px;
-      padding: 5px;
-      border-radius: 3px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .connected {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .disconnected {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    /* Estilos para las sugerencias de autocompletado */
-    .sugerencias {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 1000;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .sugerencias li {
-      padding: 8px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-    }
-
-    .sugerencias li:hover {
-      background-color: #f0f0f0;
-    }
-
-    /* Estilos para estados */
-    .exacto {
-      background-color: yellow !important;
-    }
-
-    .sobra {
-      background-color: lightgreen !important;
-    }
-
-    .falta {
-      background-color: salmon !important;
-    }
-
-    @media (max-width: 1200px) {
-      .peer-controls {
-        position: relative;
-        top: 0;
-        right: 0;
-        width: 100%;
-        max-width: 100%;
-        margin-bottom: 10px;
-      }
-    }
-  </style>
 </head>
 
 <body>
-
+<!-- Dentro de la clase "peer-controls", después del botón de guardar cambios -->
+<button id="modoLecturaBtn" class="peer-button" onclick="alternarModoLectura()" 
+  style="display:none; background: #FF9800; height: 50px;">
+  📖 Modo: Edición
+</button>
   <!-- Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -223,7 +107,7 @@
         <th style="background-color: white; width: 30px;"></th>
         <th style="width: 50px;border: 3px solid;color: black;">Monedas</th>
         <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
-        <th style="border: 3px solid;color black; width: 105px;">Total</th>
+        <th style="border: 3px solid;color: black; width: 105px;">Total</th>
         <th style="background-color: white; width: 30px;"></th>
         <th style=" border: 3px solid;"></th>
         <th style=" border: 3px solid;"></th>
@@ -1588,7 +1472,8 @@
     let reconnectInterval = null;
     let ultimoTimestampRecibido = 0;
     let sincronizacionActiva = true;
-
+let modoSoloLectura = false;
+let esModoLecturaForzado = false;
     // ID persistente basado en localStorage
     // ID persistente basado en localStorage - COMPLETAMENTE FIJO
     function obtenerPeerIdPersistente() {
@@ -1638,7 +1523,166 @@
 
       return peerId;
     }
+// ============================================
+// SISTEMA DE MODO SOLO LECTURA
+// ============================================
 
+// Alternar entre modo edición y solo lectura
+function alternarModoLectura() {
+  if (esModoLecturaForzado) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Modo Bloqueado',
+      text: 'El anfitrión ha configurado este dispositivo en modo solo lectura.',
+      timer: 2000
+    });
+    return;
+  }
+
+  modoSoloLectura = !modoSoloLectura;
+  aplicarModoLectura();
+  
+  const btn = document.getElementById('modoLecturaBtn');
+  if (modoSoloLectura) {
+    btn.textContent = '📖 Modo: Solo Lectura';
+    btn.style.background = '#f44336';
+    
+    Swal.fire({
+      icon: 'info',
+      title: 'Modo Solo Lectura',
+      text: 'No podrás editar los datos hasta desactivar este modo.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } else {
+    btn.textContent = '📖 Modo: Edición';
+    btn.style.background = '#FF9800';
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'Modo Edición',
+      text: 'Ahora puedes editar los datos.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  }
+}
+
+// Aplicar modo solo lectura
+function aplicarModoLectura() {
+  const elementos = document.querySelectorAll(
+    'input[type="tel"], input[type="text"], textarea, ' +
+    'input.cantidad, input.cantidad2, input.cantidad4, ' +
+    '.venta, .input1, .input2, .input3, .input4, .input5, ' +
+    '.input6, .input7, .input8, .input9, .input10, ' +
+    '.input11, .input12, .input13, .input14, .input15, ' +
+    '.input16, .input17, .input18, .input19, .input20, ' +
+    '.input21, .input22, .input23, .input24, .input25, ' +
+    '.input26, .input27, .input28, .input29, .input30, ' +
+    '.input31, .input32, .input33, .input34, .input35, ' +
+    '.input36, .input37, .input38, .input39, .input40, ' +
+    '.input41, .input42, .input43, .input44, .input45, ' +
+    '.input46, .input47, .input48, .input49, .input50, ' +
+    '.input51, .input52, .input53, .input54, .input55, ' +
+    '.input56, .input57, .input58, .input59, .input60'
+  );
+
+  const controles = document.querySelector('.peer-controls');
+  const botonesPeligrosos = document.querySelectorAll(
+    'button[onclick="confirmarBorrado()"], ' +
+    'button[onclick="confirmarEnvioExcel()"]'
+  );
+
+  if (modoSoloLectura) {
+    // Bloquear todos los inputs
+    elementos.forEach(el => {
+      el.classList.add('bloqueado');
+      el.setAttribute('readonly', 'true');
+      el.disabled = true;
+    });
+
+    // Marcar visualmente el panel de controles
+    if (controles) {
+      controles.classList.add('modo-lectura-activo');
+    }
+
+    // Deshabilitar botones peligrosos
+    botonesPeligrosos.forEach(btn => {
+      btn.classList.add('bloqueado');
+      btn.disabled = true;
+    });
+
+  } else {
+    // Desbloquear todo
+    elementos.forEach(el => {
+      el.classList.remove('bloqueado');
+      el.removeAttribute('readonly');
+      el.disabled = false;
+    });
+
+    if (controles) {
+      controles.classList.remove('modo-lectura-activo');
+    }
+
+    botonesPeligrosos.forEach(btn => {
+      btn.classList.remove('bloqueado');
+      btn.disabled = false;
+    });
+  }
+}
+
+// Enviar estado de modo lectura al otro dispositivo
+function enviarModoLectura(forzar = false) {
+  if (!conexion || !conexion.open) return;
+
+  const mensaje = {
+    tipo: 'modo_lectura',
+    activar: forzar,
+    timestamp: Date.now()
+  };
+
+  try {
+    conexion.send(mensaje);
+    console.log('📤 Modo lectura enviado:', mensaje);
+  } catch (error) {
+    console.error('Error al enviar modo lectura:', error);
+  }
+}
+
+// Activar modo lectura para el cliente conectado
+function activarModoLecturaCliente() {
+  if (!esAnfitrion) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Sin permisos',
+      text: 'Solo el anfitrión puede controlar el modo lectura.',
+      timer: 2000
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: '¿Activar modo solo lectura?',
+    text: 'El dispositivo conectado no podrá editar datos.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, activar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#f44336'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      enviarModoLectura(true);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Modo Activado',
+        text: 'El otro dispositivo ahora está en modo solo lectura.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
+  });
+}
     // MEJORA: Configurar inputs para mejor rendimiento
     function configurarInputsParaSincronizacion() {
       const inputs = document.querySelectorAll('input[type="tel"], input.cantidad, input.cantidad2, input.cantidad4, .venta, .input1, .input2, .input3, .input4, .input5, .input6, .input7, .input8, .input9, .input10, .input11, .input12, .input13, .input14, .input15, .input16, .input17, .input18, .input19, .input20, .input21, .input22, .input23, .input24, .input25, .input26, .input27, .input28, .input29, .input30, .input31, .input32, .input33, .input34, .input35, .input36, .input37, .input38, .input39, .input40, .input41, .input42, .input43, .input44, .input45, .input46, .input47, .input48, .input49, .input50, .input51, .input52, .input53, .input54, .input55, .input56, .input57, .input58, .input59, .input60');
@@ -2022,6 +2066,22 @@
 
     // MEJORA: Optimizar la aplicación de datos recibidos
     function aplicarDatosRecibidos(datos) {
+      // AGREGAR ESTO AL PRINCIPIO:
+  if (datos.tipo === 'modo_lectura') {
+    esModoLecturaForzado = datos.activar;
+    modoSoloLectura = datos.activar;
+    aplicarModoLectura();
+    
+    if (datos.activar) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Modo Solo Lectura Activado',
+        text: 'El anfitrión ha bloqueado la edición en este dispositivo.',
+        timer: 3000
+      });
+    }
+    return;
+  }
       if (datos.timestamp && ultimoTimestampRecibido &&
         datos.timestamp <= ultimoTimestampRecibido) {
         return;
@@ -2135,26 +2195,29 @@
     }
 
     // Actualizar estado de conexión en UI (MODIFICADA PARA INCLUIR BOTÓN GUARDAR)
-    function actualizarEstadoConexion() {
-      const statusEl = document.getElementById('peerStatus');
-      const disconnectBtn = document.getElementById('disconnectBtn');
-      const connectBtn = document.getElementById('connectBtn');
-      const guardarBtn = document.getElementById('guardarCambiosBtn'); // NUEVO
+function actualizarEstadoConexion() {
+  const statusEl = document.getElementById('peerStatus');
+  const disconnectBtn = document.getElementById('disconnectBtn');
+  const connectBtn = document.getElementById('connectBtn');
+  const guardarBtn = document.getElementById('guardarCambiosBtn');
+  const modoLecturaBtn = document.getElementById('modoLecturaBtn'); // NUEVO
 
-      if (conexion && conexion.open) {
-        statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
-        statusEl.className = 'peer-status connected';
-        disconnectBtn.style.display = 'block';
-        connectBtn.style.display = 'none';
-        guardarBtn.style.display = 'block'; // MOSTRAR BOTÓN GUARDAR
-      } else {
-        statusEl.textContent = 'Sin conexión';
-        statusEl.className = 'peer-status disconnected';
-        disconnectBtn.style.display = 'none';
-        connectBtn.style.display = 'block';
-        guardarBtn.style.display = 'none'; // OCULTAR BOTÓN GUARDAR
-      }
-    }
+  if (conexion && conexion.open) {
+    statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
+    statusEl.className = 'peer-status connected';
+    disconnectBtn.style.display = 'block';
+    connectBtn.style.display = 'none';
+    guardarBtn.style.display = 'block';
+    modoLecturaBtn.style.display = 'block'; // MOSTRAR BOTÓN MODO LECTURA
+  } else {
+    statusEl.textContent = 'Sin conexión';
+    statusEl.className = 'peer-status disconnected';
+    disconnectBtn.style.display = 'none';
+    connectBtn.style.display = 'block';
+    guardarBtn.style.display = 'none';
+    modoLecturaBtn.style.display = 'none'; // OCULTAR BOTÓN MODO LECTURA
+  }
+}
 
     // Desconectar
     function desconectar() {
@@ -2620,15 +2683,15 @@
     }
 
     // Borrar todo
-// Borrar todo
+    // Borrar todo
     function borrarTodo() {
       // GUARDAR las claves importantes ANTES de borrar
       const peerIdPersistente = localStorage.getItem('peer-id-persistente');
       const peerRemoteId = localStorage.getItem('peer-remote-id');
-      
+
       // Borrar todo el localStorage
       localStorage.clear();
-      
+
       // RESTAURAR las claves importantes del sistema P2P
       if (peerIdPersistente) {
         localStorage.setItem('peer-id-persistente', peerIdPersistente);
