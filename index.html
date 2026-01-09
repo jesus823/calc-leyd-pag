@@ -1474,7 +1474,7 @@
     let sincronizacionActiva = true;
 let modoSoloLectura = false;
 let esModoLecturaForzado = false;
-    // ID persistente basado en localStorage
+ let primeraConexion = true;
     // ID persistente basado en localStorage - COMPLETAMENTE FIJO
     function obtenerPeerIdPersistente() {
       let peerId = localStorage.getItem('peer-id-persistente');
@@ -1896,117 +1896,156 @@ function activarModoLecturaCliente() {
     }
 
     // Configurar eventos de conexión
-    function configurarEventosConexion(conn) {
-      conn.on('open', () => {
-        console.log('✅ Conexión establecida exitosamente!');
-        conexion = conn;
-        intentandoReconectar = false;
+// Configurar eventos de conexión
+function configurarEventosConexion(conn) {
+  conn.on('open', () => {
+    console.log('✅ Conexión establecida exitosamente!');
+    conexion = conn;
+    intentandoReconectar = false;
 
-        Swal.close();
+    Swal.close();
+    Swal.fire({
+      icon: 'success',
+      title: '¡Conectado!',
+      text: 'Conexión establecida exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    // IMPORTANTE: El cliente NO envía datos inmediatamente
+    // Solo espera recibir los datos del anfitrión
+    console.log('⏳ Cliente esperando datos del anfitrión...');
+
+    actualizarEstadoConexion();
+
+    conn.on('close', () => {
+      console.log('Conexión cerrada');
+      primeraConexion = true; // Resetear
+      actualizarEstadoConexion();
+      intentarReconexion();
+    });
+
+    conn.on('error', (err) => {
+      console.error('Error en la conexión:', err);
+      primeraConexion = true; // Resetear
+    });
+  });
+
+  conn.on('data', (datos) => {
+    console.log('📥 Datos recibidos:', datos);
+
+    // Verificar si es una confirmación especial
+    if (datos.tipo === 'confirmacion_cambios') {
+      console.log('✅ Confirmación de cambios recibida:', datos.mensaje);
+
+      aplicarDatosRecibidos(datos);
+      localStorage.setItem('ultima-confirmacion', Date.now().toString());
+      localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+
+      if (datos.esAnfitrion !== esAnfitrion) {
         Swal.fire({
           icon: 'success',
-          title: '¡Conectado!',
-          text: 'Conexión establecida exitosamente',
-          timer: 2000,
+          title: 'Cambios Confirmados',
+          text: 'El otro dispositivo ha confirmado y guardado los cambios permanentemente.',
+          timer: 2500,
           showConfirmButton: false
         });
-
+      }
+    } else if (datos.tipo === 'modo_lectura') {
+      // Ya se procesa en aplicarDatosRecibidos
+      aplicarDatosRecibidos(datos);
+    } else {
+      // Cliente recibe y aplica datos del anfitrión
+      aplicarDatosRecibidos(datos);
+      guardarLocalmente();
+      
+      // Después de recibir datos del anfitrión, el cliente puede enviar actualizaciones
+      if (primeraConexion) {
         setTimeout(() => {
-          enviarDatos();
-        }, 800);
-
-        actualizarEstadoConexion();
-
-        conn.on('close', () => {
-          console.log('Conexión cerrada');
-          actualizarEstadoConexion();
-          intentarReconexion();
-        });
-
-        conn.on('error', (err) => {
-          console.error('Error en la conexión:', err);
-        });
-      });
-
-      conn.on('data', (datos) => {
-        console.log('📥 Datos recibidos:', datos);
-
-        // Verificar si es una confirmación especial
-        if (datos.tipo === 'confirmacion_cambios') {
-          console.log('✅ Confirmación de cambios recibida:', datos.mensaje);
-
-          // Aplicar datos confirmados
-          aplicarDatosRecibidos(datos);
-
-          // Guardar confirmación en localStorage
-          localStorage.setItem('ultima-confirmacion', Date.now().toString());
-          localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-
-          // Mostrar notificación
-          if (datos.esAnfitrion !== esAnfitrion) {
-            Swal.fire({
-              icon: 'success',
-              title: 'Cambios Confirmados',
-              text: 'El otro dispositivo ha confirmado y guardado los cambios permanentemente.',
-              timer: 2500,
-              showConfirmButton: false
-            });
-          }
-        } else {
-          aplicarDatosRecibidos(datos);
-        }
-      });
-
-      conn.on('error', (err) => {
-        console.error('❌ Error al conectar:', err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error de conexión',
-          text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
-        });
-        intentarReconexion();
-      });
+          primeraConexion = false;
+          console.log('✅ Cliente sincronizado, puede enviar actualizaciones');
+        }, 1000);
+      }
     }
+  });
+
+  conn.on('error', (err) => {
+    console.error('❌ Error al conectar:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error de conexión',
+      text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
+    });
+    primeraConexion = true; // Resetear
+    intentarReconexion();
+  });
+}
 
     // Manejar nueva conexión entrante
-    function manejarNuevaConexion(conn) {
-      conexion = conn;
+// Manejar nueva conexión entrante
+function manejarNuevaConexion(conn) {
+  conexion = conn;
 
-      conn.on('open', () => {
-        console.log('✅ Cliente conectado:', conn.peer);
-        actualizarEstadoConexion();
+  conn.on('open', () => {
+    console.log('✅ Cliente conectado:', conn.peer);
+    actualizarEstadoConexion();
 
+    // IMPORTANTE: El anfitrión envía sus datos inmediatamente
+    setTimeout(() => {
+      console.log('📤 Anfitrión enviando datos al cliente...');
+      enviarDatos();
+      
+      // Enviar una segunda vez para asegurar sincronización completa
+      setTimeout(() => {
+        enviarDatos();
+        console.log('📤 Segunda sincronización del anfitrión completada');
+      }, 500);
+    }, 300);
+  });
+
+  conn.on('data', (datos) => {
+    console.log('📥 Datos recibidos del cliente:', datos);
+
+    if (datos.tipo === 'confirmacion_cambios') {
+      console.log('✅ Confirmación de cambios recibida del cliente');
+
+      aplicarDatosRecibidos(datos);
+      guardarLocalmente();
+
+      localStorage.setItem('ultima-confirmacion', Date.now().toString());
+      localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+    } else if (datos.tipo === 'modo_lectura') {
+      // Procesar cambio de modo lectura
+      return;
+    } else {
+      // CRÍTICO: El anfitrión NO debe aplicar datos del cliente en la primera conexión
+      // Solo actualiza después de que ya sincronizó sus datos
+      if (!primeraConexion) {
+        aplicarDatosRecibidos(datos);
+        guardarLocalmente();
+      } else {
+        console.log('⏭️ Ignorando datos iniciales del cliente (anfitrión tiene prioridad)');
+        
+        // Después de ignorar, permitir sincronización bidireccional
         setTimeout(() => {
-          enviarDatos();
-        }, 1000);
-      });
-
-      conn.on('data', (datos) => {
-        console.log('📥 Datos recibidos del cliente:', datos);
-
-        if (datos.tipo === 'confirmacion_cambios') {
-          console.log('✅ Confirmación de cambios recibida del cliente');
-
-          aplicarDatosRecibidos(datos);
-          guardarLocalmente();
-
-          localStorage.setItem('ultima-confirmacion', Date.now().toString());
-          localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-        } else {
-          aplicarDatosRecibidos(datos);
-          guardarLocalmente();
-        }
-      });
-
-      conn.on('close', () => {
-        console.log('Cliente desconectado');
-        actualizarEstadoConexion();
-      });
-
-      conn.on('error', (err) => {
-        console.error('Error en conexión entrante:', err);
-      });
+          primeraConexion = false;
+          console.log('✅ Primera conexión completada, sincronización bidireccional activada');
+        }, 2000);
+      }
     }
+  });
+
+  conn.on('close', () => {
+    console.log('Cliente desconectado');
+    primeraConexion = true; // Resetear para próxima conexión
+    actualizarEstadoConexion();
+  });
+
+  conn.on('error', (err) => {
+    console.error('Error en conexión entrante:', err);
+    primeraConexion = true; // Resetear en caso de error
+  });
+}
 
     // Enviar datos a través de la conexión P2P
     function enviarDatos() {
@@ -2066,7 +2105,29 @@ function activarModoLecturaCliente() {
 
     // MEJORA: Optimizar la aplicación de datos recibidos
     function aplicarDatosRecibidos(datos) {
-      // AGREGAR ESTO AL PRINCIPIO:
+      // AGREGAR ESTO AL PRINCIPIO:// AGREGAR ESTO AL PRINCIPIO (después del manejo de modo_lectura):
+  if (datos.tipo === 'modo_lectura') {
+    esModoLecturaForzado = datos.activar;
+    modoSoloLectura = datos.activar;
+    aplicarModoLectura();
+    
+    if (datos.activar) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Modo Solo Lectura Activado',
+        text: 'El anfitrión ha bloqueado la edición en este dispositivo.',
+        timer: 3000
+      });
+    }
+    return;
+  }
+
+  // AGREGAR ESTA PROTECCIÓN:
+  // Si es anfitrión en primera conexión, ignorar datos entrantes
+  if (esAnfitrion && primeraConexion) {
+    console.log('⏭️ Anfitrión ignorando datos iniciales (prioridad anfitrión)');
+    return;
+  }
   if (datos.tipo === 'modo_lectura') {
     esModoLecturaForzado = datos.activar;
     modoSoloLectura = datos.activar;
@@ -2220,29 +2281,31 @@ function actualizarEstadoConexion() {
 }
 
     // Desconectar
-    function desconectar() {
-      if (conexion) {
-        conexion.close();
-        conexion = null;
-      }
+ // Desconectar
+function desconectar() {
+  if (conexion) {
+    conexion.close();
+    conexion = null;
+  }
 
-      if (peer) {
-        peer.disconnect();
-      }
+  if (peer) {
+    peer.disconnect();
+  }
 
-      localStorage.removeItem('peer-remote-id');
-      esAnfitrion = false;
+  localStorage.removeItem('peer-remote-id');
+  esAnfitrion = false;
+  primeraConexion = true; // RESETEAR VARIABLE
 
-      Swal.fire({
-        icon: 'info',
-        title: 'Desconectado',
-        text: 'Se ha cerrado la conexión',
-        timer: 1500,
-        showConfirmButton: false
-      });
+  Swal.fire({
+    icon: 'info',
+    title: 'Desconectado',
+    text: 'Se ha cerrado la conexión',
+    timer: 1500,
+    showConfirmButton: false
+  });
 
-      actualizarEstadoConexion();
-    }
+  actualizarEstadoConexion();
+}
 
     // Copiar mi ID
     function copiarMiID() {
