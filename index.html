@@ -2947,7 +2947,6 @@ function borrarTodoSinConfirmacion() {
     document.addEventListener("DOMContentLoaded", () => {
      // NUEVO: Verificar rol y bloquear edición si es Cliente
 // NUEVO: Verificar rol y bloquear edición si es Cliente
-  const rol = localStorage.getItem('peer-rol');
 const rol = localStorage.getItem('peer-rol');
 if (rol === 'cliente') {
     console.log('🔒 Modo Cliente: Bloqueando edición');
