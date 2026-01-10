@@ -11,7 +11,127 @@
 
   <title>Contador Diario Pagatodo</title>
 
+  <style>
+    /* Estilos para los controles P2P */
+    .peer-controls {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 10000;
+      background: rgb(251, 247, 247);
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      max-width: 300px;
+      border: 2px solid #4CAF50;
+    }
 
+    .peer-button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 5px;
+      font-weight: bold;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .peer-button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .peer-button.connect {
+      background: #2196F3;
+    }
+
+    .peer-button.disconnect {
+      background: #f44336;
+    }
+
+    .peer-button.guardar {
+      background: #9C27B0;
+    }
+
+    .peer-button.guardar:hover {
+      background: #7B1FA2;
+    }
+
+    .peer-status {
+      margin-top: 5px;
+      padding: 5px;
+      border-radius: 3px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .connected {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .disconnected {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* Estilos para las sugerencias de autocompletado */
+    .sugerencias {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sugerencias li {
+      padding: 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+
+    .sugerencias li:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Estilos para estados */
+    .exacto {
+      background-color: yellow !important;
+    }
+
+    .sobra {
+      background-color: lightgreen !important;
+    }
+
+    .falta {
+      background-color: salmon !important;
+    }
+
+    @media (max-width: 1200px) {
+      .peer-controls {
+        position: relative;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -103,7 +223,7 @@
         <th style="background-color: white; width: 30px;"></th>
         <th style="width: 50px;border: 3px solid;color: black;">Monedas</th>
         <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
-        <th style="border: 3px solid;color: black; width: 105px;">Total</th>
+        <th style="border: 3px solid;color black; width: 105px;">Total</th>
         <th style="background-color: white; width: 30px;"></th>
         <th style=" border: 3px solid;"></th>
         <th style=" border: 3px solid;"></th>
@@ -1468,9 +1588,8 @@
     let reconnectInterval = null;
     let ultimoTimestampRecibido = 0;
     let sincronizacionActiva = true;
-    let modoSoloLectura = false;
-    let esModoLecturaForzado = false;
-    let primeraConexion = true;
+
+    // ID persistente basado en localStorage
     // ID persistente basado en localStorage - COMPLETAMENTE FIJO
     function obtenerPeerIdPersistente() {
       let peerId = localStorage.getItem('peer-id-persistente');
@@ -1519,290 +1638,7 @@
 
       return peerId;
     }
-    // ============================================
-    // SISTEMA DE MODO SOLO LECTURA
-    // ============================================
-    // ============================================
-    // SISTEMA DE ANFITRIÓN FIJO
-    // ============================================
 
-    // CONFIGURA AQUÍ EL ID DEL DISPOSITIVO ANFITRIÓN FIJO
-    const ID_ANFITRION_FIJO = "tab"; // REEMPLAZA CON EL ID REAL DEL DISPOSITIVO ANFITRIÓN
-
-    // Verificar si este dispositivo es el anfitrión fijo
-    function esDispositivoAnfitrion() {
-      const miIdActual = localStorage.getItem('peer-id-persistente');
-      const esAnfitrionFijo = miIdActual === ID_ANFITRION_FIJO;
-
-      console.log(`🔍 Verificando rol del dispositivo:`);
-      console.log(`   Mi ID: ${miIdActual}`);
-      console.log(`   ID Anfitrión Fijo: ${ID_ANFITRION_FIJO}`);
-      console.log(`   ¿Es Anfitrión? ${esAnfitrionFijo ? 'SÍ ✅' : 'NO ❌'}`);
-
-      return esAnfitrionFijo;
-    }
-
-    // Mostrar rol del dispositivo al usuario
-    function mostrarRolDispositivo() {
-      const rol = esDispositivoAnfitrion() ? 'ANFITRIÓN' : 'CLIENTE';
-      const color = esDispositivoAnfitrion() ? '#4CAF50' : '#2196F3';
-
-      console.log(`📱 ROL DEL DISPOSITIVO: ${rol}`);
-
-      // Mostrar indicador visual en la interfaz
-      const statusEl = document.getElementById('peerStatus');
-      if (statusEl && !conexion) {
-        statusEl.innerHTML = `Sin conexión - <strong style="color: ${color}">${rol}</strong>`;
-      }
-    }
-    // Alternar entre modo edición y solo lectura (BLOQUEADA PARA CLIENTES)
-    function alternarModoLectura() {
-      // Solo permitir al anfitrión cambiar el modo
-      if (!esAnfitrion) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Acceso Denegado',
-          text: 'Este dispositivo está en modo solo lectura permanente.',
-          timer: 2000
-        });
-        return;
-      }
-
-      // Esta función ahora no hace nada para clientes
-      console.log('Modo lectura permanente activado');
-    }
-
-    // Aplicar modo solo lectura
-    function aplicarModoLectura() {
-      const elementos = document.querySelectorAll(
-        'input[type="tel"], input[type="text"], textarea, ' +
-        'input.cantidad, input.cantidad2, input.cantidad4, ' +
-        '.venta, .input1, .input2, .input3, .input4, .input5, ' +
-        '.input6, .input7, .input8, .input9, .input10, ' +
-        '.input11, .input12, .input13, .input14, .input15, ' +
-        '.input16, .input17, .input18, .input19, .input20, ' +
-        '.input21, .input22, .input23, .input24, .input25, ' +
-        '.input26, .input27, .input28, .input29, .input30, ' +
-        '.input31, .input32, .input33, .input34, .input35, ' +
-        '.input36, .input37, .input38, .input39, .input40, ' +
-        '.input41, .input42, .input43, .input44, .input45, ' +
-        '.input46, .input47, .input48, .input49, .input50, ' +
-        '.input51, .input52, .input53, .input54, .input55, ' +
-        '.input56, .input57, .input58, .input59, .input60'
-      );
-
-      const controles = document.querySelector('.peer-controls');
-      const botonesPeligrosos = document.querySelectorAll(
-        'button[onclick="confirmarBorrado()"], ' +
-        'button[onclick="confirmarEnvioExcel()"]'
-      );
-
-      if (modoSoloLectura) {
-        // Bloquear todos los inputs
-        elementos.forEach(el => {
-          el.classList.add('bloqueado');
-          el.setAttribute('readonly', 'true');
-          el.disabled = true;
-        });
-
-        // Marcar visualmente el panel de controles
-        if (controles) {
-          controles.classList.add('modo-lectura-activo');
-        }
-
-        // Deshabilitar botones peligrosos
-        botonesPeligrosos.forEach(btn => {
-          btn.classList.add('bloqueado');
-          btn.disabled = true;
-        });
-
-      } else {
-        // Desbloquear todo
-        elementos.forEach(el => {
-          el.classList.remove('bloqueado');
-          el.removeAttribute('readonly');
-          el.disabled = false;
-        });
-
-        if (controles) {
-          controles.classList.remove('modo-lectura-activo');
-        }
-
-        botonesPeligrosos.forEach(btn => {
-          btn.classList.remove('bloqueado');
-          btn.disabled = false;
-        });
-      }
-    }
-
-    // Enviar estado de modo lectura al otro dispositivo
-    function enviarModoLectura(forzar = false) {
-      if (!conexion || !conexion.open) return;
-
-      const mensaje = {
-        tipo: 'modo_lectura',
-        activar: forzar,
-        timestamp: Date.now()
-      };
-
-      try {
-        conexion.send(mensaje);
-        console.log('📤 Modo lectura enviado:', mensaje);
-      } catch (error) {
-        console.error('Error al enviar modo lectura:', error);
-      }
-    }
-
-    // Activar modo lectura para el cliente conectado
-    function activarModoLecturaCliente() {
-      if (!esAnfitrion) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Sin permisos',
-          text: 'Solo el anfitrión puede controlar el modo lectura.',
-          timer: 2000
-        });
-        return;
-      }
-
-      Swal.fire({
-        title: '¿Activar modo solo lectura?',
-        text: 'El dispositivo conectado no podrá editar datos.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, activar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#f44336'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          enviarModoLectura(true);
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Modo Activado',
-            text: 'El otro dispositivo ahora está en modo solo lectura.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        }
-      });
-    }
-
-    // Aplicar modo solo lectura
-    function aplicarModoLectura() {
-      const elementos = document.querySelectorAll(
-        'input[type="tel"], input[type="text"], textarea, ' +
-        'input.cantidad, input.cantidad2, input.cantidad4, ' +
-        '.venta, .input1, .input2, .input3, .input4, .input5, ' +
-        '.input6, .input7, .input8, .input9, .input10, ' +
-        '.input11, .input12, .input13, .input14, .input15, ' +
-        '.input16, .input17, .input18, .input19, .input20, ' +
-        '.input21, .input22, .input23, .input24, .input25, ' +
-        '.input26, .input27, .input28, .input29, .input30, ' +
-        '.input31, .input32, .input33, .input34, .input35, ' +
-        '.input36, .input37, .input38, .input39, .input40, ' +
-        '.input41, .input42, .input43, .input44, .input45, ' +
-        '.input46, .input47, .input48, .input49, .input50, ' +
-        '.input51, .input52, .input53, .input54, .input55, ' +
-        '.input56, .input57, .input58, .input59, .input60'
-      );
-
-      const controles = document.querySelector('.peer-controls');
-      const botonesPeligrosos = document.querySelectorAll(
-        'button[onclick="confirmarBorrado()"], ' +
-        'button[onclick="confirmarEnvioExcel()"]'
-      );
-
-      if (modoSoloLectura) {
-        // Bloquear todos los inputs
-        elementos.forEach(el => {
-          el.classList.add('bloqueado');
-          el.setAttribute('readonly', 'true');
-          el.disabled = true;
-        });
-
-        // Marcar visualmente el panel de controles
-        if (controles) {
-          controles.classList.add('modo-lectura-activo');
-        }
-
-        // Deshabilitar botones peligrosos
-        botonesPeligrosos.forEach(btn => {
-          btn.classList.add('bloqueado');
-          btn.disabled = true;
-        });
-
-      } else {
-        // Desbloquear todo
-        elementos.forEach(el => {
-          el.classList.remove('bloqueado');
-          el.removeAttribute('readonly');
-          el.disabled = false;
-        });
-
-        if (controles) {
-          controles.classList.remove('modo-lectura-activo');
-        }
-
-        botonesPeligrosos.forEach(btn => {
-          btn.classList.remove('bloqueado');
-          btn.disabled = false;
-        });
-      }
-    }
-
-    // Enviar estado de modo lectura al otro dispositivo
-    function enviarModoLectura(forzar = false) {
-      if (!conexion || !conexion.open) return;
-
-      const mensaje = {
-        tipo: 'modo_lectura',
-        activar: forzar,
-        timestamp: Date.now()
-      };
-
-      try {
-        conexion.send(mensaje);
-        console.log('📤 Modo lectura enviado:', mensaje);
-      } catch (error) {
-        console.error('Error al enviar modo lectura:', error);
-      }
-    }
-
-    // Activar modo lectura para el cliente conectado
-    function activarModoLecturaCliente() {
-      if (!esAnfitrion) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Sin permisos',
-          text: 'Solo el anfitrión puede controlar el modo lectura.',
-          timer: 2000
-        });
-        return;
-      }
-
-      Swal.fire({
-        title: '¿Activar modo solo lectura?',
-        text: 'El dispositivo conectado no podrá editar datos.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, activar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#f44336'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          enviarModoLectura(true);
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Modo Activado',
-            text: 'El otro dispositivo ahora está en modo solo lectura.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        }
-      });
-    }
     // MEJORA: Configurar inputs para mejor rendimiento
     function configurarInputsParaSincronizacion() {
       const inputs = document.querySelectorAll('input[type="tel"], input.cantidad, input.cantidad2, input.cantidad4, .venta, .input1, .input2, .input3, .input4, .input5, .input6, .input7, .input8, .input9, .input10, .input11, .input12, .input13, .input14, .input15, .input16, .input17, .input18, .input19, .input20, .input21, .input22, .input23, .input24, .input25, .input26, .input27, .input28, .input29, .input30, .input31, .input32, .input33, .input34, .input35, .input36, .input37, .input38, .input39, .input40, .input41, .input42, .input43, .input44, .input45, .input46, .input47, .input48, .input49, .input50, .input51, .input52, .input53, .input54, .input55, .input56, .input57, .input58, .input59, .input60');
@@ -1930,15 +1766,7 @@
         const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
         document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
         document.getElementById('miIDBtn').style.display = 'block';
-        // DETERMINAR ROL BASADO EN ID FIJO
-        esAnfitrion = esDispositivoAnfitrion();
-        mostrarRolDispositivo();
 
-        if (esAnfitrion) {
-          console.log('👑 Este dispositivo es el ANFITRIÓN FIJO permanente');
-        } else {
-          console.log('📱 Este dispositivo es CLIENTE');
-        }
         configurarInputsParaSincronizacion();
 
         const idRemotoGuardado = localStorage.getItem('peer-remote-id');
@@ -1953,22 +1781,6 @@
 
       peer.on('connection', (conn) => {
         console.log('📲 Conexión entrante recibida de:', conn.peer);
-
-        // VALIDAR QUE ESTE DISPOSITIVO ES EL ANFITRIÓN
-        if (!esDispositivoAnfitrion()) {
-          console.error('⛔ Este dispositivo NO es el anfitrión. Rechazando conexión entrante.');
-          conn.close();
-
-          Swal.fire({
-            icon: 'error',
-            title: 'Conexión Rechazada',
-            text: 'Este dispositivo es CLIENTE y no puede aceptar conexiones entrantes.',
-            timer: 3000
-          });
-          return;
-        }
-
-        console.log('👑 Anfitrión aceptando conexión entrante');
         esAnfitrion = true;
         manejarNuevaConexion(conn);
 
@@ -2011,38 +1823,7 @@
       configurarEventosConexion(conexion);
 
       localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = esDispositivoAnfitrion(); // Usar siempre el rol basado en ID
-
-      // SOLO LIMPIAR SI ES CLIENTE, NUNCA SI ES ANFITRIÓN
-      if (!esAnfitrion) {
-        console.log('🗑️ Limpiando datos del cliente para reconexión automática...');
-
-        document.querySelectorAll("input, textarea").forEach(el => {
-          el.value = "";
-          if (el.dataset.valor) el.dataset.valor = "0";
-        });
-
-        document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-          el.textContent = "";
-          if (el.dataset.valor) el.dataset.valor = "0";
-        });
-
-        console.log('✅ Cliente limpiado para reconexión');
-      } else {
-        console.log('👑 Anfitrión: NO se limpian datos en reconexión automática');
-      }
-
-      document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      console.log('✅ Cliente limpiado para reconexión');
-      // LIMPIAR DATOS DEL CLIENTE EN RECONEXIÓN AUTOMÁTICA
-      console.log('🗑️ Limpiando datos del cliente para reconexión automática...');
-
-
-      console.log('✅ Cliente limpiado para reconexión');
+      esAnfitrion = false;
     }
 
     // Conectar manualmente
@@ -2065,191 +1846,85 @@
       });
 
       configurarEventosConexion(conexion);
-localStorage.setItem('peer-remote-id', idRemoto);
-esAnfitrion = esDispositivoAnfitrion(); // Usar siempre el rol basado en ID
 
-// SOLO LIMPIAR SI ES CLIENTE, NUNCA SI ES ANFITRIÓN
-if (!esAnfitrion) {
-  console.log('🗑️ Limpiando datos del cliente antes de conectar...');
-  
-  document.querySelectorAll("input, textarea").forEach(el => {
-    el.value = "";
-    if (el.dataset.valor) el.dataset.valor = "0";
-  });
-
-  document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-    el.textContent = "";
-    if (el.dataset.valor) el.dataset.valor = "0";
-  });
-
-  console.log('✅ Datos del cliente limpiados, conectando...');
-} else {
-  console.log('👑 Anfitrión: NO se limpian datos al conectar manualmente');
-}
-
-      document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      console.log('✅ Datos del cliente limpiados, conectando...');
-      // LIMPIAR DATOS DEL CLIENTE ANTES DE CONECTAR
-      console.log('🗑️ Limpiando datos del cliente antes de conectar...');
-
-      document.querySelectorAll("input, textarea").forEach(el => {
-        el.value = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      console.log('✅ Datos del cliente limpiados, conectando...');
+      localStorage.setItem('peer-remote-id', idRemoto);
+      esAnfitrion = false;
     }
 
     // Configurar eventos de conexión
+    function configurarEventosConexion(conn) {
+      conn.on('open', () => {
+        console.log('✅ Conexión establecida exitosamente!');
+        conexion = conn;
+        intentandoReconectar = false;
 
-
-// Configurar eventos de conexión
-function configurarEventosConexion(conn) {
-  conn.on('open', () => {
-    console.log('✅ Conexión establecida exitosamente!');
-    conexion = conn;
-    intentandoReconectar = false;
-
-    // FORZAR MODO SOLO LECTURA EN CLIENTE
-    if (!esAnfitrion) {
-      modoSoloLectura = true;
-      esModoLecturaForzado = true;
-      aplicarModoLectura();
-      console.log('🔒 Cliente bloqueado en modo solo lectura');
-    }
-
-    // BORRAR TODOS LOS DATOS DEL CLIENTE ANTES DE RECIBIR DEL ANFITRIÓN
-    if (!esAnfitrion) {
-      console.log('🗑️ Limpiando datos del cliente antes de sincronizar con anfitrión...');
-      
-      // Borrar todos los inputs
-      document.querySelectorAll("input, textarea").forEach(el => {
-        el.value = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Borrar resultados y celdas
-      document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Borrar divs especiales
-      document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Limpiar totales visuales
-      const totalBilteles = document.getElementById("total-general-bilteles");
-      const totalMonedas = document.getElementById("total-general-monedas");
-      const sumaTotal = document.getElementById("suma-total");
-      const resul = document.getElementById("resul");
-      const sobra = document.getElementById("sobra");
-      
-      if (totalBilteles) totalBilteles.textContent = "";
-      if (totalMonedas) totalMonedas.textContent = "";
-      if (sumaTotal) sumaTotal.textContent = "";
-      if (resul) resul.textContent = "";
-      if (sobra) sobra.textContent = "";
-
-      console.log('✅ Datos del cliente limpiados, esperando datos del anfitrión...');
-    } else {
-      console.log('👑 Anfitrión: NO se limpian datos al establecer conexión');
-    }
-
-    Swal.close();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Conectado!',
-      text: 'Conexión establecida exitosamente',
-      timer: 2000,
-      showConfirmButton: false
-    });
-
-    // IMPORTANTE: El cliente NO envía datos inmediatamente
-    // Solo espera recibir los datos del anfitrión
-    if (!esAnfitrion) {
-      console.log('⏳ Cliente esperando datos del anfitrión...');
-    } else {
-      console.log('👑 Anfitrión conectado - listo para enviar datos');
-    }
-
-    actualizarEstadoConexion();
-
-    conn.on('close', () => {
-      console.log('Conexión cerrada');
-      primeraConexion = true; // Resetear
-      actualizarEstadoConexion();
-      intentarReconexion();
-    });
-
-    conn.on('error', (err) => {
-      console.error('Error en la conexión:', err);
-      primeraConexion = true; // Resetear
-    });
-  });
-
-  conn.on('data', (datos) => {
-    console.log('📥 Datos recibidos:', datos);
-
-    // Verificar si es una confirmación especial
-    if (datos.tipo === 'confirmacion_cambios') {
-      console.log('✅ Confirmación de cambios recibida:', datos.mensaje);
-
-      aplicarDatosRecibidos(datos);
-      localStorage.setItem('ultima-confirmacion', Date.now().toString());
-      localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-
-      if (datos.esAnfitrion !== esAnfitrion) {
+        Swal.close();
         Swal.fire({
           icon: 'success',
-          title: 'Cambios Confirmados',
-          text: 'El otro dispositivo ha confirmado y guardado los cambios permanentemente.',
-          timer: 2500,
+          title: '¡Conectado!',
+          text: 'Conexión establecida exitosamente',
+          timer: 2000,
           showConfirmButton: false
         });
-      }
-    } else if (datos.tipo === 'modo_lectura') {
-      // Ya se procesa en aplicarDatosRecibidos
-      aplicarDatosRecibidos(datos);
-    } else {
-      // Cliente recibe y aplica datos del anfitrión
-      aplicarDatosRecibidos(datos);
-      guardarLocalmente();
-      
-      // Después de recibir datos del anfitrión, el cliente puede enviar actualizaciones
-      if (primeraConexion) {
+
         setTimeout(() => {
-          primeraConexion = false;
-          console.log('✅ Cliente sincronizado, puede enviar actualizaciones');
-        }, 1000);
-      }
+          enviarDatos();
+        }, 800);
+
+        actualizarEstadoConexion();
+
+        conn.on('close', () => {
+          console.log('Conexión cerrada');
+          actualizarEstadoConexion();
+          intentarReconexion();
+        });
+
+        conn.on('error', (err) => {
+          console.error('Error en la conexión:', err);
+        });
+      });
+
+      conn.on('data', (datos) => {
+        console.log('📥 Datos recibidos:', datos);
+
+        // Verificar si es una confirmación especial
+        if (datos.tipo === 'confirmacion_cambios') {
+          console.log('✅ Confirmación de cambios recibida:', datos.mensaje);
+
+          // Aplicar datos confirmados
+          aplicarDatosRecibidos(datos);
+
+          // Guardar confirmación en localStorage
+          localStorage.setItem('ultima-confirmacion', Date.now().toString());
+          localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+
+          // Mostrar notificación
+          if (datos.esAnfitrion !== esAnfitrion) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Cambios Confirmados',
+              text: 'El otro dispositivo ha confirmado y guardado los cambios permanentemente.',
+              timer: 2500,
+              showConfirmButton: false
+            });
+          }
+        } else {
+          aplicarDatosRecibidos(datos);
+        }
+      });
+
+      conn.on('error', (err) => {
+        console.error('❌ Error al conectar:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de conexión',
+          text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
+        });
+        intentarReconexion();
+      });
     }
-  });
 
-  conn.on('error', (err) => {
-    console.error('❌ Error al conectar:', err);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error de conexión',
-      text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
-    });
-    primeraConexion = true; // Resetear
-    intentarReconexion();
-  });
-}
-
-
+    // Manejar nueva conexión entrante
     function manejarNuevaConexion(conn) {
       conexion = conn;
 
@@ -2257,23 +1932,9 @@ function configurarEventosConexion(conn) {
         console.log('✅ Cliente conectado:', conn.peer);
         actualizarEstadoConexion();
 
-        // ENVIAR MODO LECTURA FORZADO AL CLIENTE
         setTimeout(() => {
-          enviarModoLectura(true);
-          console.log('📤 Modo lectura forzado enviado al cliente');
-        }, 500);
-
-        // IMPORTANTE: El anfitrión envía sus datos inmediatamente
-        setTimeout(() => {
-          console.log('📤 Anfitrión enviando datos al cliente...');
           enviarDatos();
-
-          // Enviar una segunda vez para asegurar sincronización completa
-          setTimeout(() => {
-            enviarDatos();
-            console.log('📤 Segunda sincronización del anfitrión completada');
-          }, 500);
-        }, 300);
+        }, 1000);
       });
 
       conn.on('data', (datos) => {
@@ -2287,47 +1948,24 @@ function configurarEventosConexion(conn) {
 
           localStorage.setItem('ultima-confirmacion', Date.now().toString());
           localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-        } else if (datos.tipo === 'modo_lectura') {
-          // Procesar cambio de modo lectura
-          return;
         } else {
-          // CRÍTICO: El anfitrión NO debe aplicar datos del cliente en la primera conexión
-          // Solo actualiza después de que ya sincronizó sus datos
-          if (!primeraConexion) {
-            aplicarDatosRecibidos(datos);
-            guardarLocalmente();
-          } else {
-            console.log('⏭️ Ignorando datos iniciales del cliente (anfitrión tiene prioridad)');
-
-            // Después de ignorar, permitir sincronización bidireccional
-            setTimeout(() => {
-              primeraConexion = false;
-              console.log('✅ Primera conexión completada, sincronización bidireccional activada');
-            }, 2000);
-          }
+          aplicarDatosRecibidos(datos);
+          guardarLocalmente();
         }
       });
 
       conn.on('close', () => {
         console.log('Cliente desconectado');
-        primeraConexion = true; // Resetear para próxima conexión
         actualizarEstadoConexion();
       });
 
       conn.on('error', (err) => {
         console.error('Error en conexión entrante:', err);
-        primeraConexion = true; // Resetear en caso de error
       });
     }
 
     // Enviar datos a través de la conexión P2P
     function enviarDatos() {
-      // SOLO EL ANFITRIÓN PUEDE ENVIAR DATOS
-      if (!esDispositivoAnfitrion()) {
-        console.log('🚫 Este dispositivo es CLIENTE - no puede enviar datos (solo lectura)');
-        return;
-      }
-
       if (!conexion || !conexion.open) return;
 
       const datos = obtenerTodosLosDatos();
@@ -2384,51 +2022,6 @@ function configurarEventosConexion(conn) {
 
     // MEJORA: Optimizar la aplicación de datos recibidos
     function aplicarDatosRecibidos(datos) {
-      // AGREGAR ESTO AL PRINCIPIO:// AGREGAR ESTO AL PRINCIPIO (después del manejo de modo_lectura):
-      if (datos.tipo === 'modo_lectura') {
-        esModoLecturaForzado = datos.activar;
-        modoSoloLectura = datos.activar;
-        aplicarModoLectura();
-
-        if (datos.activar) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Modo Solo Lectura Activado',
-            text: 'El anfitrión ha bloqueado la edición en este dispositivo.',
-            timer: 3000
-          });
-        }
-        return;
-      }
-
-      // AGREGAR ESTA PROTECCIÓN:
-      // Si es anfitrión en primera conexión, ignorar datos entrantes
-      if (esAnfitrion && primeraConexion) {
-        console.log('⏭️ Anfitrión ignorando datos iniciales (prioridad anfitrión)');
-        return;
-      }
-
-      // AGREGAR ESTA PROTECCIÓN:
-      // Si es anfitrión en primera conexión, ignorar datos entrantes
-      if (esAnfitrion && primeraConexion) {
-        console.log('⏭️ Anfitrión ignorando datos iniciales (prioridad anfitrión)');
-        return;
-      }
-      if (datos.tipo === 'modo_lectura') {
-        esModoLecturaForzado = datos.activar;
-        modoSoloLectura = datos.activar;
-        aplicarModoLectura();
-
-        if (datos.activar) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Modo Solo Lectura Activado',
-            text: 'El anfitrión ha bloqueado la edición en este dispositivo.',
-            timer: 3000
-          });
-        }
-        return;
-      }
       if (datos.timestamp && ultimoTimestampRecibido &&
         datos.timestamp <= ultimoTimestampRecibido) {
         return;
@@ -2546,29 +2139,23 @@ function configurarEventosConexion(conn) {
       const statusEl = document.getElementById('peerStatus');
       const disconnectBtn = document.getElementById('disconnectBtn');
       const connectBtn = document.getElementById('connectBtn');
-      const guardarBtn = document.getElementById('guardarCambiosBtn');
+      const guardarBtn = document.getElementById('guardarCambiosBtn'); // NUEVO
 
       if (conexion && conexion.open) {
-        const rol = esDispositivoAnfitrion() ? 'ANFITRIÓN FIJO' : 'CLIENTE';
-        statusEl.textContent = `Conectado (${rol})`;
+        statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
         statusEl.className = 'peer-status connected';
         disconnectBtn.style.display = 'block';
         connectBtn.style.display = 'none';
-        guardarBtn.style.display = 'block';
-
+        guardarBtn.style.display = 'block'; // MOSTRAR BOTÓN GUARDAR
       } else {
-        const rol = esDispositivoAnfitrion() ? 'ANFITRIÓN' : 'CLIENTE';
-        const color = esDispositivoAnfitrion() ? '#4CAF50' : '#2196F3';
-        statusEl.innerHTML = `Sin conexión - <strong style="color: ${color}">${rol}</strong>`;
+        statusEl.textContent = 'Sin conexión';
         statusEl.className = 'peer-status disconnected';
         disconnectBtn.style.display = 'none';
         connectBtn.style.display = 'block';
-        guardarBtn.style.display = 'none';
-
+        guardarBtn.style.display = 'none'; // OCULTAR BOTÓN GUARDAR
       }
     }
 
-    // Desconectar
     // Desconectar
     function desconectar() {
       if (conexion) {
@@ -2582,8 +2169,6 @@ function configurarEventosConexion(conn) {
 
       localStorage.removeItem('peer-remote-id');
       esAnfitrion = false;
-      primeraConexion = true; // RESETEAR VARIABLE
-      primeraConexion = true; // RESETEAR VARIABLE
 
       Swal.fire({
         icon: 'info',
@@ -3265,23 +2850,8 @@ function configurarEventosConexion(conn) {
       // 6. Iniciar reloj
       ponerFechaHora();
       setInterval(ponerFechaHora, 1000);
-      // APLICAR MODO LECTURA SI NO ES ANFITRIÓN
-      setTimeout(() => {
-        if (!esAnfitrion && conexion && conexion.open) {
-          modoSoloLectura = true;
-          esModoLecturaForzado = true;
-          aplicarModoLectura();
-        }
-      }, 2000);
+
       console.log('Aplicación inicializada correctamente');
-      // APLICAR MODO LECTURA SI NO ES ANFITRIÓN
-      setTimeout(() => {
-        if (!esAnfitrion && conexion && conexion.open) {
-          modoSoloLectura = true;
-          esModoLecturaForzado = true;
-          aplicarModoLectura();
-        }
-      }, 2000);
     });
 
     // Configurar eventos para inputs de billetes
