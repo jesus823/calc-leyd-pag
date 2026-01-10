@@ -2013,6 +2013,20 @@ function activarModoLecturaCliente() {
       localStorage.setItem('peer-remote-id', idRemoto);
       esAnfitrion = esDispositivoAnfitrion(); // Usar siempre el rol basado en ID
       // LIMPIAR DATOS DEL CLIENTE EN RECONEXIÓN AUTOMÁTICA
+console.log('🗑️ Limpiando datos del cliente para reconexión automática...');
+
+document.querySelectorAll("input, textarea").forEach(el => {
+  el.value = "";
+  if (el.dataset.valor) el.dataset.valor = "0";
+});
+
+document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+  el.textContent = "";
+  if (el.dataset.valor) el.dataset.valor = "0";
+});
+
+console.log('✅ Cliente limpiado para reconexión');
+      // LIMPIAR DATOS DEL CLIENTE EN RECONEXIÓN AUTOMÁTICA
       console.log('🗑️ Limpiando datos del cliente para reconexión automática...');
       
       document.querySelectorAll("input, textarea").forEach(el => {
@@ -2051,6 +2065,20 @@ function activarModoLecturaCliente() {
 
       localStorage.setItem('peer-remote-id', idRemoto);
      esAnfitrion = esDispositivoAnfitrion(); // Usar siempre el rol basado en ID
+     // LIMPIAR DATOS DEL CLIENTE ANTES DE CONECTAR
+console.log('🗑️ Limpiando datos del cliente antes de conectar...');
+
+document.querySelectorAll("input, textarea").forEach(el => {
+  el.value = "";
+  if (el.dataset.valor) el.dataset.valor = "0";
+});
+
+document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+  el.textContent = "";
+  if (el.dataset.valor) el.dataset.valor = "0";
+});
+
+console.log('✅ Datos del cliente limpiados, conectando...');
       // LIMPIAR DATOS DEL CLIENTE ANTES DE CONECTAR
       console.log('🗑️ Limpiando datos del cliente antes de conectar...');
       
@@ -2070,82 +2098,85 @@ function activarModoLecturaCliente() {
     // Configurar eventos de conexión
 // Configurar eventos de conexión
 function configurarEventosConexion(conn) {
-  conn.on('open', () => {
-    console.log('✅ Conexión establecida exitosamente!');
-    conexion = conn;
-    intentandoReconectar = false;
-// FORZAR MODO SOLO LECTURA EN CLIENTE
-    if (!esAnfitrion) {
-      modoSoloLectura = true;
-      esModoLecturaForzado = true;
-      aplicarModoLectura();
-      console.log('🔒 Cliente bloqueado en modo solo lectura');
-    }
-    // BORRAR TODOS LOS DATOS DEL CLIENTE ANTES DE RECIBIR DEL ANFITRIÓN
-    if (!esAnfitrion) {
-      console.log('🗑️ Limpiando datos del cliente antes de sincronizar con anfitrión...');
-      
-      // Borrar todos los inputs
-      document.querySelectorAll("input, textarea").forEach(el => {
-        el.value = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
 
-      // Borrar resultados y celdas
-      document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
+conn.on('open', () => {
+  console.log('✅ Conexión establecida exitosamente!');
+  conexion = conn;
+  intentandoReconectar = false;
 
-      // Borrar divs especiales
-      document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
+  // FORZAR MODO SOLO LECTURA EN CLIENTE
+  if (!esAnfitrion) {
+    modoSoloLectura = true;
+    esModoLecturaForzado = true;
+    aplicarModoLectura();
+    console.log('🔒 Cliente bloqueado en modo solo lectura');
+  }
 
-      // Limpiar totales visuales
-      const totalBilteles = document.getElementById("total-general-bilteles");
-      const totalMonedas = document.getElementById("total-general-monedas");
-      const sumaTotal = document.getElementById("suma-total");
-      const resul = document.getElementById("resul");
-      const sobra = document.getElementById("sobra");
-      
-      if (totalBilteles) totalBilteles.textContent = "";
-      if (totalMonedas) totalMonedas.textContent = "";
-      if (sumaTotal) sumaTotal.textContent = "";
-      if (resul) resul.textContent = "";
-      if (sobra) sobra.textContent = "";
-
-      console.log('✅ Datos del cliente limpiados, esperando datos del anfitrión...');
-    }
-    Swal.close();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Conectado!',
-      text: 'Conexión establecida exitosamente',
-      timer: 2000,
-      showConfirmButton: false
+  // BORRAR TODOS LOS DATOS DEL CLIENTE ANTES DE RECIBIR DEL ANFITRIÓN
+  if (!esAnfitrion) {
+    console.log('🗑️ Limpiando datos del cliente antes de sincronizar con anfitrión...');
+    
+    // Borrar todos los inputs
+    document.querySelectorAll("input, textarea").forEach(el => {
+      el.value = "";
+      if (el.dataset.valor) el.dataset.valor = "0";
     });
 
-    // IMPORTANTE: El cliente NO envía datos inmediatamente
-    // Solo espera recibir los datos del anfitrión
-    console.log('⏳ Cliente esperando datos del anfitrión...');
-
-    actualizarEstadoConexion();
-
-    conn.on('close', () => {
-      console.log('Conexión cerrada');
-      primeraConexion = true; // Resetear
-      actualizarEstadoConexion();
-      intentarReconexion();
+    // Borrar resultados y celdas
+    document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
+      el.textContent = "";
+      if (el.dataset.valor) el.dataset.valor = "0";
     });
 
-    conn.on('error', (err) => {
-      console.error('Error en la conexión:', err);
-      primeraConexion = true; // Resetear
+    // Borrar divs especiales
+    document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+      el.textContent = "";
+      if (el.dataset.valor) el.dataset.valor = "0";
     });
+
+    // Limpiar totales visuales
+    const totalBilteles = document.getElementById("total-general-bilteles");
+    const totalMonedas = document.getElementById("total-general-monedas");
+    const sumaTotal = document.getElementById("suma-total");
+    const resul = document.getElementById("resul");
+    const sobra = document.getElementById("sobra");
+    
+    if (totalBilteles) totalBilteles.textContent = "";
+    if (totalMonedas) totalMonedas.textContent = "";
+    if (sumaTotal) sumaTotal.textContent = "";
+    if (resul) resul.textContent = "";
+    if (sobra) sobra.textContent = "";
+
+    console.log('✅ Datos del cliente limpiados, esperando datos del anfitrión...');
+  }
+
+  Swal.close();
+  Swal.fire({
+    icon: 'success',
+    title: '¡Conectado!',
+    text: 'Conexión establecida exitosamente',
+    timer: 2000,
+    showConfirmButton: false
   });
 
+  // IMPORTANTE: El cliente NO envía datos inmediatamente
+  // Solo espera recibir los datos del anfitrión
+  console.log('⏳ Cliente esperando datos del anfitrión...');
+
+  actualizarEstadoConexion();
+
+  conn.on('close', () => {
+    console.log('Conexión cerrada');
+    primeraConexion = true; // Resetear
+    actualizarEstadoConexion();
+    intentarReconexion();
+  });
+
+  conn.on('error', (err) => {
+    console.error('Error en la conexión:', err);
+    primeraConexion = true; // Resetear
+  });
+});
   conn.on('data', (datos) => {
     console.log('📥 Datos recibidos:', datos);
 
@@ -2196,19 +2227,19 @@ function configurarEventosConexion(conn) {
   });
 }
 
-    // Manejar nueva conexión entrante
-// Manejar nueva conexión entrante
 function manejarNuevaConexion(conn) {
   conexion = conn;
 
   conn.on('open', () => {
     console.log('✅ Cliente conectado:', conn.peer);
     actualizarEstadoConexion();
-// ENVIAR MODO LECTURA FORZADO AL CLIENTE
+
+    // ENVIAR MODO LECTURA FORZADO AL CLIENTE
     setTimeout(() => {
       enviarModoLectura(true);
       console.log('📤 Modo lectura forzado enviado al cliente');
     }, 500);
+
     // IMPORTANTE: El anfitrión envía sus datos inmediatamente
     setTimeout(() => {
       console.log('📤 Anfitrión enviando datos al cliente...');
@@ -2267,7 +2298,7 @@ function manejarNuevaConexion(conn) {
 }
 
     // Enviar datos a través de la conexión P2P
-    function enviarDatos() {
+function enviarDatos() {
   // SOLO EL ANFITRIÓN PUEDE ENVIAR DATOS
   if (!esDispositivoAnfitrion()) {
     console.log('🚫 Este dispositivo es CLIENTE - no puede enviar datos (solo lectura)');
@@ -2276,15 +2307,15 @@ function manejarNuevaConexion(conn) {
   
   if (!conexion || !conexion.open) return;
 
-      const datos = obtenerTodosLosDatos();
+  const datos = obtenerTodosLosDatos();
 
-      try {
-        conexion.send(datos);
-        console.log('📤 Datos enviados:', datos);
-      } catch (error) {
-        console.error('Error al enviar datos:', error);
-      }
-    }
+  try {
+    conexion.send(datos);
+    console.log('📤 Datos enviados:', datos);
+  } catch (error) {
+    console.error('Error al enviar datos:', error);
+  }
+}
 
     // Obtener todos los datos de la página
     function obtenerTodosLosDatos() {
@@ -2331,7 +2362,7 @@ function manejarNuevaConexion(conn) {
     // MEJORA: Optimizar la aplicación de datos recibidos
     function aplicarDatosRecibidos(datos) {
       // AGREGAR ESTO AL PRINCIPIO:// AGREGAR ESTO AL PRINCIPIO (después del manejo de modo_lectura):
-  if (datos.tipo === 'modo_lectura') {
+ if (datos.tipo === 'modo_lectura') {
     esModoLecturaForzado = datos.activar;
     modoSoloLectura = datos.activar;
     aplicarModoLectura();
@@ -2344,6 +2375,13 @@ function manejarNuevaConexion(conn) {
         timer: 3000
       });
     }
+    return;
+  }
+
+  // AGREGAR ESTA PROTECCIÓN:
+  // Si es anfitrión en primera conexión, ignorar datos entrantes
+  if (esAnfitrion && primeraConexion) {
+    console.log('⏭️ Anfitrión ignorando datos iniciales (prioridad anfitrión)');
     return;
   }
 
@@ -2520,7 +2558,8 @@ function desconectar() {
   }
 
   localStorage.removeItem('peer-remote-id');
-  esAnfitrion = false;
+esAnfitrion = false;
+primeraConexion = true; // RESETEAR VARIABLE
   primeraConexion = true; // RESETEAR VARIABLE
 
   Swal.fire({
@@ -3212,6 +3251,14 @@ function desconectar() {
         }
       }, 2000);
       console.log('Aplicación inicializada correctamente');
+      // APLICAR MODO LECTURA SI NO ES ANFITRIÓN
+setTimeout(() => {
+  if (!esAnfitrion && conexion && conexion.open) {
+    modoSoloLectura = true;
+    esModoLecturaForzado = true;
+    aplicarModoLectura();
+  }
+}, 2000);
     });
 
     // Configurar eventos para inputs de billetes
