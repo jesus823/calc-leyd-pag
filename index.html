@@ -11,207 +11,15 @@
 
   <title>Contador Diario Pagatodo</title>
 
-  <style>
-    /* Estilos para los controles P2P */
-    .peer-controls {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 10000;
-      background: rgb(251, 247, 247);
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      max-width: 300px;
-      border: 2px solid #4CAF50;
-    }
-
-    .peer-button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-bottom: 5px;
-      font-weight: bold;
-      width: 100%;
-      transition: all 0.3s;
-    }
-
-    .peer-button:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
-
-    .peer-button.connect {
-      background: #2196F3;
-    }
-
-    .peer-button.disconnect {
-      background: #f44336;
-    }
-
-    .peer-button.guardar {
-      background: #9C27B0;
-    }
-
-    .peer-button.guardar:hover {
-      background: #7B1FA2;
-    }
-
-    .peer-status {
-      margin-top: 5px;
-      padding: 5px;
-      border-radius: 3px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .connected {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .disconnected {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    /* Estilos para las sugerencias de autocompletado */
-    .sugerencias {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 1000;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .sugerencias li {
-      padding: 8px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-    }
-
-    .sugerencias li:hover {
-      background-color: #f0f0f0;
-    }
-
-    /* Estilos para estados */
-    .exacto {
-      background-color: yellow !important;
-    }
-
-    .sobra {
-      background-color: lightgreen !important;
-    }
-
-    .falta {
-      background-color: salmon !important;
-    }
-
-    @media (max-width: 1200px) {
-      .peer-controls {
-        position: relative;
-        top: 0;
-        right: 0;
-        width: 100%;
-        max-width: 100%;
-        margin-bottom: 10px;
-      }
-    }
-  </style>
 </head>
 
 <body>
 
-  <!-- Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const numericInputs = document.querySelectorAll('input[type="tel"]:not([id^="loteria"]), input.input1, input.input2, input.input3, input.input4, input.input5, input.input6, input.input7, input.input8, input.input9, input.input10, input.input11, input.input12, input.input13, input.input14, input.input15, input.input16, input.input17, input.input18, input.input19, input.input20, input.input21, input.input22, input.input23, input.input24, input.input25, input.input26, input.input27, input.input28, input.input29, input.input30, input.input31, input.input32, input.input33, input.input34, input.input35, input.input36, input.input37, input.input38, input.input39, input.input40, input.input41, input.input42, input.input43, input.input44, input.input45, input.input46, input.input47, input.input48, input.input49, input.input50, input.input51, input.input52, input.input53, input.input54, input.input55, input.input56, input.input57, input.input58, input.input59, input.input60');
 
-      numericInputs.forEach(input => {
-        input.addEventListener('keydown', function (e) {
-          if ([8, 9, 13, 27, 46, 35, 36, 37, 38, 39, 40].includes(e.keyCode) ||
-            (e.ctrlKey && [65, 67, 86, 88, 90].includes(e.keyCode)) ||
-            (e.metaKey && [65, 67, 86, 88, 90].includes(e.keyCode))) {
-            return;
-          }
-
-          if ((e.keyCode >= 48 && e.keyCode <= 57) ||
-            (e.keyCode >= 96 && e.keyCode <= 105)) {
-            return;
-          }
-
-          if (e.keyCode === 190 || e.keyCode === 188 || e.keyCode === 110) {
-            return;
-          }
-
-          e.preventDefault();
-        });
-
-        input.addEventListener('paste', function (e) {
-          setTimeout(() => {
-            const valor = input.value;
-            const numerosSolo = valor.replace(/[^\d]/g, '');
-            input.value = numerosSolo;
-
-            const event = new Event('input', { bubbles: true });
-            input.dispatchEvent(event);
-          }, 10);
-        });
-
-        input.addEventListener('blur', function () {
-          const valor = input.value;
-          const numerosSolo = valor.replace(/[^\d]/g, '');
-          if (valor !== numerosSolo) {
-            input.value = numerosSolo;
-            const event = new Event('input', { bubbles: true });
-            input.dispatchEvent(event);
-          }
-        });
-      });
-    });
-  </script>
-
-  <!-- Controles de conexión P2P -->
-  <div class="peer-controls">
-    <button id="miIDBtn" class="peer-button" onclick="copiarMiID()">
-      Mi ID: Cargando...
-    </button>
-    <button id="connectBtn" class="peer-button connect" onclick="conectarDispositivo()">
-      🔗 Conectar a otro dispositivo
-    </button>
-    <button id="disconnectBtn" class="peer-button disconnect" onclick="desconectar()"
-      style="display:none; height: 50px;">
-      🚫 Desconectar
-    </button>
-    <!-- NUEVO BOTÓN: Guardar Cambios -->
-    <button id="guardarCambiosBtn" class="peer-button guardar" onclick="guardarCambiosConfirmados()"
-      style="display:none; height: 60px;">
-      💾 Guardar Cambios Confirmados
-    </button>
-
-    <div id="peerStatus" class="peer-status disconnected">
-      Sin conexión
-    </div>
-  </div>
-
-  <!-- Tabla principal - Manteniendo la estructura original -->
   <table id="miTabla">
     <thead>
       <tr>
+        <!-- Encabezados de columna A a R (18 columnas) -->
         <th style="width: 75px; background-color: yellow; border: 3px solid;color: black;">$ Total Venta </th>
         <th style="background-color: white; width: 30px;"></th>
         <th style="border: 3px solid; color: black;">Sumar a la Venta / Gastos / Nequi</th>
@@ -223,7 +31,7 @@
         <th style="background-color: white; width: 30px;"></th>
         <th style="width: 50px;border: 3px solid;color: black;">Monedas</th>
         <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
-        <th style="border: 3px solid;color black; width: 105px;">Total</th>
+        <th style="border: 3px solid;color: black; width: 105px;">Total</th>
         <th style="background-color: white; width: 30px;"></th>
         <th style=" border: 3px solid;"></th>
         <th style=" border: 3px solid;"></th>
@@ -237,70 +45,85 @@
             <span id="fechaHoraActual" style="font-size: 13px;"></span>
           </div>
         </th>
+
         <th style="width: 105px;"></th>
       </tr>
     </thead>
     <tbody>
-      <!-- Fila 1 -->
+
       <tr>
+
         <td onclick="this.querySelector('input').focus()" style="border: 3px solid black; background-color: yellow;">
-          <input type="tel" inputmode="numeric" class="venta" id="venta-total"
+          <input type="tel" inputmode="numeric" class="venta"
             style="background-color: yellow; font-size: 17px; font-weight: bold; width: 100px; height: 25px; box-shadow: 0 0 8px rgba(8, 2, 5, 1); border-radius: 6px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off">
+            oninput="formatearMiles(this)">
         </td>
+
+
         <td><textarea></textarea></td>
         <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Nequi</td>
         <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="nequi1"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center; "
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
+
         <td><textarea></textarea></td>
+
         <td class="valor-fijo" style="font-weight:bolder ;  border: 3px solid;">100,000</td>
         <td style="border: 3px solid; "><input id="b1" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+            style="height: 25px; width: 50px;text-align: center;"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder; border: 5px solid;">
         </td>
-        <td><textarea></textarea></td>
+
+
+        <td></td>
+
         <td class="valor-fijo" style="font-weight: bolder; border: 3px solid;">1000</td>
         <td style="border: 3px solid;"> <input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+            style="height: 25px;width: 50px;text-align: center;"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
+
         <td><textarea></textarea></td>
         <td id="nequi" style=" border: 3px solid;">Nequii</td>
         <td style="width: 70px;  border: 3px solid;   "><input type="tel" class="cantidad4"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
+
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
+
       </tr>
-      <!-- Fila 2 -->
+      <!-- Fila 3 -->
       <tr>
         <td></td>
         <td><textarea></textarea></td>
         <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Don Alfonso</td>
+
         <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="alfonso1"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
+
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50,000</td>
         <td style="border: 3px solid;"><input id="b2" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+            style="height: 25px; width: 50px;text-align: center;"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">500</td>
         <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+            style="height: 25px;width: 50px;text-align: center;"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td id="alfonso" style=" border: 3px solid;">Don Alfonso</td>
         <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
+
         <td style="position: relative; height: 40px; width: 60px;">
           <img src="stich.webp" alt="" style="
          position: absolute;
-         top: 15px;
+         top: 15px; /* Mueve la imagen hacia arriba */
          left: 50%;
          transform: translateX(-50%);
          width: 150px;
@@ -308,91 +131,93 @@
          pointer-events: none;
        ">
         </td>
+
       </tr>
-      <!-- Fila 3 -->
+      <!-- Fila 4  <td rowspan="3"><img src="stich.webp" alt="" style="width: 150px; border-radius: 80px;"></td>-->
       <tr>
         <td id="sobra" style="font-weight: bolder; border: 3px solid;color: black;"></td>
         <td><textarea></textarea></td>
         <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Descuadre</td>
         <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="descuadre1"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">20,000</td>
         <td style="border: 3px solid;"><input id="b3" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+            style="height: 25px; width: 50px;text-align: center;"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">200</td>
         <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
+            style="height: 25px;width: 50px;text-align: center;"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td style=" border: 3px solid;" id="descuadre">Descuadre</td>
         <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-      </tr>
-      <!-- Fila 4 -->
-      <tr>
-        <td id="resul" style="font-weight: bolder; border: 3px solid;color: black;"></td>
-        <td><textarea></textarea></td>
-        <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Mío</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="mio1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">10,000</td>
-        <td style="border: 3px solid;"><input id="b4" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid; ">100</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px;text-align: center;" autocomplete="off"></td>
-        <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
-        <td><textarea></textarea></td>
-        <td id="mio" style="border: 3px solid;">Míoo</td>
-        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
       </tr>
       <!-- Fila 5 -->
       <tr>
-        <td></td>
+        <td id="resul" style="font-weight: bolder; border: 3px solid;color: black;"></td>
         <td><textarea></textarea></td>
-        <td style="border: 3px solid;">Avances</td>
-        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="Avances1"
-            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+        <td style="border-top: 3px solid; border-bottom: 3px solid; border-left: 3px solid;">Mío</td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="mio1"
+            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">5,000</td>
-        <td style="border: 3px solid;"><input id="b5" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">10,000</td>
+        <td style="border: 3px solid;"><input id="b4" type="tel" class="cantidad"
+            style="height: 25px; width: 50px;text-align: center;"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
-        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50</td>
+        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid; ">100</td>
         <td style="border: 3px solid;"><input type="tel" class="cantidad"
-            style="height: 25px;width: 50px; text-align: center;" autocomplete="off"></td>
+            style="height: 25px;width: 50px;text-align: center;"></td>
         <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
-        <td id="Avances" style="border: 3px solid;">Avances</td>
+        <td id="mio" style="border: 3px solid;">Míoo</td>
         <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
       </tr>
       <!-- Fila 6 -->
       <tr>
-        <td style="border-bottom: 2px solid black;" class="celda-con-boton">
+        <td></td>
+        <td><textarea></textarea></td>
+        <td style="border: 3px solid;">Avances</td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad2" id="Avances1"
+            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
+            oninput="formatearMiles(this)"></td>
+        <td><textarea></textarea></td>
+        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">5,000</td>
+        <td style="border: 3px solid;"><input id="b5" type="tel" class="cantidad"
+            style="height: 25px; width: 50px;text-align: center;"></td>
+        <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
+        <td><textarea></textarea></td>
+        <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">50</td>
+        <td style="border: 3px solid;"><input type="tel" class="cantidad"
+            style="height: 25px;width: 50px; text-align: center;"></td>
+        <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
+        <td><textarea></textarea></td>
+        <td id="Avances" style="border: 3px solid;">Avances</td>
+        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
+            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+            oninput="formatearMiles(this)"></td>
+        <td><textarea></textarea></td>
+        <td><textarea></textarea></td>
+        <td><textarea></textarea></td>
+      </tr>
+
+      <tr>
+        <td style="border-bottom: 2px solid black;
+" class="celda-con-boton">
           <p
             style="font-weight: bold; color: rgb(102, 141, 234); margin: 0; text-shadow: 6px 6px 8px rgb(5, 400, 210);">
             Borrar Todo
@@ -402,15 +227,19 @@
             src="https://thumbs.dreamstime.com/b/borrador-feliz-de-la-historieta-53892555.jpg" alt="Borrar"
             class="img-flotante" onclick="confirmarBorrado()">
         </td>
+
+
+
+
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"><textarea></textarea></td>
         <td style="border: 3px solid;"><input type="tel" class="cantidad2"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
         <td class="valor-fijo" style="font-weight: bolder;border: 3px solid;">2,000</td>
         <td style="border: 3px solid;"><input id="b6" type="tel" class="cantidad"
-            style="height: 25px; width: 50px;text-align: center;" autocomplete="off"></td>
+            style="height: 25px; width: 50px;text-align: center;"></td>
         <td class="resultado resultado-bilteles" style="font-weight: bolder;border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -420,19 +249,19 @@
         <td style="border: 3px solid;"><textarea></textarea></td>
         <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
       </tr>
-      <!-- Fila 7 -->
+
       <tr>
         <td style="border-bottom: 2px solid black;"><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td style="border: 3px solid;"><textarea></textarea></td>
         <td style="border: 3px solid;"><input type="tel" class="cantidad2"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
-            oninput="formatearMiles(this)" autocomplete="off"></td>
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
         <td colspan="2" style="font-weight: bold; font-size: 20px; background-color: rgb(7, 134, 7);border: 3px solid;">
           $ Total Bilteles</td>
@@ -444,10 +273,10 @@
           style="font-weight: bold; font-size: 19px; background-color: rgb(230, 12, 197);border: 3px solid;"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-
-
-
+        <td style="border: 3px solid;"><textarea></textarea></td>
+        <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
+            style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
+            oninput="formatearMiles(this)"></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -461,6 +290,7 @@
         <td style="border: 3px solid;"><input type="tel" class="cantidad2"
             style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px;text-align: center;"
             oninput="formatearMiles(this)"></td>
+        <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
@@ -496,8 +326,8 @@
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
-        <td style="font-weight: bold; text-align: center; vertical-align: middle;">Cant. Premios</td>
-        <td style="font-weight: bold; text-align: center; vertical-align: middle;">Valor Premios</td>
+        <td><textarea></textarea></td>
+        <td><textarea></textarea></td>
         <td><textarea></textarea></td>
         <td><textarea></textarea></td>
 
@@ -1562,6 +1392,9 @@
         <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r30"></td>
       </tr>
 
+
+
+
     </tbody>
   </table>
 
@@ -1569,848 +1402,93 @@
     Powered by <strong>Jesús Sánchez para Fresa </strong>
   </footer>
 
-  <!-- Librerías externas -->
-  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.0/dist/peerjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
   <script>
-    // ============================================
-    // SISTEMA DE PERSISTENCIA Y SINCRONIZACIÓN P2P MEJORADO
-    // ============================================
 
-    // Variables globales
-    let peer = null;
-    let conexion = null;
-    let miID = '';
-    let esAnfitrion = false;
-    let intentandoReconectar = false;
-    let reconnectInterval = null;
-    let ultimoTimestampRecibido = 0;
-    let sincronizacionActiva = true;
 
-    // ID persistente basado en localStorage
-    // ID persistente basado en localStorage - COMPLETAMENTE FIJO
- function obtenerPeerIdPersistente() {
-  let peerId = localStorage.getItem('peer-id-persistente');
-  let rol = localStorage.getItem('peer-rol'); // NUEVO: Guardar el rol
 
-  // Si no existe, preguntar qué rol quiere
-  if (!peerId || !rol) {
-    // Mostrar diálogo de selección de rol
-    Swal.fire({
-      title: '¿Qué dispositivo es este?',
-      text: 'Selecciona el rol de este dispositivo',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: '👑 Anfitrión (Edita)',
-      cancelButtonText: '👁️ Cliente (Solo ve)',
-      allowOutsideClick: false,
-      allowEscapeKey: false
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Es Anfitrión
-        peerId = 'anfitrion-pagatodo-fijo';
-        rol = 'anfitrion';
-        esAnfitrion = true;
-      } else {
-        // Es Cliente
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substr(2, 9);
-        peerId = `cliente-${timestamp}-${random}`;
-        rol = 'cliente';
-        esAnfitrion = false;
+
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // === GUARDAR/RESTAURAR INPUTS y TEXTAREAS ===
+      const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
+      const premiosDiv = document.querySelector(".cantidad3");
+      const premiosGuardado = localStorage.getItem("premios-total");
+      if (premiosDiv && premiosGuardado !== null) {
+        premiosDiv.textContent = parseFloat(premiosGuardado).toLocaleString('es-CO');
+        premiosDiv.dataset.valor = premiosGuardado;
       }
 
-      // Guardar permanentemente
-      localStorage.setItem('peer-id-persistente', peerId);
-      localStorage.setItem('peer-rol', rol);
+      campos.forEach((campo, index) => {
+        const key = `input-${index}`;
+        const valorGuardado = localStorage.getItem(key);
+        if (valorGuardado !== null) {
+          campo.value = valorGuardado;
 
-      console.log(`✅ Dispositivo configurado como: ${rol.toUpperCase()}`);
-      console.log(`🆔 ID asignado: ${peerId}`);
+          // Para inputs que usan dataset.valor
+          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
+            campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
+          }
+        }
 
-      // Mostrar confirmación
-      Swal.fire({
-        title: rol === 'anfitrion' ? '👑 Anfitrión' : '👁️ Cliente',
-        html: `
-          <p><strong>Rol:</strong> ${rol === 'anfitrion' ? 'Anfitrión (puede editar)' : 'Cliente (solo lectura)'}</p>
-          <p><strong>ID:</strong> ${peerId}</p>
-          ${rol === 'cliente' ? '<p style="color: orange;">⚠️ Este dispositivo NO podrá editar, solo visualizar</p>' : ''}
-        `,
-        icon: 'success',
-        confirmButtonText: 'Continuar'
-      }).then(() => {
-        location.reload(); // Recargar para aplicar cambios
+        campo.addEventListener("input", () => {
+          localStorage.setItem(key, campo.value);
+          sumarInputsImpares();
+          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
+            campo.dataset.valor = campo.value.replace(/\D/g, "") || "0";
+          }
+
+          calcularTotales?.();
+          verificarCamposVacios?.();
+          guardarCeldasTd(); // También guarda los <td class="rX">
+        });
       });
+
+      // === GUARDAR Y RESTAURAR CELDAS <td class="rX"> ===
+      const celdas = document.querySelectorAll("td[class^='r']");
+
+      // Restaurar al cargar
+      celdas.forEach((celda, index) => {
+        const valor = localStorage.getItem(`td-${index}`);
+        if (valor !== null) {
+          celda.textContent = valor;
+        }
+      });
+
+      // Guardar todos los <td> con clase rX
+      function guardarCeldasTd() {
+        celdas.forEach((celda, index) => {
+          localStorage.setItem(`td-${index}`, celda.textContent.trim());
+        });
+      }
+
+      // Guardar también al cargar
+      guardarCeldasTd();
+      calcularTotales?.();
+      verificarCamposVacios?.();
     });
 
-    return peerId; // Retornar temporalmente
-  }
 
-  // Si ya existe, recuperar el rol
-  esAnfitrion = (rol === 'anfitrion');
-  console.log(`♻️ Dispositivo recuperado: ${rol.toUpperCase()}`);
-  console.log(`🆔 ID: ${peerId}`);
 
-  return peerId;
-}
 
-    // MEJORA: Configurar inputs para mejor rendimiento
-    function configurarInputsParaSincronizacion() {
-      const inputs = document.querySelectorAll('input[type="tel"], input.cantidad, input.cantidad2, input.cantidad4, .venta, .input1, .input2, .input3, .input4, .input5, .input6, .input7, .input8, .input9, .input10, .input11, .input12, .input13, .input14, .input15, .input16, .input17, .input18, .input19, .input20, .input21, .input22, .input23, .input24, .input25, .input26, .input27, .input28, .input29, .input30, .input31, .input32, .input33, .input34, .input35, .input36, .input37, .input38, .input39, .input40, .input41, .input42, .input43, .input44, .input45, .input46, .input47, .input48, .input49, .input50, .input51, .input52, .input53, .input54, .input55, .input56, .input57, .input58, .input59, .input60');
 
-      inputs.forEach(input => {
-        input.addEventListener('input', function (e) {
-          setTimeout(() => {
-            if (sincronizacionActiva && conexion && conexion.open) {
-              enviarDatosDebounced();
-            }
-          }, 100);
-        });
 
-        input.addEventListener('paste', function (e) {
-          setTimeout(() => {
-            if (sincronizacionActiva && conexion && conexion.open) {
-              setTimeout(() => {
-                enviarDatos();
-              }, 300);
-            }
-          }, 50);
-        });
 
-        input.addEventListener('blur', function () {
-          if (sincronizacionActiva && conexion && conexion.open) {
-            enviarDatos();
-          }
-        });
-      });
+
+    function borrarTodo() {
+      localStorage.clear();
+      location.reload();
     }
 
-    // MEJORA: Debounce mejorado para envío de datos
-    let timeoutEnvio = null;
-    function enviarDatosDebounced() {
-      clearTimeout(timeoutEnvio);
-      timeoutEnvio = setTimeout(() => {
-        if (conexion && conexion.open) {
-          enviarDatos();
-        }
-      }, 1500);
-    }
-
-    // MEJORA: Función para suspender temporalmente la sincronización
-    function suspenderSincronizacion(tiempoMs = 1000) {
-      sincronizacionActiva = false;
-      setTimeout(() => {
-        sincronizacionActiva = true;
-      }, tiempoMs);
-    }
-
-    // NUEVA FUNCIÓN: Guardar cambios confirmados
-    function guardarCambiosConfirmados() {
-      if (conexion && conexion.open) {
-        Swal.fire({
-          title: '¿Guardar cambios confirmados?',
-          text: 'Esta acción garantizará que los cambios se sincronicen permanentemente en ambos dispositivos.',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, guardar cambios',
-          cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#9C27B0'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            // Forzar guardado en localStorage de ambos dispositivos
-            guardarLocalmente();
-
-            // Enviar datos con flag especial de confirmación
-            const datos = obtenerTodosLosDatos();
-            datos.tipo = 'confirmacion_cambios';
-            datos.timestampConfirmacion = Date.now();
-            datos.mensaje = 'Cambios confirmados y guardados permanentemente';
-
-            try {
-              conexion.send(datos);
-              console.log('✅ Cambios confirmados enviados:', datos);
-
-              // Guardar estado confirmado en localStorage
-              localStorage.setItem('ultima-confirmacion', Date.now().toString());
-              localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-
-              Swal.fire({
-                icon: 'success',
-                title: 'Cambios Guardados',
-                text: 'Los cambios han sido confirmados y sincronizados permanentemente en ambos dispositivos.',
-                timer: 2500,
-                showConfirmButton: false
-              });
-            } catch (error) {
-              console.error('Error al enviar confirmación:', error);
-              Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'No se pudieron guardar los cambios. Verifica la conexión.'
-              });
-            }
-          }
-        });
-      } else {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Sin conexión',
-          text: 'Debes estar conectado a otro dispositivo para guardar cambios confirmados.'
-        });
+    function confirmarBorrado() {
+      const confirmacion = confirm("¿Estás seguro de que deseas borrar todos los datos?");
+      if (confirmacion) {
+        borrarTodo();
       }
     }
 
-    // Inicializar PeerJS con ID persistente
-    function inicializarPeerJS() {
-      const peerId = obtenerPeerIdPersistente();
 
-      peer = new Peer(peerId, {
-        debug: 1,
-        config: {
-          'iceServers': [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:global.stun.twilio.com:3478' }
-          ]
-        }
-      });
 
-      peer.on('open', (id) => {
-        miID = id;
-        console.log('Mi ID persistente:', id);
-
-        const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
-        document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
-        document.getElementById('miIDBtn').style.display = 'block';
-
-        configurarInputsParaSincronizacion();
-
-        const idRemotoGuardado = localStorage.getItem('peer-remote-id');
-        if (idRemotoGuardado && idRemotoGuardado !== id) {
-          setTimeout(() => {
-            conectarAutomaticamente(idRemotoGuardado);
-          }, 1500);
-        }
-
-        actualizarEstadoConexion();
-      });
-
-      peer.on('connection', (conn) => {
-        console.log('📲 Conexión entrante recibida de:', conn.peer);
-        esAnfitrion = true;
-        manejarNuevaConexion(conn);
-
-        localStorage.setItem('peer-remote-id', conn.peer);
-      });
-
-      peer.on('error', (err) => {
-        console.error('Error en PeerJS:', err);
-        if (err.type === 'peer-unavailable') {
-          intentarReconexion();
-        }
-      });
-
-      peer.on('disconnected', () => {
-        console.log('Peer desconectado, intentando reconectar...');
-        peer.reconnect();
-      });
-
-      peer.on('close', () => {
-        console.log('Peer cerrado');
-        actualizarEstadoConexion();
-      });
-    }
-
-    // Conectar automáticamente
-    function conectarAutomaticamente(idRemoto) {
-      if (!peer || !peer.open) {
-        setTimeout(() => conectarAutomaticamente(idRemoto), 1000);
-        return;
-      }
-
-      console.log('Intentando reconexión automática a:', idRemoto);
-      intentandoReconectar = true;
-
-      conexion = peer.connect(idRemoto, {
-        reliable: true,
-        serialization: 'json'
-      });
-
-      configurarEventosConexion(conexion);
-
-      localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = false;
-    }
-
-    // Conectar manualmente
-    function conectarDispositivo() {
-      const idRemoto = prompt('Ingresa el ID del otro dispositivo:');
-      if (!idRemoto || idRemoto === miID) return;
-
-      Swal.fire({
-        title: 'Conectando...',
-        text: 'Estableciendo conexión con el otro dispositivo',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-
-      conexion = peer.connect(idRemoto, {
-        reliable: true,
-        serialization: 'json'
-      });
-
-      configurarEventosConexion(conexion);
-
-      localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = false;
-    }
-
-    // Configurar eventos de conexión
-    function configurarEventosConexion(conn) {
-conn.on('open', () => {
-  console.log('✅ Conexión establecida exitosamente!');
-  conexion = conn;
-  intentandoReconectar = false;
-
-  Swal.close();
-  Swal.fire({
-    icon: 'success',
-    title: '¡Conectado!',
-    text: 'Conexión establecida exitosamente',
-    timer: 2000,
-    showConfirmButton: false
-  });
-
-  // NUEVO: Lógica de prevalencia del Anfitrión
-  const rol = localStorage.getItem('peer-rol');
-  
-  if (rol === 'anfitrion') {
-    // Si soy Anfitrión, envío mis datos inmediatamente para sobrescribir al Cliente
-    console.log('👑 Soy Anfitrión: Enviando mis datos al Cliente');
-    setTimeout(() => {
-      const datosAnfitrion = obtenerTodosLosDatos();
-      datosAnfitrion.tipo = 'datos_anfitrion'; // Marcar como datos del Anfitrión
-      datosAnfitrion.forzarSobrescritura = true; // Flag especial
-      conexion.send(datosAnfitrion);
-    }, 500);
-  } else if (rol === 'cliente') {
-    // Si soy Cliente, solicito los datos del Anfitrión
-    console.log('👁️ Soy Cliente: Solicitando datos del Anfitrión');
-    setTimeout(() => {
-      conexion.send({
-        tipo: 'solicitar_datos_anfitrion',
-        mensaje: 'Cliente solicitando datos'
-      });
-    }, 500);
-  }
-
-  actualizarEstadoConexion();
-
-  conn.on('close', () => {
-    console.log('Conexión cerrada');
-    actualizarEstadoConexion();
-    intentarReconexion();
-  });
-
-  conn.on('error', (err) => {
-    console.error('Error en la conexión:', err);
-  });
-});
-
-conn.on('data', (datos) => {
-  console.log('📥 Datos recibidos:', datos);
-
-  const miRol = localStorage.getItem('peer-rol');
-
-  // CASO 1: Soy Cliente y recibo datos del Anfitrión
-  if (miRol === 'cliente' && datos.tipo === 'datos_anfitrion') {
-    console.log('👁️ Cliente recibiendo datos del Anfitrión: SOBRESCRIBIENDO TODO');
-    
-    // Borrar todo lo que tengo
-    borrarTodoSinConfirmacion();
-    
-    // Aplicar datos del Anfitrión
-    setTimeout(() => {
-      aplicarDatosRecibidos(datos);
-      guardarLocalmente();
-    }, 200);
-    
-    return;
-  }
-
-  // CASO 2: Soy Anfitrión y recibo solicitud de datos del Cliente
-  if (miRol === 'anfitrion' && datos.tipo === 'solicitar_datos_anfitrion') {
-    console.log('👑 Anfitrión enviando datos al Cliente que los solicitó');
-    
-    setTimeout(() => {
-      const misDatos = obtenerTodosLosDatos();
-      misDatos.tipo = 'datos_anfitrion';
-      misDatos.forzarSobrescritura = true;
-      conexion.send(misDatos);
-    }, 300);
-    
-    return;
-  }
-
-  // CASO 3: Soy Anfitrión y recibo datos de un Cliente (IGNORAR)
-  if (miRol === 'anfitrion' && datos.tipo !== 'solicitar_datos_anfitrion') {
-    console.log('👑 Anfitrión IGNORANDO datos del Cliente (prevalece Anfitrión)');
-    return; // No hacer nada
-  }
-
-  // CASO 4: Confirmaciones especiales
-  if (datos.tipo === 'confirmacion_cambios') {
-    console.log('✅ Confirmación de cambios recibida');
-    aplicarDatosRecibidos(datos);
-    guardarLocalmente();
-    return;
-  }
-
-  // CASO 5: Datos normales (solo si soy Cliente)
-  if (miRol === 'cliente') {
-    aplicarDatosRecibidos(datos);
-    guardarLocalmente();
-  }
-});
-
-      conn.on('error', (err) => {
-        console.error('❌ Error al conectar:', err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error de conexión',
-          text: 'No se pudo conectar al dispositivo. Verifica el ID e intenta nuevamente.',
-        });
-        intentarReconexion();
-      });
-    }
-
-    // Manejar nueva conexión entrante
-    function manejarNuevaConexion(conn) {
-      conexion = conn;
-
-      conn.on('open', () => {
-        console.log('✅ Cliente conectado:', conn.peer);
-        actualizarEstadoConexion();
-
-        setTimeout(() => {
-          enviarDatos();
-        }, 1000);
-      });
-
-      conn.on('data', (datos) => {
-        console.log('📥 Datos recibidos del cliente:', datos);
-
-        if (datos.tipo === 'confirmacion_cambios') {
-          console.log('✅ Confirmación de cambios recibida del cliente');
-
-          aplicarDatosRecibidos(datos);
-          guardarLocalmente();
-
-          localStorage.setItem('ultima-confirmacion', Date.now().toString());
-          localStorage.setItem('datos-confirmados', JSON.stringify(datos));
-        } else {
-          aplicarDatosRecibidos(datos);
-          guardarLocalmente();
-        }
-      });
-
-      conn.on('close', () => {
-        console.log('Cliente desconectado');
-        actualizarEstadoConexion();
-      });
-
-      conn.on('error', (err) => {
-        console.error('Error en conexión entrante:', err);
-      });
-    }
-
-    // Enviar datos a través de la conexión P2P
-    function enviarDatos() {
-  if (!conexion || !conexion.open) return;
-
-  // NUEVO: Solo el Anfitrión puede enviar datos de edición
-  const rol = localStorage.getItem('peer-rol');
-  if (rol !== 'anfitrion') {
-    console.log('👁️ Cliente no puede enviar datos de edición');
-    return; // Cliente no envía datos
-  }
-
-  const datos = obtenerTodosLosDatos();
-  datos.tipo = 'datos_anfitrion'; // Marcar como datos del Anfitrión
-
-      try {
-        conexion.send(datos);
-        console.log('📤 Datos enviados:', datos);
-      } catch (error) {
-        console.error('Error al enviar datos:', error);
-      }
-    }
-
-    // Obtener todos los datos de la página
-    function obtenerTodosLosDatos() {
-      const datos = {
-        campos: {},
-        celdas: {},
-        divs: {},
-        localStorage: {},
-        timestamp: Date.now(),
-        esAnfitrion: esAnfitrion
-      };
-
-      document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
-        const clave = campo.id || campo.name || `campo-${index}`;
-        datos.campos[clave] = campo.value;
-
-        if (campo.dataset.valor !== undefined) {
-          datos.campos[clave + '_dataset'] = campo.dataset.valor;
-        }
-      });
-
-      document.querySelectorAll("td[class^='r'], td.resultado, td.valor-fijo").forEach((celda, index) => {
-        const clave = celda.className || `celda-${index}`;
-        datos.celdas[clave] = celda.textContent;
-      });
-
-      const divsEspeciales = document.querySelectorAll('.cantidad3, .cantidad5, .resultado-adicionales');
-      divsEspeciales.forEach((div, index) => {
-        const clave = div.className || `div-${index}`;
-        datos.divs[clave] = div.textContent;
-        if (div.dataset.valor) {
-          datos.divs[clave + '_dataset'] = div.dataset.valor;
-        }
-      });
-
-      const keysToSync = ['premios-total', 'peer-remote-id', 'ultima-confirmacion'];
-      keysToSync.forEach(key => {
-        datos.localStorage[key] = localStorage.getItem(key);
-      });
-
-      return datos;
-    }
-
-    // MEJORA: Optimizar la aplicación de datos recibidos
-    function aplicarDatosRecibidos(datos) {
-      if (datos.timestamp && ultimoTimestampRecibido &&
-        datos.timestamp <= ultimoTimestampRecibido) {
-        return;
-      }
-      ultimoTimestampRecibido = datos.timestamp;
-
-      sincronizacionActiva = false;
-
-      if (datos.campos) {
-        Object.keys(datos.campos).forEach(clave => {
-          if (clave.endsWith('_dataset')) return;
-
-          const valor = datos.campos[clave];
-
-          let campo = document.getElementById(clave) ||
-            document.querySelector(`[name="${clave}"]`);
-
-          if (!campo && clave.startsWith('campo-')) {
-            const index = parseInt(clave.replace('campo-', ''));
-            const campos = document.querySelectorAll("input, textarea, select");
-            if (campos[index]) campo = campos[index];
-          }
-
-          if (campo && campo.value !== valor) {
-            const estaEnfocado = (document.activeElement === campo);
-
-            if (!estaEnfocado) {
-              campo.value = valor;
-
-              const datasetKey = clave + '_dataset';
-              if (datos.campos[datasetKey] && campo.dataset.valor !== undefined) {
-                campo.dataset.valor = datos.campos[datasetKey];
-              }
-
-              const event = new Event('input', { bubbles: true });
-              campo.dispatchEvent(event);
-            }
-          }
-        });
-      }
-
-      if (datos.celdas) {
-        Object.keys(datos.celdas).forEach(clave => {
-          const celdas = document.querySelectorAll(`.${clave}`);
-          celdas.forEach(celda => {
-            if (celda.textContent !== datos.celdas[clave]) {
-              celda.textContent = datos.celdas[clave];
-            }
-          });
-        });
-      }
-
-      if (datos.divs) {
-        Object.keys(datos.divs).forEach(clave => {
-          if (clave.endsWith('_dataset')) return;
-
-          const div = document.querySelector(`.${clave}`);
-          if (div && div.textContent !== datos.divs[clave]) {
-            div.textContent = datos.divs[clave];
-
-            const datasetKey = clave + '_dataset';
-            if (datos.divs[datasetKey] && div.dataset.valor !== undefined) {
-              div.dataset.valor = datos.divs[datasetKey];
-            }
-          }
-        });
-      }
-
-      if (datos.localStorage) {
-        Object.keys(datos.localStorage).forEach(key => {
-          if (datos.localStorage[key] !== null) {
-            localStorage.setItem(key, datos.localStorage[key]);
-          }
-        });
-      }
-
-      setTimeout(() => {
-        if (typeof calcularTotales === 'function') calcularTotales();
-        if (typeof verificarCamposVacios === 'function') verificarCamposVacios();
-        if (typeof sumarInputsImpares === 'function') sumarInputsImpares();
-        if (typeof sumarResultados === 'function') sumarResultados();
-        if (typeof sumarConteoBilletes === 'function') sumarConteoBilletes();
-
-        setTimeout(() => {
-          sincronizacionActiva = true;
-        }, 500);
-      }, 100);
-    }
-
-    // Intentar reconexión automática
-    function intentarReconexion() {
-      if (intentandoReconectar) return;
-
-      const idRemoto = localStorage.getItem('peer-remote-id');
-      if (!idRemoto || idRemoto === miID) return;
-
-      intentandoReconectar = true;
-
-      console.log('Intentando reconexión en 5 segundos...');
-
-      if (reconnectInterval) clearInterval(reconnectInterval);
-
-      reconnectInterval = setInterval(() => {
-        if (!conexion || !conexion.open) {
-          conectarAutomaticamente(idRemoto);
-        } else {
-          clearInterval(reconnectInterval);
-          intentandoReconectar = false;
-        }
-      }, 5000);
-    }
-
-    // Actualizar estado de conexión en UI (MODIFICADA PARA INCLUIR BOTÓN GUARDAR)
-    function actualizarEstadoConexion() {
-      const statusEl = document.getElementById('peerStatus');
-      const disconnectBtn = document.getElementById('disconnectBtn');
-      const connectBtn = document.getElementById('connectBtn');
-      const guardarBtn = document.getElementById('guardarCambiosBtn'); // NUEVO
-
-      if (conexion && conexion.open) {
-        statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
-        statusEl.className = 'peer-status connected';
-        disconnectBtn.style.display = 'block';
-        connectBtn.style.display = 'none';
-        guardarBtn.style.display = 'block'; // MOSTRAR BOTÓN GUARDAR
-      } else {
-        statusEl.textContent = 'Sin conexión';
-        statusEl.className = 'peer-status disconnected';
-        disconnectBtn.style.display = 'none';
-        connectBtn.style.display = 'block';
-        guardarBtn.style.display = 'none'; // OCULTAR BOTÓN GUARDAR
-      }
-    }
-
-    // Desconectar
-    function desconectar() {
-      if (conexion) {
-        conexion.close();
-        conexion = null;
-      }
-
-      if (peer) {
-        peer.disconnect();
-      }
-
-      localStorage.removeItem('peer-remote-id');
-      esAnfitrion = false;
-
-      Swal.fire({
-        icon: 'info',
-        title: 'Desconectado',
-        text: 'Se ha cerrado la conexión',
-        timer: 1500,
-        showConfirmButton: false
-      });
-
-      actualizarEstadoConexion();
-    }
-
-    // Copiar mi ID
-function copiarMiID() {
-  Swal.fire({
-    title: 'Mi ID',
-    text: `ID actual: ${miID}`,
-    icon: 'info',
-    showCancelButton: true,
-    confirmButtonText: 'Copiar',
-    cancelButtonText: 'Cambiar ID',
-    showDenyButton: true,
-    denyButtonText: 'Cerrar'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      navigator.clipboard.writeText(miID).then(() => {
-        Swal.fire({
-          icon: 'success',
-          title: 'ID copiado',
-          text: 'ID copiado al portapapeles',
-          timer: 1500,
-          showConfirmButton: false
-        });
-      }).catch(() => {
-        prompt('Copia este ID manualmente:', miID);
-      });
-    } else if (result.dismiss === Swal.DismissReason.cancel) {
-      // Mostrar submenú: Cambiar ID o Cambiar Rol
-      Swal.fire({
-        title: '⚙️ Configuración',
-        html: `
-          <p><strong>ID actual:</strong> ${miID}</p>
-          <p><strong>Rol actual:</strong> ${localStorage.getItem('peer-rol') || 'No definido'}</p>
-          <p>¿Qué deseas cambiar?</p>
-        `,
-        icon: 'question',
-        showCancelButton: true,
-        showDenyButton: true,
-        confirmButtonText: '🆔 Cambiar ID',
-        denyButtonText: '🔄 Cambiar Rol',
-        cancelButtonText: '❌ Cancelar'
-      }).then((subResult) => {
-        // Opción 1: Cambiar ID
-        if (subResult.isConfirmed) {
-          Swal.fire({
-            title: 'Cambiar ID',
-            input: 'text',
-            inputLabel: 'Nuevo ID',
-            inputValue: miID,
-            showCancelButton: true,
-            confirmButtonText: 'Guardar',
-            cancelButtonText: 'Cancelar',
-            inputValidator: (value) => {
-              if (!value) {
-                return 'Debes ingresar un ID';
-              }
-            }
-          }).then((idResult) => {
-            if (idResult.isConfirmed) {
-              const nuevoId = idResult.value;
-              localStorage.setItem('peer-id-persistente', nuevoId);
-              Swal.fire({
-                icon: 'success',
-                title: 'ID guardado',
-                text: 'El ID ha sido cambiado. La página se recargará para aplicar los cambios.',
-                timer: 2000,
-                showConfirmButton: false
-              }).then(() => {
-                location.reload();
-              });
-            }
-          });
-        } 
-        // Opción 2: Cambiar Rol
-        else if (subResult.isDenied) {
-          const rolActual = localStorage.getItem('peer-rol');
-          const rolTexto = rolActual === 'anfitrion' ? '👑 Anfitrión (Control Total)' : '👁️ Cliente (Solo Lectura)';
-          
-          Swal.fire({
-            title: '⚠️ Cambiar Rol',
-            html: `
-              <p>Rol actual: <strong style="color: ${rolActual === 'anfitrion' ? '#4CAF50' : '#ff9800'};">${rolTexto}</strong></p>
-              <p style="margin-top: 15px;">¿Deseas cambiar el rol de este dispositivo?</p>
-              <p style="color: red; font-size: 14px; margin-top: 10px;">⚠️ Advertencia: Esto reiniciará la conexión y recargará la página</p>
-            `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, cambiar rol',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#f44336'
-          }).then((rolResult) => {
-            if (rolResult.isConfirmed) {
-              // Preguntar qué rol quiere
-              Swal.fire({
-                title: '¿Qué rol deseas?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: '👑 Anfitrión (Editar)',
-                cancelButtonText: '👁️ Cliente (Solo Ver)',
-                allowOutsideClick: false
-              }).then((nuevoRolResult) => {
-                if (nuevoRolResult.isConfirmed) {
-                  // Cambiar a Anfitrión
-                  localStorage.setItem('peer-rol', 'anfitrion');
-                  localStorage.setItem('peer-id-persistente', 'anfitrion-pagatodo-fijo');
-                  Swal.fire({
-                    icon: 'success',
-                    title: '👑 Ahora eres Anfitrión',
-                    text: 'Recargando página...',
-                    timer: 1500,
-                    showConfirmButton: false
-                  }).then(() => {
-                    location.reload();
-                  });
-                } else if (nuevoRolResult.dismiss === Swal.DismissReason.cancel) {
-                  // Cambiar a Cliente
-                  localStorage.setItem('peer-rol', 'cliente');
-                  const timestamp = Date.now();
-                  const random = Math.random().toString(36).substr(2, 9);
-                  localStorage.setItem('peer-id-persistente', `cliente-${timestamp}-${random}`);
-                  Swal.fire({
-                    icon: 'success',
-                    title: '👁️ Ahora eres Cliente',
-                    text: 'Recargando página...',
-                    timer: 1500,
-                    showConfirmButton: false
-                  }).then(() => {
-                    location.reload();
-                  });
-                }
-              });
-            }
-          });
-        }
-      });
-    }
-  });
-}
-
-    // Guardar datos localmente
-    function guardarLocalmente() {
-      document.querySelectorAll("input, textarea, select").forEach((campo, index) => {
-        const key = campo.id || campo.name || `campo-${index}`;
-        localStorage.setItem(key, campo.value);
-
-        if (campo.dataset.valor) {
-          localStorage.setItem(`${key}-dataset`, campo.dataset.valor);
-        }
-      });
-
-      document.querySelectorAll("td[class^='r']").forEach((celda, index) => {
-        localStorage.setItem(`td-${index}`, celda.textContent.trim());
-      });
-
-      localStorage.setItem('ultima-sincronizacion', Date.now());
-    }
-
-    // ============================================
-    // FUNCIONES EXISTENTES DE LA APLICACIÓN ORIGINAL
-    // ============================================
-
-    // Calcular totales
     function calcularTotales() {
       let totalBilteles = 0;
       let totalMonedas = 0;
@@ -2456,6 +1534,7 @@ function copiarMiID() {
         totalPremios = valorPremio;
       }
 
+
       const ventaInput = document.querySelector("input.venta");
       if (ventaInput) {
         const valorVenta = parseFloat(ventaInput.dataset.valor || "0");
@@ -2481,34 +1560,63 @@ function copiarMiID() {
 
       if (resulEl) {
         resulEl.innerText = resultadoResta.toLocaleString("es-CO");
-        resulEl.classList.remove("exacto", "sobra", "falta");
-        if (resultadoResta > 0) {
-          resulEl.classList.add("sobra");
-        } else if (resultadoResta < 0) {
-          resulEl.classList.add("falta");
+        if (totalVenta < sumaTotal) {
+          resulEl.style.backgroundColor = "lightgreen";
+        } else if (totalVenta > sumaTotal) {
+          resulEl.style.backgroundColor = "salmon";
         } else {
-          resulEl.classList.add("exacto");
+          resulEl.style.backgroundColor = "yellow";
         }
       }
 
       if (sobraEl) {
-        sobraEl.classList.remove("exacto", "sobra", "falta");
         if (resultadoResta > 0) {
           sobraEl.innerText = "Sobra";
-          sobraEl.classList.add("sobra");
+          sobraEl.style.backgroundColor = "lightgreen";
         } else if (resultadoResta < 0) {
           sobraEl.innerText = "Falta";
-          sobraEl.classList.add("falta");
+          sobraEl.style.backgroundColor = "salmon";
         } else {
           sobraEl.innerText = "Exacto";
-          sobraEl.classList.add("exacto");
+          sobraEl.style.backgroundColor = "yellow";
         }
       }
 
       verificarCamposVacios();
     }
+    function formatearMiles(input) {
+      const valor = input.value.replace(/\D/g, "");
+      if (valor === "") {
+        input.value = "";
+        input.dataset.valor = "0";
+      } else {
+        const numero = parseInt(valor);
+        input.dataset.valor = numero;
+        input.value = numero.toLocaleString("es-CO");
+      }
 
-    // Verificar campos vacíos
+      detectarFila(input);     // Para actualizar la fila correspondiente
+      calcularTotales();       // Si usas totales globales
+      verificarCamposVacios(); // Si deseas actualizar colores
+    }
+
+
+    /*
+    function formatearMiles(input) {
+      const valor = input.value.replace(/\D/g, "");
+      if (valor === "") {
+        input.value = "";
+        input.dataset.valor = "0";
+      } else {
+        const numero = parseInt(valor);
+        input.dataset.valor = numero;
+        input.value = numero.toLocaleString("es-CO");
+      }
+
+      calcularTotales();
+      verificarCamposVacios();
+    } */
+
     function verificarCamposVacios() {
       const verificaciones = [
         { inputId: "nequi1", celdaId: "nequi" },
@@ -2516,6 +1624,7 @@ function copiarMiID() {
         { inputId: "descuadre1", celdaId: "descuadre" },
         { inputId: "mio1", celdaId: "mio" },
         { inputId: "Avances1", celdaId: "Avances" }
+
       ];
 
       verificaciones.forEach(({ inputId, celdaId }) => {
@@ -2531,18 +1640,18 @@ function copiarMiID() {
         }
       });
 
+      // Pintar morado claro los inputs cantidad4 si tienen valor
       const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
       inputsCantidad4.forEach(input => {
         const valorNumerico = input.value.replace(/\D/g, "");
         if (valorNumerico !== "") {
-          input.style.backgroundColor = "#d6b3f8";
+          input.style.backgroundColor = "#d6b3f8"; // morado clarito
         } else {
           input.style.backgroundColor = "";
         }
       });
     }
 
-    // Lista de loterías para autocompletado
     const loterias = [
       "Lote Cundi", "Lote Tolima", "Lote Cruz Roja", "Lote Huila", "Lote Meta", "Lote Valle",
       "Lote Manizales", "Lote Bogota", "Lote Quindio", "Lote Risaralda", "Lote Medellin",
@@ -2554,12 +1663,9 @@ function copiarMiID() {
       "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas"
     ];
 
-    // Configurar autocompletado
     function setupAutoComplete(inputId, sugerenciasId) {
       const input = document.getElementById(inputId);
       const sugerencias = document.getElementById(sugerenciasId);
-
-      if (!input || !sugerencias) return;
 
       input.addEventListener('input', () => {
         const valor = input.value.toLowerCase();
@@ -2579,9 +1685,11 @@ function copiarMiID() {
               li.style.cursor = 'pointer';
               li.onclick = () => {
                 input.value = dep;
-                localStorage.setItem(input.id || input.name, dep);
+                localStorage.setItem(input.id || input.name, dep); // ✅ guardar valor
                 sugerencias.style.display = 'none';
-                input.dispatchEvent(new Event('input'));
+
+                // También podrías disparar manualmente un evento input o change si lo necesitas:
+                input.dispatchEvent(new Event('input')); // Opcional
               };
               sugerencias.appendChild(li);
             });
@@ -2589,6 +1697,7 @@ function copiarMiID() {
         }
       });
 
+      // Ocultar lista si se hace clic fuera
       document.addEventListener('click', e => {
         if (!sugerencias.contains(e.target) && e.target !== input) {
           sugerencias.style.display = 'none';
@@ -2596,71 +1705,86 @@ function copiarMiID() {
       });
     }
 
-    // Calcular resultado por input
-    function calcularResultadoPorInput(input) {
-      const clases = Array.from(input.classList);
-      const claseInput = clases.find(c => /^input\d+$/.test(c));
-      if (!claseInput) return;
 
-      const numeroClase = parseInt(claseInput.replace('input', ''));
-      const fila = Math.ceil(numeroClase / 2);
-      calcularResultado(fila);
+    // ✅ Aplicar a ambos inputs
+    setupAutoComplete('loteria', 'sugerencias');
+    setupAutoComplete('loteria2', 'sugerencias2');
+    setupAutoComplete('loteria3', 'sugerencias3');
+    setupAutoComplete('loteria4', 'sugerencias4');
+    setupAutoComplete('loteria5', 'sugerencias5');
+    setupAutoComplete('loteria6', 'sugerencias6');
+    setupAutoComplete('loteria7', 'sugerencias7');
+    setupAutoComplete('loteria8', 'sugerencias8');
+    setupAutoComplete('loteria9', 'sugerencias9');
+    setupAutoComplete('loteria10', 'sugerencias10');
+    setupAutoComplete('loteria11', 'sugerencias11');
+    setupAutoComplete('loteria12', 'sugerencias12');
+    setupAutoComplete('loteria13', 'sugerencias13');
+    setupAutoComplete('loteria14', 'sugerencias14');
+    setupAutoComplete('loteria15', 'sugerencias15');
+    setupAutoComplete('loteria16', 'sugerencias16');
+    setupAutoComplete('loteria17', 'sugerencias17');
+    setupAutoComplete('loteria18', 'sugerencias18');
+    setupAutoComplete('loteria19', 'sugerencias19');
+    setupAutoComplete('loteria20', 'sugerencias20');
+    setupAutoComplete('loteria21', 'sugerencias21');
+    setupAutoComplete('loteria22', 'sugerencias22');
+    setupAutoComplete('loteria23', 'sugerencias23');
+    setupAutoComplete('loteria24', 'sugerencias24');
+    setupAutoComplete('loteria25', 'sugerencias25');
+    setupAutoComplete('loteria26', 'sugerencias26');
+    setupAutoComplete('loteria27', 'sugerencias27');
+    setupAutoComplete('loteria28', 'sugerencias28');
+    setupAutoComplete('loteria29', 'sugerencias29');
+    setupAutoComplete('loteria30', 'sugerencias30');
+    setupAutoComplete('loteria31', 'sugerencias31');
+    setupAutoComplete('loteria32', 'sugerencias32');
+    setupAutoComplete('loteria33', 'sugerencias33');
+    setupAutoComplete('loteria34', 'sugerencias34');
+    setupAutoComplete('loteria35', 'sugerencias35');
+    setupAutoComplete('loteria36', 'sugerencias36');
+    setupAutoComplete('loteria37', 'sugerencias37');
+    setupAutoComplete('loteria38', 'sugerencias38');
+    setupAutoComplete('loteria39', 'sugerencias39');
+    setupAutoComplete('loteria40', 'sugerencias40');
+    setupAutoComplete('loteria41', 'sugerencias41');
+    setupAutoComplete('loteria42', 'sugerencias42');
+    setupAutoComplete('loteria43', 'sugerencias43');
+    setupAutoComplete('loteria44', 'sugerencias44');
+    setupAutoComplete('loteria45', 'sugerencias45');
+    setupAutoComplete('loteria46', 'sugerencias46');
+    setupAutoComplete('loteria47', 'sugerencias47');
+    setupAutoComplete('loteria48', 'sugerencias48');
+    setupAutoComplete('loteria49', 'sugerencias49');
+    setupAutoComplete('loteria50', 'sugerencias50');
+    setupAutoComplete('loteria51', 'sugerencias51');
+    setupAutoComplete('loteria52', 'sugerencias52');
+    setupAutoComplete('loteria53', 'sugerencias53');
+    setupAutoComplete('loteria54', 'sugerencias54');
+    setupAutoComplete('loteria55', 'sugerencias55');
+    setupAutoComplete('loteria56', 'sugerencias56');
+    setupAutoComplete('loteria57', 'sugerencias57');
+    setupAutoComplete('loteria58', 'sugerencias58');
+
+
+
+
+
+    function limpiarMiles(valor) {
+      return valor.replace(/\./g, '').replace(',', '.');
     }
 
-    // Calcular resultado de una fila
-    function calcularResultado(fila) {
-      const claseA = `input${((fila - 1) * 2) + 1}`;
-      const claseB = `input${((fila - 1) * 2) + 2}`;
-
-      const inputA = document.querySelector(`input.${claseA}`);
-      const inputB = document.querySelector(`input.${claseB}`);
-      const celdaResultado = document.querySelector(`.r${fila}`);
-
-      if (!inputA || !inputB || !celdaResultado) return;
-
-      const valA = inputA.value.replace(/\./g, '').replace(',', '.');
-      const valB = inputB.value.replace(/\./g, '').replace(',', '.');
-
-      const numA = parseFloat(valA) || 0;
-      const numB = parseFloat(valB) || 0;
-
-      if (!isNaN(numA) && !isNaN(numB)) {
-        const resultado = (numA * numB);
-        celdaResultado.textContent = resultado.toLocaleString('es-CO');
-        celdaResultado.dataset.valor = resultado.toString();
-      } else {
-        celdaResultado.textContent = '';
-        celdaResultado.dataset.valor = '0';
+    /*
+    function formatearMiles(input) {
+      tel valor = input.value.replace(/\./g, '').replace(',', '.');
+      if (!isNaN(valor) && valor.trim() !== '') {
+        tel num = parseFloat(valor);
+        input.value = num.toLocaleString('es-CO');
       }
 
-      sumarResultados();
-    }
+      detectarFila(input);
+    } */
 
-    // Sumar todos los resultados
-    function sumarResultados() {
-      let total = 0;
-
-      for (let i = 1; i <= 30; i++) {
-        const celda = document.querySelector(`.r${i}`);
-        if (!celda) continue;
-
-        const texto = celda.textContent.replace(/\./g, '').replace(',', '.');
-        const numero = parseFloat(texto) || 0;
-
-        total += numero;
-      }
-
-      const divCantidad3 = document.querySelector('.cantidad3');
-      if (divCantidad3) {
-        divCantidad3.textContent = total.toLocaleString('es-CO');
-        divCantidad3.dataset.valor = total.toString();
-        localStorage.setItem("premios-total", total.toString());
-      }
-
-      calcularTotales();
-    }
-
-    // Función para detectar fila desde input
     function detectarFila(input) {
       const clases = Array.from(input.classList);
       const claseInput = clases.find(c => /^input\d+$/.test(c));
@@ -2671,32 +1795,66 @@ function copiarMiID() {
       calcularResultado(fila);
     }
 
-    // Formatear miles
-    function formatearMiles(input) {
-      const valor = input.value.replace(/\D/g, "");
-      if (valor === "") {
-        input.value = "";
-        input.dataset.valor = "0";
+    function calcularResultado(fila) {
+      const claseA = `input${((fila - 1) * 2) + 1}`;
+      const claseB = `input${((fila - 1) * 2) + 2}`;
+
+      const inputA = document.querySelector(`input.${claseA}`);
+      const inputB = document.querySelector(`input.${claseB}`);
+      const celdaResultado = document.querySelector(`.r${fila}`);
+
+      if (!inputA || !inputB || !celdaResultado) return;
+
+      const valA = limpiarMiles(inputA.value);
+      const valB = limpiarMiles(inputB.value);
+
+      const numA = parseFloat(valA);
+      const numB = parseFloat(valB);
+
+      if (!isNaN(numA) && !isNaN(numB)) {
+        celdaResultado.textContent = (numA * numB).toLocaleString('es-CO');
       } else {
-        const numero = parseInt(valor);
-        input.dataset.valor = numero;
-        input.value = numero.toLocaleString("es-CO");
+        celdaResultado.textContent = '';
+      }
+      sumarResultados();
+    }
+
+
+    function sumarResultados() {
+      let total = 0;
+
+      for (let i = 1; i <= 58; i++) {
+        const celda = document.querySelector(`.r${i}`);
+        if (!celda) continue;
+
+        const texto = celda.textContent.replace(/\./g, '').replace(',', '.');
+        const numero = parseFloat(texto);
+
+        if (!isNaN(numero)) {
+          total += numero;
+        }
       }
 
-      if (input.classList.contains('input1') || input.classList.contains('input2') ||
-        /^input\d+$/.test(Array.from(input.classList).find(c => /^input\d+$/.test(c)))) {
-        detectarFila(input);
+      // Mostrar el total en el DIV .cantidad3
+      const divCantidad3 = document.querySelector('.cantidad3');
+      if (divCantidad3) {
+        divCantidad3.textContent = total.toLocaleString('es-CO');
+        divCantidad3.dataset.valor = total.toString(); // Para cálculos futuros
+        localStorage.setItem("premios-total", total.toString());
+      }
+
+      // Mostrar también en una celda si deseas (opcional)
+      const totalEl = document.getElementById('totalResultado');
+      if (totalEl) {
+        totalEl.textContent = total.toLocaleString('es-CO');
       }
 
       calcularTotales();
-      verificarCamposVacios();
     }
-
-    // Sumar inputs impares
     function sumarInputsImpares() {
       let suma = 0;
 
-      for (let i = 1; i <= 60; i += 2) {
+      for (let i = 1; i <= 115; i += 2) {
         const input = document.querySelector(`input.input${i}`);
         if (input) {
           const valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
@@ -2706,15 +1864,239 @@ function copiarMiID() {
 
       const campoCantidad5 = document.querySelector(".cantidad5");
       if (campoCantidad5) {
-        campoCantidad5.textContent = suma.toLocaleString("es-CO");
-        campoCantidad5.dataset.valor = suma.toString();
+        campoCantidad5.value = suma.toLocaleString("es-CO"); // si es input
+        campoCantidad5.textContent = suma.toLocaleString("es-CO"); // si es div o span
+        campoCantidad5.dataset.valor = suma.toString(); // si lo usas como dataset
       }
     }
 
-    // Sumar conteo de billetes
+  </script>
+
+
+  <!-- Librería XLSX necesaria para exportar -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+
+  <script>
+    function confirmarEnvioExcel() {
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Se enviarán los datos a Excel.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, enviar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          exportarTablaAExcel();
+        }
+      });
+
+      const celdasResultado = tablaClon.querySelectorAll(".resultado");
+      celdasResultado.forEach(td => {
+        const valor = td.textContent.replace(/,/g, "").trim(); // quitar comas
+        td.textContent = valor;
+      });
+    }
+
+
+
+
+
+    function exportarAExcelReal() {
+      const tabla = document.getElementById("miTabla");
+      if (!tabla) {
+        alert("No se encontró la tabla.");
+        return;
+      }
+
+      // Clonar la tabla
+      const tablaClon = tabla.cloneNode(true);
+
+      // Reemplazar inputs y textareas por su valor
+      const campos = tablaClon.querySelectorAll("input, textarea");
+      campos.forEach(el => {
+        const td = el.closest("td");
+        if (td) {
+          const valor = el.value.trim().replace(/,/g, ""); // quitar comas si el input tiene
+          const span = document.createElement("span");
+          span.textContent = valor;
+          td.replaceChild(span, el);
+        }
+      });
+
+      // Quitar comas en celdas de clase .resultado
+      const resultados = tablaClon.querySelectorAll(".resultado");
+      resultados.forEach(td => {
+        if (td.textContent.includes(",")) {
+          td.textContent = td.textContent.replace(/,/g, "").trim();
+        }
+      });
+
+      // Convertir tabla a hoja de cálculo
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
+
+
+      // Forzar que celdas tipo número sean leídas como números
+      Object.keys(ws).forEach(key => {
+        if (key[0] === '!') return; // omitir claves especiales
+        const celda = ws[key];
+        if (typeof celda.v === "string" && /^\d+$/.test(celda.v)) {
+          celda.t = "n"; // tipo número
+          celda.v = parseInt(celda.v, 10);
+        }
+      });
+
+      XLSX.utils.book_append_sheet(wb, ws, "Datos");
+      XLSX.writeFile(wb, "tabla_loterias.xlsx");
+    }
+
+
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Guardar al cambiar
+      const elementos = document.querySelectorAll("input, textarea, select");
+
+      elementos.forEach(el => {
+        const clave = el.id || el.name;
+        if (!clave) return;
+
+        // Restaurar valor guardado si existe
+        const guardado = localStorage.getItem(clave);
+        if (guardado !== null) {
+          el.value = guardado;
+        }
+
+        // Guardar al cambiar o escribir
+        el.addEventListener("input", () => localStorage.setItem(clave, el.value));
+        el.addEventListener("change", () => localStorage.setItem(clave, el.value));
+      });
+      sumarInputsImpares(); // ← Llamado inicial para calcular al cargar
+
+    });
+  </script>
+
+
+  <!-- Incluye la librería XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Tu tabla con ID correcto -->
+  <table id="miTabla">
+
+  </table>
+
+  <!-- Botón para exportar -->
+
+
+  <script>
+    function confirmarEnvioExcel() {
+      Swal.fire({
+        title: '¿Exportar a Excel?',
+        text: 'Se generará un archivo con los datos actuales.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, exportar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          exportarAExcelReal(); // tu función que realmente exporta
+          Swal.fire({
+            title: '¡Exportado!',
+            text: 'El archivo fue generado correctamente.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+      });
+    }
+
+
+    function exportarAExcelReal() {
+      const tabla = document.getElementById("miTabla");
+
+      if (!tabla) {
+        alert("No se encontró la tabla.");
+        return;
+      }
+
+      // Clonar la tabla para no afectar la original
+      const tablaClon = tabla.cloneNode(true);
+
+      // Reemplazar inputs y textareas por su valor
+      const campos = tablaClon.querySelectorAll("input, textarea");
+      campos.forEach(el => {
+        const td = el.closest("td");
+        if (td) {
+          const span = document.createElement("span");
+          span.textContent = el.value.trim();
+          td.replaceChild(span, el); // ⚠️ reemplaza directamente el input por texto plano
+        }
+      });
+
+
+
+      // Crear archivo Excel real con XLSX
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
+
+      XLSX.utils.book_append_sheet(wb, ws, "Datos");
+      XLSX.writeFile(wb, "tabla_loterias.xlsx"); // ✅ Real .xlsx
+    }
+  </script>
+
+
+  <td id="fechaHoraActual" style="font-weight: bold; color: blue;"></td>
+
+  <td id="fechaHoraActual" style="font-weight: bold; color: blue;"></td>
+
+  <script>
+    function ponerFechaHora() {
+      const ahora = new Date();
+
+      const opciones = {
+        weekday: "short",    // ej: "vie"
+        day: "2-digit",
+        month: "short",      // ej: "jul"
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      };
+
+      const fechaHora = ahora.toLocaleString("es-CO", opciones);
+      document.getElementById("fechaHoraActual").textContent = fechaHora;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      ponerFechaHora(); // Primera vez
+      setInterval(ponerFechaHora, 1000); // Cada segundo, aunque ya no se muestren
+    });
+  </script>
+
+  <script>
     function sumarConteoBilletes() {
       let total = 0;
 
+      // IDs reales de los INPUTS
       const ids = ["b1", "b2", "b3", "b4", "b5", "b6"];
 
       ids.forEach(id => {
@@ -2731,425 +2113,14 @@ function copiarMiID() {
       }
     }
 
-    // Configurar autocompletado para todos los inputs de lotería
-    function configurarTodosLosAutocompletados() {
-      console.log('Configurando autocompletados...');
-
-      if (document.getElementById('loteria') && document.getElementById('sugerencias')) {
-        setupAutoComplete('loteria', 'sugerencias');
-        console.log('Configurado loteria');
-      }
-
-      for (let i = 1; i <= 30; i++) {
-        const inputId = `loteria${i}`;
-        const sugerenciasId = `sugerencias${i}`;
-
-        if (document.getElementById(inputId) && document.getElementById(sugerenciasId)) {
-          setupAutoComplete(inputId, sugerenciasId);
-          console.log(`Configurado ${inputId}`);
-        }
-      }
-    }
-
-    // Confirmar borrado
-    function confirmarBorrado() {
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: "Se borrarán todos los datos y no se podrán recuperar.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, borrar todo',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          borrarTodo();
-        }
-      });
-    }
-
-    // Borrar todo
-    // Borrar todo
-    function borrarTodo() {
-      // GUARDAR las claves importantes ANTES de borrar
-      const peerIdPersistente = localStorage.getItem('peer-id-persistente');
-      const peerRemoteId = localStorage.getItem('peer-remote-id');
-
-      // Borrar todo el localStorage
-      localStorage.clear();
-
-      // RESTAURAR las claves importantes del sistema P2P
-      if (peerIdPersistente) {
-        localStorage.setItem('peer-id-persistente', peerIdPersistente);
-      }
-      if (peerRemoteId) {
-        localStorage.setItem('peer-remote-id', peerRemoteId);
-      }
-
-      // Borrar todos los inputs y textareas
-      document.querySelectorAll("input, textarea").forEach(el => {
-        el.value = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Borrar todos los resultados y celdas
-      document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Borrar divs especiales
-      document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-        el.textContent = "";
-        if (el.dataset.valor) el.dataset.valor = "0";
-      });
-
-      // Limpiar totales
-      document.getElementById("total-general-bilteles").textContent = "";
-      document.getElementById("total-general-monedas").textContent = "";
-      document.getElementById("suma-total").textContent = "";
-      document.getElementById("resul").textContent = "";
-      document.getElementById("sobra").textContent = "";
-
-      // Recalcular todo
-      calcularTotales();
-      verificarCamposVacios();
-      sumarResultados();
-      sumarInputsImpares();
-      sumarConteoBilletes();
-
-      // Si hay conexión P2P activa, enviar los datos borrados al otro dispositivo
-      if (conexion && conexion.open) {
-        setTimeout(() => {
-          enviarDatos();
-        }, 300);
-      }
-
-      Swal.fire({
-        icon: 'success',
-        title: '¡Borrado!',
-        text: 'Todos los datos han sido borrados.',
-        timer: 1500,
-        showConfirmButton: false
-      });
-    }
-// NUEVA FUNCIÓN: Borrar sin confirmación (para uso interno del Cliente)
-function borrarTodoSinConfirmacion() {
-  console.log('🗑️ Borrando datos del Cliente para recibir datos del Anfitrión');
-
-  // NO borrar las claves del sistema P2P
-  const peerIdPersistente = localStorage.getItem('peer-id-persistente');
-  const peerRemoteId = localStorage.getItem('peer-remote-id');
-  const peerRol = localStorage.getItem('peer-rol');
-
-  // Borrar inputs y textareas
-  document.querySelectorAll("input, textarea").forEach(el => {
-    el.value = "";
-    if (el.dataset.valor) el.dataset.valor = "0";
-  });
-
-  // Borrar resultados y celdas
-  document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
-    el.textContent = "";
-    if (el.dataset.valor) el.dataset.valor = "0";
-  });
-
-  // Borrar divs especiales
-  document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
-    el.textContent = "";
-    if (el.dataset.valor) el.dataset.valor = "0";
-  });
-
-  // Restaurar claves P2P
-  if (peerIdPersistente) localStorage.setItem('peer-id-persistente', peerIdPersistente);
-  if (peerRemoteId) localStorage.setItem('peer-remote-id', peerRemoteId);
-  if (peerRol) localStorage.setItem('peer-rol', peerRol);
-}
-    // Exportar a Excel
-    function confirmarEnvioExcel() {
-      Swal.fire({
-        title: '¿Exportar a Excel?',
-        text: 'Se generará un archivo con los datos actuales.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, exportar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          exportarAExcelReal();
-          Swal.fire({
-            title: '¡Exportado!',
-            text: 'El archivo fue generado correctamente.',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        }
-      });
-    }
-
-    // Exportar a Excel real
-    function exportarAExcelReal() {
-      const tabla = document.getElementById("miTabla");
-
-      if (!tabla) {
-        alert("No se encontró la tabla.");
-        return;
-      }
-
-      const tablaClon = tabla.cloneNode(true);
-
-      const campos = tablaClon.querySelectorAll("input, textarea");
-      campos.forEach(el => {
-        const td = el.closest("td");
-        if (td) {
-          const span = document.createElement("span");
-          span.textContent = el.value.trim();
-          td.replaceChild(span, el);
-        }
-      });
-
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
-
-      XLSX.utils.book_append_sheet(wb, ws, "Datos");
-      XLSX.writeFile(wb, "contador_pagatodo.xlsx");
-    }
-
-    // Mostrar fecha y hora actual
-    function ponerFechaHora() {
-      const ahora = new Date();
-
-      const opciones = {
-        weekday: "short",
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true
-      };
-
-      const fechaHora = ahora.toLocaleString("es-CO", opciones);
-      const elemento = document.getElementById("fechaHoraActual");
-      if (elemento) {
-        elemento.textContent = fechaHora;
-      }
-    }
-
-    // ============================================
-    // INICIALIZACIÓN AL CARGAR LA PÁGINA
-    // ============================================
-
-    document.addEventListener("DOMContentLoaded", () => {
-     // NUEVO: Verificar rol y bloquear edición si es Cliente
-// NUEVO: Verificar rol y bloquear edición si es Cliente
-const rol = localStorage.getItem('peer-rol');
-if (rol === 'cliente') {
-    console.log('🔒 Modo Cliente: Bloqueando edición');
-    
-    // Deshabilitar TODOS los inputs, textareas y botones de edición
-    document.querySelectorAll('input, textarea, select, button').forEach(elemento => {
-      // Excepto los botones de conexión P2P
-      if (!elemento.id.includes('Btn') && elemento.id !== 'miIDBtn') {
-        elemento.disabled = true;
-        elemento.style.cursor = 'not-allowed';
-        
-        // NUEVO: Aplicar fondo azul claro SOLO a inputs con fondo blanco/transparente
-        if (elemento.tagName === 'INPUT' || elemento.tagName === 'TEXTAREA') {
-          elemento.style.opacity = '1'; // Restaurar opacidad completa para inputs
-          elemento.style.fontWeight = 'bold'; // NEGRILLA
-          elemento.style.color = '#000 !important'; // Negro sólido para mejor contraste
-          
-          // Obtener el color de fondo REAL computado por el navegador
-          const estiloComputado = window.getComputedStyle(elemento);
-          const bgColor = estiloComputado.backgroundColor;
-          
-          // Detectar si el fondo es blanco o transparente
-          const esBlanco = bgColor === 'rgb(255, 255, 255)' || 
-                          bgColor === 'rgba(255, 255, 255, 1)' ||
-                          bgColor === 'transparent' ||
-                          bgColor === 'rgba(0, 0, 0, 0)' ||
-                          bgColor === '' ||
-                          bgColor === 'initial' ||
-                          bgColor === 'inherit';
-          
-          // SOLO aplicar amarillo pastel si el fondo es blanco o transparente
-          if (esBlanco) {
-            elemento.style.setProperty('background-color', '#FEFFDB', 'important'); // Amarillo pastel suave
-            elemento.style.setProperty('background', '#FEFFDB', 'important');
-          }
-          // Si tiene cualquier otro color (amarillo fuerte, morado, verde, negro, etc.), lo conserva
-        } else {
-          // Para botones mantener la opacidad reducida
-          elemento.style.opacity = '0.6';
-        }
-      }
-    });
-    
-    // AGREGAR: Estilo CSS dinámico más fuerte para inputs con fondo blanco en modo Cliente
-    const styleCliente = document.createElement('style');
-    styleCliente.id = 'estilo-cliente-readonly';
-    styleCliente.textContent = `
-      input:disabled:not([style*="background-color: yellow"]):not([style*="background-color: rgb"]),
-      textarea:disabled {
-        background-color: #FEFFDB !important;
-        background: #FEFFDB !important;
-        color: #000 !important;
-        font-weight: bold !important;
-      }
-    `;
-    document.head.appendChild(styleCliente);
-    styleCliente.id = 'estilo-cliente-readonly';
-    styleCliente.textContent = `
-      input:disabled:not([style*="background-color: yellow"]):not([style*="background-color: rgb"]),
-      textarea:disabled {
-        background-color: #B3E5FC !important;
-        background: #B3E5FC !important;
-        color: #000 !important;
-        font-weight: bold !important;
-      }
-    `;
-    document.head.appendChild(styleCliente);
-    
-
-    // Agregar marca visual de "Solo Lectura"
-    const header = document.querySelector('thead tr th:first-child');
-    if (header) {
-      const badge = document.createElement('div');
-      badge.innerHTML = '👁️ MODO CLIENTE (SOLO LECTURA)';
-      badge.style.cssText = `
-        position: fixed;
-        top: 80px;
-        right: 10px;
-        background: #ff9800;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
-        font-weight: bold;
-        z-index: 10001;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      `;
-      document.body.appendChild(badge);
-    }
-  } else if (rol === 'anfitrion') {
-    console.log('👑 Modo Anfitrión: Edición habilitada');
-    
-    // Agregar marca visual de "Anfitrión"
-    const badge = document.createElement('div');
-    badge.innerHTML = '👑 ANFITRIÓN (CONTROL TOTAL)';
-    badge.style.cssText = `
-      position: fixed;
-      top: 80px;
-      right: 10px;
-      background: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      font-weight: bold;
-      z-index: 10001;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    `;
-    document.body.appendChild(badge);
-  }
-      // 1. Cargar datos desde localStorage
-      const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
-      const premiosDiv = document.querySelector(".cantidad3");
-      const premiosGuardado = localStorage.getItem("premios-total");
-
-      if (premiosDiv && premiosGuardado !== null) {
-        premiosDiv.textContent = parseFloat(premiosGuardado).toLocaleString('es-CO');
-        premiosDiv.dataset.valor = premiosGuardado;
-      }
-
-      campos.forEach((campo, index) => {
-        const key = `input-${index}`;
-        const valorGuardado = localStorage.getItem(key);
-        if (valorGuardado !== null) {
-          campo.value = valorGuardado;
-
-          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
-            campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
-          }
-        }
-
-        campo.addEventListener("input", () => {
-          localStorage.setItem(key, campo.value);
-          sumarInputsImpares();
-          if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
-            campo.dataset.valor = campo.value.replace(/\D/g, "") || "0";
-          }
-
-          calcularTotales?.();
-          verificarCamposVacios?.();
-          guardarCeldasTd();
-        });
-      });
-
-      // Restaurar celdas <td class="rX">
-      const celdas = document.querySelectorAll("td[class^='r']");
-      celdas.forEach((celda, index) => {
-        const valor = localStorage.getItem(`td-${index}`);
-        if (valor !== null) {
-          celda.textContent = valor;
-        }
-      });
-
-      function guardarCeldasTd() {
-        celdas.forEach((celda, index) => {
-          localStorage.setItem(`td-${index}`, celda.textContent.trim());
-        });
-      }
-
-      // 2. Inicializar PeerJS
-      inicializarPeerJS();
-
-      // 3. Configurar autocompletado
-      configurarTodosLosAutocompletados();
-
-      // 4. Configurar eventos de input para cálculos
-      document.addEventListener("input", (e) => {
-        if (e.target.classList.contains('cantidad')) {
-          calcularTotales();
-          sumarConteoBilletes();
-        }
-
-        if (e.target.classList.contains('cantidad2') || e.target.classList.contains('cantidad4')) {
-          calcularTotales();
-        }
-
-        if (e.target.classList.contains('input')) {
-          calcularResultadoPorInput(e.target);
-          sumarInputsImpares();
-        }
-      });
-
-      // 5. Inicializar cálculos
-      setTimeout(() => {
-        calcularTotales();
-        verificarCamposVacios();
-        sumarInputsImpares();
-        sumarResultados();
-        sumarConteoBilletes();
-      }, 500);
-
-      // 6. Iniciar reloj
-      ponerFechaHora();
-      setInterval(ponerFechaHora, 1000);
-
-      console.log('Aplicación inicializada correctamente');
-    });
-
-    // Configurar eventos para inputs de billetes
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6").forEach(input => {
+    // Escuchar escritura en TODOS los inputs de billetes
+    document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6")
+      .forEach(input => {
         input.addEventListener("input", sumarConteoBilletes);
       });
-    });
   </script>
+
+
 </body>
 
 </html>
