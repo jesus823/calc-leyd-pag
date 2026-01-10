@@ -1522,7 +1522,39 @@ let esModoLecturaForzado = false;
 // ============================================
 // SISTEMA DE MODO SOLO LECTURA
 // ============================================
+// ============================================
+// SISTEMA DE ANFITRIÓN FIJO
+// ============================================
 
+// CONFIGURA AQUÍ EL ID DEL DISPOSITIVO ANFITRIÓN FIJO
+const ID_ANFITRION_FIJO = "tab"; // REEMPLAZA CON EL ID REAL DEL DISPOSITIVO ANFITRIÓN
+
+// Verificar si este dispositivo es el anfitrión fijo
+function esDispositivoAnfitrion() {
+  const miIdActual = localStorage.getItem('peer-id-persistente');
+  const esAnfitrionFijo = miIdActual === ID_ANFITRION_FIJO;
+  
+  console.log(`🔍 Verificando rol del dispositivo:`);
+  console.log(`   Mi ID: ${miIdActual}`);
+  console.log(`   ID Anfitrión Fijo: ${ID_ANFITRION_FIJO}`);
+  console.log(`   ¿Es Anfitrión? ${esAnfitrionFijo ? 'SÍ ✅' : 'NO ❌'}`);
+  
+  return esAnfitrionFijo;
+}
+
+// Mostrar rol del dispositivo al usuario
+function mostrarRolDispositivo() {
+  const rol = esDispositivoAnfitrion() ? 'ANFITRIÓN' : 'CLIENTE';
+  const color = esDispositivoAnfitrion() ? '#4CAF50' : '#2196F3';
+  
+  console.log(`📱 ROL DEL DISPOSITIVO: ${rol}`);
+  
+  // Mostrar indicador visual en la interfaz
+  const statusEl = document.getElementById('peerStatus');
+  if (statusEl && !conexion) {
+    statusEl.innerHTML = `Sin conexión - <strong style="color: ${color}">${rol}</strong>`;
+  }
+}
 // Alternar entre modo edición y solo lectura (BLOQUEADA PARA CLIENTES)
 function alternarModoLectura() {
   // Solo permitir al anfitrión cambiar el modo
@@ -1898,7 +1930,15 @@ function activarModoLecturaCliente() {
         const idCorto = id.length > 8 ? id.substring(0, 8) + '...' : id;
         document.getElementById('miIDBtn').textContent = `Mi ID: ${idCorto}`;
         document.getElementById('miIDBtn').style.display = 'block';
-
+// DETERMINAR ROL BASADO EN ID FIJO
+        esAnfitrion = esDispositivoAnfitrion();
+        mostrarRolDispositivo();
+        
+        if (esAnfitrion) {
+          console.log('👑 Este dispositivo es el ANFITRIÓN FIJO permanente');
+        } else {
+          console.log('📱 Este dispositivo es CLIENTE');
+        }
         configurarInputsParaSincronizacion();
 
         const idRemotoGuardado = localStorage.getItem('peer-remote-id');
@@ -1911,8 +1951,24 @@ function activarModoLecturaCliente() {
         actualizarEstadoConexion();
       });
 
-      peer.on('connection', (conn) => {
+     peer.on('connection', (conn) => {
         console.log('📲 Conexión entrante recibida de:', conn.peer);
+        
+        // VALIDAR QUE ESTE DISPOSITIVO ES EL ANFITRIÓN
+        if (!esDispositivoAnfitrion()) {
+          console.error('⛔ Este dispositivo NO es el anfitrión. Rechazando conexión entrante.');
+          conn.close();
+          
+          Swal.fire({
+            icon: 'error',
+            title: 'Conexión Rechazada',
+            text: 'Este dispositivo es CLIENTE y no puede aceptar conexiones entrantes.',
+            timer: 3000
+          });
+          return;
+        }
+        
+        console.log('👑 Anfitrión aceptando conexión entrante');
         esAnfitrion = true;
         manejarNuevaConexion(conn);
 
@@ -1955,7 +2011,7 @@ function activarModoLecturaCliente() {
       configurarEventosConexion(conexion);
 
       localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = false;
+      esAnfitrion = esDispositivoAnfitrion(); // Usar siempre el rol basado en ID
       // LIMPIAR DATOS DEL CLIENTE EN RECONEXIÓN AUTOMÁTICA
       console.log('🗑️ Limpiando datos del cliente para reconexión automática...');
       
@@ -1994,7 +2050,7 @@ function activarModoLecturaCliente() {
       configurarEventosConexion(conexion);
 
       localStorage.setItem('peer-remote-id', idRemoto);
-      esAnfitrion = false;
+     esAnfitrion = esDispositivoAnfitrion(); // Usar siempre el rol basado en ID
       // LIMPIAR DATOS DEL CLIENTE ANTES DE CONECTAR
       console.log('🗑️ Limpiando datos del cliente antes de conectar...');
       
@@ -2212,14 +2268,13 @@ function manejarNuevaConexion(conn) {
 
     // Enviar datos a través de la conexión P2P
     function enviarDatos() {
-        // SI NO ES ANFITRIÓN, NO ENVIAR NADA
-  if (!esAnfitrion) {
-    console.log('🚫 Cliente no puede enviar datos (solo lectura)');
+  // SOLO EL ANFITRIÓN PUEDE ENVIAR DATOS
+  if (!esDispositivoAnfitrion()) {
+    console.log('🚫 Este dispositivo es CLIENTE - no puede enviar datos (solo lectura)');
     return;
   }
   
   if (!conexion || !conexion.open) return;
-      if (!conexion || !conexion.open) return;
 
       const datos = obtenerTodosLosDatos();
 
@@ -2432,16 +2487,18 @@ function actualizarEstadoConexion() {
   const connectBtn = document.getElementById('connectBtn');
   const guardarBtn = document.getElementById('guardarCambiosBtn');
 
-
-  if (conexion && conexion.open) {
-    statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
+if (conexion && conexion.open) {
+    const rol = esDispositivoAnfitrion() ? 'ANFITRIÓN FIJO' : 'CLIENTE';
+    statusEl.textContent = `Conectado (${rol})`;
     statusEl.className = 'peer-status connected';
     disconnectBtn.style.display = 'block';
     connectBtn.style.display = 'none';
     guardarBtn.style.display = 'block';
 
-  } else {
-    statusEl.textContent = 'Sin conexión';
+} else {
+    const rol = esDispositivoAnfitrion() ? 'ANFITRIÓN' : 'CLIENTE';
+    const color = esDispositivoAnfitrion() ? '#4CAF50' : '#2196F3';
+    statusEl.innerHTML = `Sin conexión - <strong style="color: ${color}">${rol}</strong>`;
     statusEl.className = 'peer-status disconnected';
     disconnectBtn.style.display = 'none';
     connectBtn.style.display = 'block';
