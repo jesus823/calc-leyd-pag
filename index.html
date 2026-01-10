@@ -2945,8 +2945,7 @@ function borrarTodoSinConfirmacion() {
     // ============================================
 
     document.addEventListener("DOMContentLoaded", () => {
-      console.log('Inicializando aplicación...');
-// NUEVO: Verificar rol y bloquear edición si es Cliente
+     // NUEVO: Verificar rol y bloquear edición si es Cliente
   const rol = localStorage.getItem('peer-rol');
 if (rol === 'cliente') {
     console.log('🔒 Modo Cliente: Bloqueando edición');
@@ -2958,26 +2957,35 @@ if (rol === 'cliente') {
         elemento.disabled = true;
         elemento.style.cursor = 'not-allowed';
         
-        // NUEVO: Aplicar fondo azul claro SOLO a inputs sin color de fondo específico
+        // NUEVO: Aplicar fondo azul claro SOLO a inputs con fondo blanco/transparente
         if (elemento.tagName === 'INPUT' || elemento.tagName === 'TEXTAREA') {
           elemento.style.opacity = '1'; // Restaurar opacidad completa para inputs
           elemento.style.fontWeight = 'bold'; // NEGRILLA
           elemento.style.color = '#000'; // Negro sólido para mejor contraste
           
-          // SOLO aplicar fondo azul si NO tiene un color de fondo específico en el HTML
-          const estiloInline = elemento.style.backgroundColor;
-          const tieneColorEspecifico = estiloInline && estiloInline !== '' && estiloInline !== 'transparent';
+          // Obtener el color de fondo computado (el real que se está mostrando)
+          const estiloComputado = window.getComputedStyle(elemento);
+          const bgColor = estiloComputado.backgroundColor;
           
-          if (!tieneColorEspecifico) {
+          // Convertir a RGB para comparar
+          const esBlanco = bgColor === 'rgb(255, 255, 255)' || 
+                          bgColor === 'rgba(255, 255, 255, 1)' ||
+                          bgColor === 'transparent' ||
+                          bgColor === 'rgba(0, 0, 0, 0)' ||
+                          bgColor === '';
+          
+          // SOLO aplicar azul claro si el fondo es blanco o transparente
+          if (esBlanco) {
             elemento.style.backgroundColor = '#E3F2FD'; // Azul cielo claro
           }
-          // Si tiene color específico (amarillo, morado, etc.), lo conserva
+          // Si tiene otro color (amarillo, morado, verde, etc.), lo conserva
         } else {
           // Para botones mantener la opacidad reducida
           elemento.style.opacity = '0.6';
         }
       }
     });
+    
 
     // Agregar marca visual de "Solo Lectura"
     const header = document.querySelector('thead tr th:first-child');
