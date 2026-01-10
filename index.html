@@ -1591,53 +1591,69 @@
 
     // ID persistente basado en localStorage
     // ID persistente basado en localStorage - COMPLETAMENTE FIJO
-    function obtenerPeerIdPersistente() {
-      let peerId = localStorage.getItem('peer-id-persistente');
+ function obtenerPeerIdPersistente() {
+  let peerId = localStorage.getItem('peer-id-persistente');
+  let rol = localStorage.getItem('peer-rol'); // NUEVO: Guardar el rol
 
-      // Si no existe, crear uno nuevo ÚNICO
-      if (!peerId) {
-        // Generar ID único basado en timestamp + random
+  // Si no existe, preguntar qué rol quiere
+  if (!peerId || !rol) {
+    // Mostrar diálogo de selección de rol
+    Swal.fire({
+      title: '¿Qué dispositivo es este?',
+      text: 'Selecciona el rol de este dispositivo',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '👑 Anfitrión (Edita)',
+      cancelButtonText: '👁️ Cliente (Solo ve)',
+      allowOutsideClick: false,
+      allowEscapeKey: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Es Anfitrión
+        peerId = 'anfitrion-pagatodo-fijo';
+        rol = 'anfitrion';
+        esAnfitrion = true;
+      } else {
+        // Es Cliente
         const timestamp = Date.now();
         const random = Math.random().toString(36).substr(2, 9);
-        peerId = `pagato-${timestamp}-${random}`;
-
-        // Guardar permanentemente
-        localStorage.setItem('peer-id-persistente', peerId);
-        console.log('🆕 ID FIJO creado y guardado permanentemente:', peerId);
-
-        // Mostrar al usuario su ID fijo
-        setTimeout(() => {
-          Swal.fire({
-            title: '¡ID Fijo Creado!',
-            html: `
-              <p>Tu ID personal es:</p>
-              <strong style="font-size: 18px; color: #2196F3;">${peerId}</strong>
-              <p style="margin-top: 10px; color: #666;">Este ID nunca cambiará. Guárdalo para reconectar tus dispositivos.</p>
-            `,
-            icon: 'info',
-            confirmButtonText: 'Copiar ID',
-            showCancelButton: true,
-            cancelButtonText: 'Entendido'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              navigator.clipboard.writeText(peerId).then(() => {
-                Swal.fire({
-                  icon: 'success',
-                  title: 'ID Copiado',
-                  text: 'Tu ID ha sido copiado al portapapeles',
-                  timer: 2000,
-                  showConfirmButton: false
-                });
-              });
-            }
-          });
-        }, 1000);
-      } else {
-        console.log('♻️ ID FIJO recuperado de localStorage:', peerId);
+        peerId = `cliente-${timestamp}-${random}`;
+        rol = 'cliente';
+        esAnfitrion = false;
       }
 
-      return peerId;
-    }
+      // Guardar permanentemente
+      localStorage.setItem('peer-id-persistente', peerId);
+      localStorage.setItem('peer-rol', rol);
+
+      console.log(`✅ Dispositivo configurado como: ${rol.toUpperCase()}`);
+      console.log(`🆔 ID asignado: ${peerId}`);
+
+      // Mostrar confirmación
+      Swal.fire({
+        title: rol === 'anfitrion' ? '👑 Anfitrión' : '👁️ Cliente',
+        html: `
+          <p><strong>Rol:</strong> ${rol === 'anfitrion' ? 'Anfitrión (puede editar)' : 'Cliente (solo lectura)'}</p>
+          <p><strong>ID:</strong> ${peerId}</p>
+          ${rol === 'cliente' ? '<p style="color: orange;">⚠️ Este dispositivo NO podrá editar, solo visualizar</p>' : ''}
+        `,
+        icon: 'success',
+        confirmButtonText: 'Continuar'
+      }).then(() => {
+        location.reload(); // Recargar para aplicar cambios
+      });
+    });
+
+    return peerId; // Retornar temporalmente
+  }
+
+  // Si ya existe, recuperar el rol
+  esAnfitrion = (rol === 'anfitrion');
+  console.log(`♻️ Dispositivo recuperado: ${rol.toUpperCase()}`);
+  console.log(`🆔 ID: ${peerId}`);
+
+  return peerId;
+}
 
     // MEJORA: Configurar inputs para mejor rendimiento
     function configurarInputsParaSincronizacion() {
@@ -1853,65 +1869,111 @@
 
     // Configurar eventos de conexión
     function configurarEventosConexion(conn) {
-      conn.on('open', () => {
-        console.log('✅ Conexión establecida exitosamente!');
-        conexion = conn;
-        intentandoReconectar = false;
+conn.on('open', () => {
+  console.log('✅ Conexión establecida exitosamente!');
+  conexion = conn;
+  intentandoReconectar = false;
 
-        Swal.close();
-        Swal.fire({
-          icon: 'success',
-          title: '¡Conectado!',
-          text: 'Conexión establecida exitosamente',
-          timer: 2000,
-          showConfirmButton: false
-        });
+  Swal.close();
+  Swal.fire({
+    icon: 'success',
+    title: '¡Conectado!',
+    text: 'Conexión establecida exitosamente',
+    timer: 2000,
+    showConfirmButton: false
+  });
 
-        setTimeout(() => {
-          enviarDatos();
-        }, 800);
-
-        actualizarEstadoConexion();
-
-        conn.on('close', () => {
-          console.log('Conexión cerrada');
-          actualizarEstadoConexion();
-          intentarReconexion();
-        });
-
-        conn.on('error', (err) => {
-          console.error('Error en la conexión:', err);
-        });
+  // NUEVO: Lógica de prevalencia del Anfitrión
+  const rol = localStorage.getItem('peer-rol');
+  
+  if (rol === 'anfitrion') {
+    // Si soy Anfitrión, envío mis datos inmediatamente para sobrescribir al Cliente
+    console.log('👑 Soy Anfitrión: Enviando mis datos al Cliente');
+    setTimeout(() => {
+      const datosAnfitrion = obtenerTodosLosDatos();
+      datosAnfitrion.tipo = 'datos_anfitrion'; // Marcar como datos del Anfitrión
+      datosAnfitrion.forzarSobrescritura = true; // Flag especial
+      conexion.send(datosAnfitrion);
+    }, 500);
+  } else if (rol === 'cliente') {
+    // Si soy Cliente, solicito los datos del Anfitrión
+    console.log('👁️ Soy Cliente: Solicitando datos del Anfitrión');
+    setTimeout(() => {
+      conexion.send({
+        tipo: 'solicitar_datos_anfitrion',
+        mensaje: 'Cliente solicitando datos'
       });
+    }, 500);
+  }
 
-      conn.on('data', (datos) => {
-        console.log('📥 Datos recibidos:', datos);
+  actualizarEstadoConexion();
 
-        // Verificar si es una confirmación especial
-        if (datos.tipo === 'confirmacion_cambios') {
-          console.log('✅ Confirmación de cambios recibida:', datos.mensaje);
+  conn.on('close', () => {
+    console.log('Conexión cerrada');
+    actualizarEstadoConexion();
+    intentarReconexion();
+  });
 
-          // Aplicar datos confirmados
-          aplicarDatosRecibidos(datos);
+  conn.on('error', (err) => {
+    console.error('Error en la conexión:', err);
+  });
+});
 
-          // Guardar confirmación en localStorage
-          localStorage.setItem('ultima-confirmacion', Date.now().toString());
-          localStorage.setItem('datos-confirmados', JSON.stringify(datos));
+conn.on('data', (datos) => {
+  console.log('📥 Datos recibidos:', datos);
 
-          // Mostrar notificación
-          if (datos.esAnfitrion !== esAnfitrion) {
-            Swal.fire({
-              icon: 'success',
-              title: 'Cambios Confirmados',
-              text: 'El otro dispositivo ha confirmado y guardado los cambios permanentemente.',
-              timer: 2500,
-              showConfirmButton: false
-            });
-          }
-        } else {
-          aplicarDatosRecibidos(datos);
-        }
-      });
+  const miRol = localStorage.getItem('peer-rol');
+
+  // CASO 1: Soy Cliente y recibo datos del Anfitrión
+  if (miRol === 'cliente' && datos.tipo === 'datos_anfitrion') {
+    console.log('👁️ Cliente recibiendo datos del Anfitrión: SOBRESCRIBIENDO TODO');
+    
+    // Borrar todo lo que tengo
+    borrarTodoSinConfirmacion();
+    
+    // Aplicar datos del Anfitrión
+    setTimeout(() => {
+      aplicarDatosRecibidos(datos);
+      guardarLocalmente();
+    }, 200);
+    
+    return;
+  }
+
+  // CASO 2: Soy Anfitrión y recibo solicitud de datos del Cliente
+  if (miRol === 'anfitrion' && datos.tipo === 'solicitar_datos_anfitrion') {
+    console.log('👑 Anfitrión enviando datos al Cliente que los solicitó');
+    
+    setTimeout(() => {
+      const misDatos = obtenerTodosLosDatos();
+      misDatos.tipo = 'datos_anfitrion';
+      misDatos.forzarSobrescritura = true;
+      conexion.send(misDatos);
+    }, 300);
+    
+    return;
+  }
+
+  // CASO 3: Soy Anfitrión y recibo datos de un Cliente (IGNORAR)
+  if (miRol === 'anfitrion' && datos.tipo !== 'solicitar_datos_anfitrion') {
+    console.log('👑 Anfitrión IGNORANDO datos del Cliente (prevalece Anfitrión)');
+    return; // No hacer nada
+  }
+
+  // CASO 4: Confirmaciones especiales
+  if (datos.tipo === 'confirmacion_cambios') {
+    console.log('✅ Confirmación de cambios recibida');
+    aplicarDatosRecibidos(datos);
+    guardarLocalmente();
+    return;
+  }
+
+  // CASO 5: Datos normales (solo si soy Cliente)
+  if (miRol === 'cliente') {
+    aplicarDatosRecibidos(datos);
+    guardarLocalmente();
+  }
+});
 
       conn.on('error', (err) => {
         console.error('❌ Error al conectar:', err);
@@ -1966,9 +2028,17 @@
 
     // Enviar datos a través de la conexión P2P
     function enviarDatos() {
-      if (!conexion || !conexion.open) return;
+  if (!conexion || !conexion.open) return;
 
-      const datos = obtenerTodosLosDatos();
+  // NUEVO: Solo el Anfitrión puede enviar datos de edición
+  const rol = localStorage.getItem('peer-rol');
+  if (rol !== 'anfitrion') {
+    console.log('👁️ Cliente no puede enviar datos de edición');
+    return; // Cliente no envía datos
+  }
+
+  const datos = obtenerTodosLosDatos();
+  datos.tipo = 'datos_anfitrion'; // Marcar como datos del Anfitrión
 
       try {
         conexion.send(datos);
@@ -2182,30 +2252,47 @@
     }
 
     // Copiar mi ID
-    function copiarMiID() {
+function copiarMiID() {
+  Swal.fire({
+    title: 'Mi ID',
+    text: `ID actual: ${miID}`,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonText: 'Copiar',
+    cancelButtonText: 'Cambiar ID',
+    showDenyButton: true,
+    denyButtonText: 'Cerrar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      navigator.clipboard.writeText(miID).then(() => {
+        Swal.fire({
+          icon: 'success',
+          title: 'ID copiado',
+          text: 'ID copiado al portapapeles',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }).catch(() => {
+        prompt('Copia este ID manualmente:', miID);
+      });
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      // Mostrar submenú: Cambiar ID o Cambiar Rol
       Swal.fire({
-        title: 'Mi ID',
-        text: `ID actual: ${miID}`,
-        icon: 'info',
+        title: '⚙️ Configuración',
+        html: `
+          <p><strong>ID actual:</strong> ${miID}</p>
+          <p><strong>Rol actual:</strong> ${localStorage.getItem('peer-rol') || 'No definido'}</p>
+          <p>¿Qué deseas cambiar?</p>
+        `,
+        icon: 'question',
         showCancelButton: true,
-        confirmButtonText: 'Copiar',
-        cancelButtonText: 'Cambiar ID',
         showDenyButton: true,
-        denyButtonText: 'Cerrar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigator.clipboard.writeText(miID).then(() => {
-            Swal.fire({
-              icon: 'success',
-              title: 'ID copiado',
-              text: 'ID copiado al portapapeles',
-              timer: 1500,
-              showConfirmButton: false
-            });
-          }).catch(() => {
-            prompt('Copia este ID manualmente:', miID);
-          });
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
+        confirmButtonText: '🆔 Cambiar ID',
+        denyButtonText: '🔄 Cambiar Rol',
+        cancelButtonText: '❌ Cancelar'
+      }).then((subResult) => {
+        // Opción 1: Cambiar ID
+        if (subResult.isConfirmed) {
           Swal.fire({
             title: 'Cambiar ID',
             input: 'text',
@@ -2219,9 +2306,9 @@
                 return 'Debes ingresar un ID';
               }
             }
-          }).then((result) => {
-            if (result.isConfirmed) {
-              const nuevoId = result.value;
+          }).then((idResult) => {
+            if (idResult.isConfirmed) {
+              const nuevoId = idResult.value;
               localStorage.setItem('peer-id-persistente', nuevoId);
               Swal.fire({
                 icon: 'success',
@@ -2234,9 +2321,72 @@
               });
             }
           });
+        } 
+        // Opción 2: Cambiar Rol
+        else if (subResult.isDenied) {
+          const rolActual = localStorage.getItem('peer-rol');
+          const rolTexto = rolActual === 'anfitrion' ? '👑 Anfitrión (Control Total)' : '👁️ Cliente (Solo Lectura)';
+          
+          Swal.fire({
+            title: '⚠️ Cambiar Rol',
+            html: `
+              <p>Rol actual: <strong style="color: ${rolActual === 'anfitrion' ? '#4CAF50' : '#ff9800'};">${rolTexto}</strong></p>
+              <p style="margin-top: 15px;">¿Deseas cambiar el rol de este dispositivo?</p>
+              <p style="color: red; font-size: 14px; margin-top: 10px;">⚠️ Advertencia: Esto reiniciará la conexión y recargará la página</p>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cambiar rol',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#f44336'
+          }).then((rolResult) => {
+            if (rolResult.isConfirmed) {
+              // Preguntar qué rol quiere
+              Swal.fire({
+                title: '¿Qué rol deseas?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '👑 Anfitrión (Editar)',
+                cancelButtonText: '👁️ Cliente (Solo Ver)',
+                allowOutsideClick: false
+              }).then((nuevoRolResult) => {
+                if (nuevoRolResult.isConfirmed) {
+                  // Cambiar a Anfitrión
+                  localStorage.setItem('peer-rol', 'anfitrion');
+                  localStorage.setItem('peer-id-persistente', 'anfitrion-pagatodo-fijo');
+                  Swal.fire({
+                    icon: 'success',
+                    title: '👑 Ahora eres Anfitrión',
+                    text: 'Recargando página...',
+                    timer: 1500,
+                    showConfirmButton: false
+                  }).then(() => {
+                    location.reload();
+                  });
+                } else if (nuevoRolResult.dismiss === Swal.DismissReason.cancel) {
+                  // Cambiar a Cliente
+                  localStorage.setItem('peer-rol', 'cliente');
+                  const timestamp = Date.now();
+                  const random = Math.random().toString(36).substr(2, 9);
+                  localStorage.setItem('peer-id-persistente', `cliente-${timestamp}-${random}`);
+                  Swal.fire({
+                    icon: 'success',
+                    title: '👁️ Ahora eres Cliente',
+                    text: 'Recargando página...',
+                    timer: 1500,
+                    showConfirmButton: false
+                  }).then(() => {
+                    location.reload();
+                  });
+                }
+              });
+            }
+          });
         }
       });
     }
+  });
+}
 
     // Guardar datos localmente
     function guardarLocalmente() {
@@ -2684,7 +2834,38 @@
         showConfirmButton: false
       });
     }
+// NUEVA FUNCIÓN: Borrar sin confirmación (para uso interno del Cliente)
+function borrarTodoSinConfirmacion() {
+  console.log('🗑️ Borrando datos del Cliente para recibir datos del Anfitrión');
 
+  // NO borrar las claves del sistema P2P
+  const peerIdPersistente = localStorage.getItem('peer-id-persistente');
+  const peerRemoteId = localStorage.getItem('peer-remote-id');
+  const peerRol = localStorage.getItem('peer-rol');
+
+  // Borrar inputs y textareas
+  document.querySelectorAll("input, textarea").forEach(el => {
+    el.value = "";
+    if (el.dataset.valor) el.dataset.valor = "0";
+  });
+
+  // Borrar resultados y celdas
+  document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
+    el.textContent = "";
+    if (el.dataset.valor) el.dataset.valor = "0";
+  });
+
+  // Borrar divs especiales
+  document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+    el.textContent = "";
+    if (el.dataset.valor) el.dataset.valor = "0";
+  });
+
+  // Restaurar claves P2P
+  if (peerIdPersistente) localStorage.setItem('peer-id-persistente', peerIdPersistente);
+  if (peerRemoteId) localStorage.setItem('peer-remote-id', peerRemoteId);
+  if (peerRol) localStorage.setItem('peer-rol', peerRol);
+}
     // Exportar a Excel
     function confirmarEnvioExcel() {
       Swal.fire({
@@ -2765,7 +2946,61 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       console.log('Inicializando aplicación...');
+// NUEVO: Verificar rol y bloquear edición si es Cliente
+  const rol = localStorage.getItem('peer-rol');
+  
+  if (rol === 'cliente') {
+    console.log('🔒 Modo Cliente: Bloqueando edición');
+    
+    // Deshabilitar TODOS los inputs, textareas y botones de edición
+    document.querySelectorAll('input, textarea, select, button').forEach(elemento => {
+      // Excepto los botones de conexión P2P
+      if (!elemento.id.includes('Btn') && elemento.id !== 'miIDBtn') {
+        elemento.disabled = true;
+        elemento.style.opacity = '0.6';
+        elemento.style.cursor = 'not-allowed';
+      }
+    });
 
+    // Agregar marca visual de "Solo Lectura"
+    const header = document.querySelector('thead tr th:first-child');
+    if (header) {
+      const badge = document.createElement('div');
+      badge.innerHTML = '👁️ MODO CLIENTE (SOLO LECTURA)';
+      badge.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 10px;
+        background: #ff9800;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: bold;
+        z-index: 10001;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      `;
+      document.body.appendChild(badge);
+    }
+  } else if (rol === 'anfitrion') {
+    console.log('👑 Modo Anfitrión: Edición habilitada');
+    
+    // Agregar marca visual de "Anfitrión"
+    const badge = document.createElement('div');
+    badge.innerHTML = '👑 ANFITRIÓN (CONTROL TOTAL)';
+    badge.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 10px;
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      z-index: 10001;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    `;
+    document.body.appendChild(badge);
+  }
       // 1. Cargar datos desde localStorage
       const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
       const premiosDiv = document.querySelector(".cantidad3");
