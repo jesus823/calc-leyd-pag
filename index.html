@@ -2958,12 +2958,20 @@ if (rol === 'cliente') {
         elemento.disabled = true;
         elemento.style.cursor = 'not-allowed';
         
-        // NUEVO: Aplicar fondo amarillo claro y negrilla a inputs y textareas
+        // NUEVO: Aplicar fondo azul claro SOLO a inputs sin color de fondo específico
         if (elemento.tagName === 'INPUT' || elemento.tagName === 'TEXTAREA') {
-          elemento.style.backgroundColor = '#E0FEFF'; // Amarillo claro (lemon chiffon)
           elemento.style.opacity = '1'; // Restaurar opacidad completa para inputs
           elemento.style.fontWeight = 'bold'; // NEGRILLA
           elemento.style.color = '#000'; // Negro sólido para mejor contraste
+          
+          // SOLO aplicar fondo azul si NO tiene un color de fondo específico en el HTML
+          const estiloInline = elemento.style.backgroundColor;
+          const tieneColorEspecifico = estiloInline && estiloInline !== '' && estiloInline !== 'transparent';
+          
+          if (!tieneColorEspecifico) {
+            elemento.style.backgroundColor = '#E3F2FD'; // Azul cielo claro
+          }
+          // Si tiene color específico (amarillo, morado, etc.), lo conserva
         } else {
           // Para botones mantener la opacidad reducida
           elemento.style.opacity = '0.6';
