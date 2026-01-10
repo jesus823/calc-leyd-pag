@@ -2948,6 +2948,7 @@ function borrarTodoSinConfirmacion() {
      // NUEVO: Verificar rol y bloquear edición si es Cliente
 // NUEVO: Verificar rol y bloquear edición si es Cliente
   const rol = localStorage.getItem('peer-rol');
+const rol = localStorage.getItem('peer-rol');
 if (rol === 'cliente') {
     console.log('🔒 Modo Cliente: Bloqueando edición');
     
@@ -2962,7 +2963,7 @@ if (rol === 'cliente') {
         if (elemento.tagName === 'INPUT' || elemento.tagName === 'TEXTAREA') {
           elemento.style.opacity = '1'; // Restaurar opacidad completa para inputs
           elemento.style.fontWeight = 'bold'; // NEGRILLA
-          elemento.style.color = '#000'; // Negro sólido para mejor contraste
+          elemento.style.color = '#000 !important'; // Negro sólido para mejor contraste
           
           // Obtener el color de fondo REAL computado por el navegador
           const estiloComputado = window.getComputedStyle(elemento);
@@ -2979,7 +2980,8 @@ if (rol === 'cliente') {
           
           // SOLO aplicar azul claro si el fondo es blanco o transparente
           if (esBlanco) {
-            elemento.style.backgroundColor = '#E3F2FD !important'; // Azul cielo claro
+            elemento.style.setProperty('background-color', '#B3E5FC', 'important'); // Azul cielo más visible
+            elemento.style.setProperty('background', '#B3E5FC', 'important');
           }
           // Si tiene cualquier otro color (amarillo, morado, verde, negro, etc.), lo conserva
         } else {
@@ -2988,6 +2990,20 @@ if (rol === 'cliente') {
         }
       }
     });
+    
+    // AGREGAR: Estilo CSS dinámico más fuerte para inputs con fondo blanco en modo Cliente
+    const styleCliente = document.createElement('style');
+    styleCliente.id = 'estilo-cliente-readonly';
+    styleCliente.textContent = `
+      input:disabled:not([style*="background-color: yellow"]):not([style*="background-color: rgb"]),
+      textarea:disabled {
+        background-color: #B3E5FC !important;
+        background: #B3E5FC !important;
+        color: #000 !important;
+        font-weight: bold !important;
+      }
+    `;
+    document.head.appendChild(styleCliente);
     
 
     // Agregar marca visual de "Solo Lectura"
