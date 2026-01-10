@@ -2946,6 +2946,7 @@ function borrarTodoSinConfirmacion() {
 
     document.addEventListener("DOMContentLoaded", () => {
      // NUEVO: Verificar rol y bloquear edición si es Cliente
+// NUEVO: Verificar rol y bloquear edición si es Cliente
   const rol = localStorage.getItem('peer-rol');
 if (rol === 'cliente') {
     console.log('🔒 Modo Cliente: Bloqueando edición');
@@ -2963,22 +2964,24 @@ if (rol === 'cliente') {
           elemento.style.fontWeight = 'bold'; // NEGRILLA
           elemento.style.color = '#000'; // Negro sólido para mejor contraste
           
-          // Obtener el color de fondo computado (el real que se está mostrando)
+          // Obtener el color de fondo REAL computado por el navegador
           const estiloComputado = window.getComputedStyle(elemento);
           const bgColor = estiloComputado.backgroundColor;
           
-          // Convertir a RGB para comparar
+          // Detectar si el fondo es blanco o transparente
           const esBlanco = bgColor === 'rgb(255, 255, 255)' || 
                           bgColor === 'rgba(255, 255, 255, 1)' ||
                           bgColor === 'transparent' ||
                           bgColor === 'rgba(0, 0, 0, 0)' ||
-                          bgColor === '';
+                          bgColor === '' ||
+                          bgColor === 'initial' ||
+                          bgColor === 'inherit';
           
           // SOLO aplicar azul claro si el fondo es blanco o transparente
           if (esBlanco) {
-            elemento.style.backgroundColor = '#E3F2FD'; // Azul cielo claro
+            elemento.style.backgroundColor = '#E3F2FD !important'; // Azul cielo claro
           }
-          // Si tiene otro color (amarillo, morado, verde, etc.), lo conserva
+          // Si tiene cualquier otro color (amarillo, morado, verde, negro, etc.), lo conserva
         } else {
           // Para botones mantener la opacidad reducida
           elemento.style.opacity = '0.6';
