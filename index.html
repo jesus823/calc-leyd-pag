@@ -15,11 +15,7 @@
 </head>
 
 <body>
-<!-- Dentro de la clase "peer-controls", después del botón de guardar cambios -->
-<button id="modoLecturaBtn" class="peer-button" onclick="alternarModoLectura()" 
-  style="display:none; background: #FF9800; height: 50px;">
-  📖 Modo: Edición
-</button>
+
   <!-- Script para bloquear letras en inputs numéricos - VERSIÓN MEJORADA -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -1527,45 +1523,137 @@ let esModoLecturaForzado = false;
 // SISTEMA DE MODO SOLO LECTURA
 // ============================================
 
-// Alternar entre modo edición y solo lectura
+// Alternar entre modo edición y solo lectura (BLOQUEADA PARA CLIENTES)
 function alternarModoLectura() {
-  if (esModoLecturaForzado) {
+  // Solo permitir al anfitrión cambiar el modo
+  if (!esAnfitrion) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Acceso Denegado',
+      text: 'Este dispositivo está en modo solo lectura permanente.',
+      timer: 2000
+    });
+    return;
+  }
+  
+  // Esta función ahora no hace nada para clientes
+  console.log('Modo lectura permanente activado');
+}
+
+// Aplicar modo solo lectura
+function aplicarModoLectura() {
+  const elementos = document.querySelectorAll(
+    'input[type="tel"], input[type="text"], textarea, ' +
+    'input.cantidad, input.cantidad2, input.cantidad4, ' +
+    '.venta, .input1, .input2, .input3, .input4, .input5, ' +
+    '.input6, .input7, .input8, .input9, .input10, ' +
+    '.input11, .input12, .input13, .input14, .input15, ' +
+    '.input16, .input17, .input18, .input19, .input20, ' +
+    '.input21, .input22, .input23, .input24, .input25, ' +
+    '.input26, .input27, .input28, .input29, .input30, ' +
+    '.input31, .input32, .input33, .input34, .input35, ' +
+    '.input36, .input37, .input38, .input39, .input40, ' +
+    '.input41, .input42, .input43, .input44, .input45, ' +
+    '.input46, .input47, .input48, .input49, .input50, ' +
+    '.input51, .input52, .input53, .input54, .input55, ' +
+    '.input56, .input57, .input58, .input59, .input60'
+  );
+
+  const controles = document.querySelector('.peer-controls');
+  const botonesPeligrosos = document.querySelectorAll(
+    'button[onclick="confirmarBorrado()"], ' +
+    'button[onclick="confirmarEnvioExcel()"]'
+  );
+
+  if (modoSoloLectura) {
+    // Bloquear todos los inputs
+    elementos.forEach(el => {
+      el.classList.add('bloqueado');
+      el.setAttribute('readonly', 'true');
+      el.disabled = true;
+    });
+
+    // Marcar visualmente el panel de controles
+    if (controles) {
+      controles.classList.add('modo-lectura-activo');
+    }
+
+    // Deshabilitar botones peligrosos
+    botonesPeligrosos.forEach(btn => {
+      btn.classList.add('bloqueado');
+      btn.disabled = true;
+    });
+
+  } else {
+    // Desbloquear todo
+    elementos.forEach(el => {
+      el.classList.remove('bloqueado');
+      el.removeAttribute('readonly');
+      el.disabled = false;
+    });
+
+    if (controles) {
+      controles.classList.remove('modo-lectura-activo');
+    }
+
+    botonesPeligrosos.forEach(btn => {
+      btn.classList.remove('bloqueado');
+      btn.disabled = false;
+    });
+  }
+}
+
+// Enviar estado de modo lectura al otro dispositivo
+function enviarModoLectura(forzar = false) {
+  if (!conexion || !conexion.open) return;
+
+  const mensaje = {
+    tipo: 'modo_lectura',
+    activar: forzar,
+    timestamp: Date.now()
+  };
+
+  try {
+    conexion.send(mensaje);
+    console.log('📤 Modo lectura enviado:', mensaje);
+  } catch (error) {
+    console.error('Error al enviar modo lectura:', error);
+  }
+}
+
+// Activar modo lectura para el cliente conectado
+function activarModoLecturaCliente() {
+  if (!esAnfitrion) {
     Swal.fire({
       icon: 'warning',
-      title: 'Modo Bloqueado',
-      text: 'El anfitrión ha configurado este dispositivo en modo solo lectura.',
+      title: 'Sin permisos',
+      text: 'Solo el anfitrión puede controlar el modo lectura.',
       timer: 2000
     });
     return;
   }
 
-  modoSoloLectura = !modoSoloLectura;
-  aplicarModoLectura();
-  
-  const btn = document.getElementById('modoLecturaBtn');
-  if (modoSoloLectura) {
-    btn.textContent = '📖 Modo: Solo Lectura';
-    btn.style.background = '#f44336';
-    
-    Swal.fire({
-      icon: 'info',
-      title: 'Modo Solo Lectura',
-      text: 'No podrás editar los datos hasta desactivar este modo.',
-      timer: 2000,
-      showConfirmButton: false
-    });
-  } else {
-    btn.textContent = '📖 Modo: Edición';
-    btn.style.background = '#FF9800';
-    
-    Swal.fire({
-      icon: 'success',
-      title: 'Modo Edición',
-      text: 'Ahora puedes editar los datos.',
-      timer: 2000,
-      showConfirmButton: false
-    });
-  }
+  Swal.fire({
+    title: '¿Activar modo solo lectura?',
+    text: 'El dispositivo conectado no podrá editar datos.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, activar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#f44336'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      enviarModoLectura(true);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Modo Activado',
+        text: 'El otro dispositivo ahora está en modo solo lectura.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
+  });
 }
 
 // Aplicar modo solo lectura
@@ -1902,7 +1990,13 @@ function configurarEventosConexion(conn) {
     console.log('✅ Conexión establecida exitosamente!');
     conexion = conn;
     intentandoReconectar = false;
-
+// FORZAR MODO SOLO LECTURA EN CLIENTE
+    if (!esAnfitrion) {
+      modoSoloLectura = true;
+      esModoLecturaForzado = true;
+      aplicarModoLectura();
+      console.log('🔒 Cliente bloqueado en modo solo lectura');
+    }
     Swal.close();
     Swal.fire({
       icon: 'success',
@@ -1989,7 +2083,11 @@ function manejarNuevaConexion(conn) {
   conn.on('open', () => {
     console.log('✅ Cliente conectado:', conn.peer);
     actualizarEstadoConexion();
-
+// ENVIAR MODO LECTURA FORZADO AL CLIENTE
+    setTimeout(() => {
+      enviarModoLectura(true);
+      console.log('📤 Modo lectura forzado enviado al cliente');
+    }, 500);
     // IMPORTANTE: El anfitrión envía sus datos inmediatamente
     setTimeout(() => {
       console.log('📤 Anfitrión enviando datos al cliente...');
@@ -2049,6 +2147,13 @@ function manejarNuevaConexion(conn) {
 
     // Enviar datos a través de la conexión P2P
     function enviarDatos() {
+        // SI NO ES ANFITRIÓN, NO ENVIAR NADA
+  if (!esAnfitrion) {
+    console.log('🚫 Cliente no puede enviar datos (solo lectura)');
+    return;
+  }
+  
+  if (!conexion || !conexion.open) return;
       if (!conexion || !conexion.open) return;
 
       const datos = obtenerTodosLosDatos();
@@ -2261,7 +2366,7 @@ function actualizarEstadoConexion() {
   const disconnectBtn = document.getElementById('disconnectBtn');
   const connectBtn = document.getElementById('connectBtn');
   const guardarBtn = document.getElementById('guardarCambiosBtn');
-  const modoLecturaBtn = document.getElementById('modoLecturaBtn'); // NUEVO
+
 
   if (conexion && conexion.open) {
     statusEl.textContent = `Conectado ${esAnfitrion ? '(Anfitrión)' : '(Cliente)'}`;
@@ -2269,14 +2374,14 @@ function actualizarEstadoConexion() {
     disconnectBtn.style.display = 'block';
     connectBtn.style.display = 'none';
     guardarBtn.style.display = 'block';
-    modoLecturaBtn.style.display = 'block'; // MOSTRAR BOTÓN MODO LECTURA
+
   } else {
     statusEl.textContent = 'Sin conexión';
     statusEl.className = 'peer-status disconnected';
     disconnectBtn.style.display = 'none';
     connectBtn.style.display = 'block';
     guardarBtn.style.display = 'none';
-    modoLecturaBtn.style.display = 'none'; // OCULTAR BOTÓN MODO LECTURA
+
   }
 }
 
@@ -2976,7 +3081,14 @@ function desconectar() {
       // 6. Iniciar reloj
       ponerFechaHora();
       setInterval(ponerFechaHora, 1000);
-
+// APLICAR MODO LECTURA SI NO ES ANFITRIÓN
+      setTimeout(() => {
+        if (!esAnfitrion && conexion && conexion.open) {
+          modoSoloLectura = true;
+          esModoLecturaForzado = true;
+          aplicarModoLectura();
+        }
+      }, 2000);
       console.log('Aplicación inicializada correctamente');
     });
 
