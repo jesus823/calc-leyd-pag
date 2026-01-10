@@ -2958,10 +2958,12 @@ if (rol === 'cliente') {
         elemento.disabled = true;
         elemento.style.cursor = 'not-allowed';
         
-        // NUEVO: Aplicar fondo amarillo claro a inputs y textareas
+        // NUEVO: Aplicar fondo amarillo claro y negrilla a inputs y textareas
         if (elemento.tagName === 'INPUT' || elemento.tagName === 'TEXTAREA') {
-          elemento.style.backgroundColor = '#fff9c4'; // Amarillo claro (lemon chiffon)
+          elemento.style.backgroundColor = '#fffacd'; // Amarillo claro (lemon chiffon)
           elemento.style.opacity = '1'; // Restaurar opacidad completa para inputs
+          elemento.style.fontWeight = 'bold'; // NEGRILLA
+          elemento.style.color = '#000'; // Negro sólido para mejor contraste
         } else {
           // Para botones mantener la opacidad reducida
           elemento.style.opacity = '0.6';
