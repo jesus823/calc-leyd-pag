@@ -2977,12 +2977,12 @@ if (rol === 'cliente') {
                           bgColor === 'initial' ||
                           bgColor === 'inherit';
           
-          // SOLO aplicar azul claro si el fondo es blanco o transparente
+          // SOLO aplicar amarillo pastel si el fondo es blanco o transparente
           if (esBlanco) {
-            elemento.style.setProperty('background-color', '#FEFFDB', 'important'); // Azul cielo más visible
-            elemento.style.setProperty('background', '#B3E5FC', 'important');
+            elemento.style.setProperty('background-color', '#FEFFDB', 'important'); // Amarillo pastel suave
+            elemento.style.setProperty('background', '#FEFFDB', 'important');
           }
-          // Si tiene cualquier otro color (amarillo, morado, verde, negro, etc.), lo conserva
+          // Si tiene cualquier otro color (amarillo fuerte, morado, verde, negro, etc.), lo conserva
         } else {
           // Para botones mantener la opacidad reducida
           elemento.style.opacity = '0.6';
@@ -2992,6 +2992,17 @@ if (rol === 'cliente') {
     
     // AGREGAR: Estilo CSS dinámico más fuerte para inputs con fondo blanco en modo Cliente
     const styleCliente = document.createElement('style');
+    styleCliente.id = 'estilo-cliente-readonly';
+    styleCliente.textContent = `
+      input:disabled:not([style*="background-color: yellow"]):not([style*="background-color: rgb"]),
+      textarea:disabled {
+        background-color: #FEFFDB !important;
+        background: #FEFFDB !important;
+        color: #000 !important;
+        font-weight: bold !important;
+      }
+    `;
+    document.head.appendChild(styleCliente);
     styleCliente.id = 'estilo-cliente-readonly';
     styleCliente.textContent = `
       input:disabled:not([style*="background-color: yellow"]):not([style*="background-color: rgb"]),
