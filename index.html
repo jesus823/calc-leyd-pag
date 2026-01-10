@@ -1956,6 +1956,20 @@ function activarModoLecturaCliente() {
 
       localStorage.setItem('peer-remote-id', idRemoto);
       esAnfitrion = false;
+      // LIMPIAR DATOS DEL CLIENTE EN RECONEXIÓN AUTOMÁTICA
+      console.log('🗑️ Limpiando datos del cliente para reconexión automática...');
+      
+      document.querySelectorAll("input, textarea").forEach(el => {
+        el.value = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
+
+      document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+        el.textContent = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
+
+      console.log('✅ Cliente limpiado para reconexión');
     }
 
     // Conectar manualmente
@@ -1981,6 +1995,20 @@ function activarModoLecturaCliente() {
 
       localStorage.setItem('peer-remote-id', idRemoto);
       esAnfitrion = false;
+      // LIMPIAR DATOS DEL CLIENTE ANTES DE CONECTAR
+      console.log('🗑️ Limpiando datos del cliente antes de conectar...');
+      
+      document.querySelectorAll("input, textarea").forEach(el => {
+        el.value = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
+
+      document.querySelectorAll(".resultado, td[class^='r'], .cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+        el.textContent = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
+
+      console.log('✅ Datos del cliente limpiados, conectando...');
     }
 
     // Configurar eventos de conexión
@@ -1996,6 +2024,43 @@ function configurarEventosConexion(conn) {
       esModoLecturaForzado = true;
       aplicarModoLectura();
       console.log('🔒 Cliente bloqueado en modo solo lectura');
+    }
+    // BORRAR TODOS LOS DATOS DEL CLIENTE ANTES DE RECIBIR DEL ANFITRIÓN
+    if (!esAnfitrion) {
+      console.log('🗑️ Limpiando datos del cliente antes de sincronizar con anfitrión...');
+      
+      // Borrar todos los inputs
+      document.querySelectorAll("input, textarea").forEach(el => {
+        el.value = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
+
+      // Borrar resultados y celdas
+      document.querySelectorAll(".resultado, td[class^='r']").forEach(el => {
+        el.textContent = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
+
+      // Borrar divs especiales
+      document.querySelectorAll(".cantidad3, .cantidad5, .resultado-adicionales").forEach(el => {
+        el.textContent = "";
+        if (el.dataset.valor) el.dataset.valor = "0";
+      });
+
+      // Limpiar totales visuales
+      const totalBilteles = document.getElementById("total-general-bilteles");
+      const totalMonedas = document.getElementById("total-general-monedas");
+      const sumaTotal = document.getElementById("suma-total");
+      const resul = document.getElementById("resul");
+      const sobra = document.getElementById("sobra");
+      
+      if (totalBilteles) totalBilteles.textContent = "";
+      if (totalMonedas) totalMonedas.textContent = "";
+      if (sumaTotal) sumaTotal.textContent = "";
+      if (resul) resul.textContent = "";
+      if (sobra) sobra.textContent = "";
+
+      console.log('✅ Datos del cliente limpiados, esperando datos del anfitrión...');
     }
     Swal.close();
     Swal.fire({
