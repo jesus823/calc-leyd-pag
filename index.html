@@ -2948,8 +2948,7 @@ function borrarTodoSinConfirmacion() {
       console.log('Inicializando aplicación...');
 // NUEVO: Verificar rol y bloquear edición si es Cliente
   const rol = localStorage.getItem('peer-rol');
-  
-  if (rol === 'cliente') {
+if (rol === 'cliente') {
     console.log('🔒 Modo Cliente: Bloqueando edición');
     
     // Deshabilitar TODOS los inputs, textareas y botones de edición
@@ -2957,8 +2956,16 @@ function borrarTodoSinConfirmacion() {
       // Excepto los botones de conexión P2P
       if (!elemento.id.includes('Btn') && elemento.id !== 'miIDBtn') {
         elemento.disabled = true;
-        elemento.style.opacity = '0.6';
         elemento.style.cursor = 'not-allowed';
+        
+        // NUEVO: Aplicar fondo amarillo claro a inputs y textareas
+        if (elemento.tagName === 'INPUT' || elemento.tagName === 'TEXTAREA') {
+          elemento.style.backgroundColor = '#fffacd'; // Amarillo claro (lemon chiffon)
+          elemento.style.opacity = '1'; // Restaurar opacidad completa para inputs
+        } else {
+          // Para botones mantener la opacidad reducida
+          elemento.style.opacity = '0.6';
+        }
       }
     });
 
