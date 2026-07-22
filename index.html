@@ -2344,9 +2344,9 @@
         }
         const contenedor = document.getElementById('contenedor-impresion');
         const canvas = await html2canvas(contenedor, {
-  backgroundColor: '#ffffff',
-  scale: 1
-});
+          backgroundColor: '#ffffff',
+          scale: 1
+        });
         const dataUrl = canvas.toDataURL('image/png');
 
         await printerGato.printImage(dataUrl, { dither: 'floyd-steinberg' });
