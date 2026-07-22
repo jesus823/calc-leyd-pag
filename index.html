@@ -2243,7 +2243,11 @@
     </script>
 
     <script>
+    window.imprimiendoAhora = false;
+
       function mostrarConfirmacionImprimir() {
+        if (window.imprimiendoAhora) return;
+
         Swal.fire({
           title: '¿Deseas imprimir?',
           icon: 'question',
@@ -2262,7 +2266,11 @@
         });
       }
 
-      async function generarImpresion() {
+     async function generarImpresion() {
+        if (window.imprimiendoAhora) return;
+        window.imprimiendoAhora = true;
+
+        try {
         const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
         const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
         const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
@@ -2304,8 +2312,11 @@
         <p class="total-final">Total $ ${totalGeneral}</p>
       `;
 
-        document.getElementById('contenedor-impresion').innerHTML = contenido;
+     document.getElementById('contenedor-impresion').innerHTML = contenido;
         await imprimirEnGato();
+        } finally {
+          window.imprimiendoAhora = false;
+        }
       }
     </script>
   </div>
@@ -2332,6 +2343,8 @@
           alert("Primero conecta la impresora con el botón de Bluetooth.");
           return;
         }
+       await printerGato.feed(20);
+
         const contenedor = document.getElementById('contenedor-impresion');
         const canvas = await html2canvas(contenedor, {
           backgroundColor: '#ffffff',
@@ -2339,7 +2352,7 @@
         });
         const dataUrl = canvas.toDataURL('image/png');
 
-        await printerGato.printImage(dataUrl, { dither: 'floyd-steinberg' });
+        await printerGato.printImage(dataUrl, { dither: 'threshold' });
         await printerGato.feed(80);
       } catch (err) {
         console.error(err);
