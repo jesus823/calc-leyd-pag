@@ -19,26 +19,23 @@
     margin: 0;
     size: auto;
   }
-
- #contenedor-impresion {
-      --tam-base: 28px;
-      /* tamaño letra premios, billetes, monedas total y código */
-      --tam-premios: 20px;
-      /* 👈 muévelo aquí, tamaño para lotería y círculo */
-      position: fixed;
-      left: 20px;
-      top: 20px;
-      z-index: 999999;
-      border: 2px solid rgb(255, 255, 255);  
-      top: 0;
-      width: 384px;
-      background: #fff;
-      color: #000;
-      font-family: 'Courier New', monospace;
-      font-size: var(--tam-base);
-      padding: 10px;
-      line-height: 1.5;
-    }
+#contenedor-impresion {
+    --tam-base: 28px;
+    --tam-premios: 20px;
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    z-index: 999999;
+    display: flow-root;   /* 👈 bloquea el colapso de márgenes sin necesitar borde */
+    top: 0;
+    width: 384px;
+    background: #fff;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: var(--tam-base);
+    padding: 10px;
+    line-height: 1.5;
+}
 
     .cod {
       font-size: var(--tam-base);
