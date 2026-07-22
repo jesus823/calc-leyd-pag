@@ -19,17 +19,24 @@
       margin: 0;
       size: auto;
     }
-#contenedor-impresion {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  width: 320px;
-  background: #fff;
-  color: #000;
-  font-family: 'Courier New', monospace;
-  padding: 10px;
-  line-height: 1.8; /* 👈 espacio entre líneas dentro del texto */
-}
+
+    #contenedor-impresion {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+
+      /* IMPORTANTE: ancho real para impresora térmica pequeña */
+      width: 384px;
+
+      background: #fff;
+      color: #000;
+
+      font-family: monospace;
+      font-size: 22px;
+
+      padding: 10px;
+      line-height: 1.5;
+    }
 
     @media print {
       body * {
@@ -66,19 +73,23 @@
 
       .seccion-titulo {
         font-weight: bold;
-        font-size: 16px;
-        margin: 16px 0 4px;
+        font-size: 22px;
+        margin: 18px 0 8px;
         text-align: left;
+        line-height: 1.5;
       }
 
       .linea-premio {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 13px;
-          margin: 8px 0;        /* antes era 3px 0 */
-    line-height: 1.8;
-  }
+
+        font-size: 22px;
+
+        margin: 12px 0;
+
+        line-height: 1.5;
+      }
 
       .circulo {
         display: inline-flex;
@@ -100,12 +111,13 @@
       }
 
       .total-final {
-    font-size: 19px;
-    font-weight: bold;
-    text-align: left;
-    margin-top: 14px;     /* antes era 8px */
-    line-height: 1.8;
-  }
+        font-size: 19px;
+        font-weight: bold;
+        text-align: left;
+        margin-top: 14px;
+        /* antes era 8px */
+        line-height: 1.8;
+      }
     }
   </style>
 </head>
@@ -2324,7 +2336,7 @@
       }
     };
 
-window.imprimirEnGato = async function () {
+    window.imprimirEnGato = async function () {
       try {
         if (!printerGato || !printerGato.isConnected()) {
           alert("Primero conecta la impresora con el botón de Bluetooth.");
