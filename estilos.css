@@ -261,11 +261,11 @@ tr {
 
 /* 👇 Tamaño de letra SOLO de la fila de premios (cantidad, valor, lotería, resultado) */
 :root {
-  --tam-premios: 15px;   /* cambia solo este número para achicar o agrandar */
+  --tam-premios: 15px;
 }
 
-input[class*="input"],      /* cantidad e valor (input1, input2, input3...) */
-input[id^="loteria"],       /* el nombre de la lotería */
-td[class^="r"] {            /* el resultado (8.000, 35.000, etc.) */
+input[class^="input"],   /* input1, input2, input3... (cantidad y valor de premios) */
+input[id^="loteria"],    /* nombre de la lotería */
+td[class^="r"]:not([class*="resultado"]) {  /* SOLO r1, r2, r3... nunca "resultado*" */
   font-size: var(--tam-premios) !important;
 }
