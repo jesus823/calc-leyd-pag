@@ -23,10 +23,10 @@
     #contenedor-impresion {
       --tam-base: 34px;
       --tam-premios: 20px;
-     position: fixed;
-    left: 20px;
-    top: 20px;
-    z-index: 999999;
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      z-index: 999999;
       border: 2px solid rgb(101, 100, 100);
       top: 0;
       width: 420px;
@@ -233,8 +233,8 @@
               style=" font-size: 17px; font-weight: bold; width: 100px; height: 25px; text-align: center;"
               oninput="formatearMiles(this)"></td>
 
-         <td><textarea></textarea></td>
-             <td id="boton-conectar-impresora" style="text-align: center; border: 3px solid;">
+          <td><textarea></textarea></td>
+          <td id="boton-conectar-impresora" style="text-align: center; border: 3px solid;">
             <button id="btnConectarImpresora" onclick="conectarImpresoraGato()"
               style="height: 34px; padding: 0 8px; font-size: 12px; font-weight: bold; border: none; border-radius: 8px; background: #2196F3; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: background 0.3s; width: 100%;">
               <span id="textoBtnImpresora">🔵 Conectar</span>
@@ -2288,84 +2288,84 @@
     </script>
 
     <script>
-  window.imprimiendoAhora = false;
+      window.imprimiendoAhora = false;
 
-function calcularFechaImpresion(esAyer) {
-  const fecha = new Date();
-  fecha.setHours(12, 0, 0, 0);
-  if (esAyer) fecha.setDate(fecha.getDate() - 1);
-  const anio = fecha.getFullYear();
-  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-  const dia = String(fecha.getDate()).padStart(2, '0');
-  return `${dia}-${mes}-${anio}`;
-}
+      function calcularFechaImpresion(esAyer) {
+        const fecha = new Date();
+        fecha.setHours(12, 0, 0, 0);
+        if (esAyer) fecha.setDate(fecha.getDate() - 1);
+        const anio = fecha.getFullYear();
+        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+        const dia = String(fecha.getDate()).padStart(2, '0');
+        return `${dia}-${mes}-${anio}`;
+      }
 
-function preguntarConBotones(titulo, opciones) {
-  // opciones: [{ id, texto, valor }, ...]
-  return new Promise((resolve) => {
-    const botonesHTML = opciones.map(op => `
+      function preguntarConBotones(titulo, opciones) {
+        // opciones: [{ id, texto, valor }, ...]
+        return new Promise((resolve) => {
+          const botonesHTML = opciones.map(op => `
       <button id="${op.id}" type="button" style="font-size:22px; font-weight:bold; padding:14px; border:none; border-radius:10px; background:#3085d6; color:#fff; cursor:pointer;">
         ${op.texto}
       </button>
     `).join('<div style="height:22px;"></div>');
 
-    let respondido = false;
+          let respondido = false;
 
-    Swal.fire({
-      title: titulo,
-      icon: 'question',
-      html: `<div style="display:flex; flex-direction:column; margin-top:10px;">${botonesHTML}</div>`,
-      showConfirmButton: false,
-      showCancelButton: true,
-      cancelButtonText: 'Cancelar',
-      cancelButtonColor: '#d33',
-      background: '#1a1a1a',
-      color: '#fff',
-      width: '30em',
-      padding: '2em',
-      allowOutsideClick: false,
-      didOpen: () => {
-        opciones.forEach(op => {
-          document.getElementById(op.id).addEventListener('click', () => {
-            respondido = true;
-            resolve(op.valor);
-            Swal.close();
+          Swal.fire({
+            title: titulo,
+            icon: 'question',
+            html: `<div style="display:flex; flex-direction:column; margin-top:10px;">${botonesHTML}</div>`,
+            showConfirmButton: false,
+            showCancelButton: true,
+            cancelButtonText: 'Cancelar',
+            cancelButtonColor: '#d33',
+            background: '#1a1a1a',
+            color: '#fff',
+            width: '30em',
+            padding: '2em',
+            allowOutsideClick: false,
+            didOpen: () => {
+              opciones.forEach(op => {
+                document.getElementById(op.id).addEventListener('click', () => {
+                  respondido = true;
+                  resolve(op.valor);
+                  Swal.close();
+                });
+              });
+            }
+          }).then(() => {
+            // Si se cerró sin haber respondido (cancelado o clic afuera), resolvemos null
+            if (!respondido) resolve(null);
           });
         });
       }
-    }).then(() => {
-      // Si se cerró sin haber respondido (cancelado o clic afuera), resolvemos null
-      if (!respondido) resolve(null);
-    });
-  });
-}
 
-async function mostrarConfirmacionImprimir() {
-  if (window.imprimiendoAhora) return;
+      async function mostrarConfirmacionImprimir() {
+        if (window.imprimiendoAhora) return;
 
-  // 1) Ventana: Hoy o Ayer
-  const fechaSeleccion = await preguntarConBotones('¿Qué fecha deseas imprimir?', [
-    { id: 'btnFechaHoy', texto: 'Hoy', valor: 'hoy' },
-    { id: 'btnFechaAyer', texto: 'Ayer', valor: 'ayer' },
-    { id: 'btnFechaSinFecha', texto: 'Sin fecha', valor: 'sin-fecha' }
-  ]);
+        // 1) Ventana: Hoy o Ayer
+        const fechaSeleccion = await preguntarConBotones('¿Qué fecha deseas imprimir?', [
+          { id: 'btnFechaHoy', texto: 'Hoy', valor: 'hoy' },
+          { id: 'btnFechaAyer', texto: 'Ayer', valor: 'ayer' },
+          { id: 'btnFechaSinFecha', texto: 'Sin fecha', valor: 'sin-fecha' }
+        ]);
 
-  if (!fechaSeleccion) return;
+        if (!fechaSeleccion) return;
 
-  const fechaImpresion = fechaSeleccion === 'sin-fecha'
-    ? ''
-    : calcularFechaImpresion(fechaSeleccion === 'ayer');
+        const fechaImpresion = fechaSeleccion === 'sin-fecha'
+          ? ''
+          : calcularFechaImpresion(fechaSeleccion === 'ayer');
 
-  // 2) Ventana: cuántas copias
-  const copias = await preguntarConBotones('¿Cuántas impresiones deseas?', [
-    { id: 'btnCopias1', texto: '1 impresión', valor: '1' },
-    { id: 'btnCopias2', texto: '2 impresiones', valor: '2' }
-  ]);
+        // 2) Ventana: cuántas copias
+        const copias = await preguntarConBotones('¿Cuántas impresiones deseas?', [
+          { id: 'btnCopias1', texto: '1 impresión', valor: '1' },
+          { id: 'btnCopias2', texto: '2 impresiones', valor: '2' }
+        ]);
 
-  if (!copias) return;
+        if (!copias) return;
 
-  await generarImpresion(fechaImpresion, parseInt(copias, 10));
-}
+        await generarImpresion(fechaImpresion, parseInt(copias, 10));
+      }
       async function generarImpresion(fechaImpresion, copias = 1) {
         if (window.imprimiendoAhora) return;
         window.imprimiendoAhora = true;
