@@ -55,15 +55,15 @@
     line-height: 1.5;
   }
 
-  .linea-premio {
+.linea-premio {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: var(--tam-base);
+    font-size: var(--tam-premios);   /* ← ahora usa la variable nueva */
     font-weight: bold;
     margin: 12px 0;
     line-height: 1.5;
-  }
+}
 
   .circulo {
     display: inline-flex;
@@ -75,10 +75,11 @@
     border: 2px solid #000;
     border-radius: 50%;
     font-weight: 900;
-    font-size: calc(var(--tam-base) - 4px);
-  }
-
+    font-size: calc(var(--tam-premios) - 4px);
+}
   #contenedor-impresion hr {
+    --tam-base: 28px;   /* 👈 CAMBIA SOLO ESTE NÚMERO PARA AJUSTAR TODO EL RECIBO */
+    --tam-premios: 18px; /* 👈 tamaño SOLO de las líneas de loterías/cantidad/valor */
     border: none;
     border-top: 2px dashed #000;
     margin: 18px 0;
