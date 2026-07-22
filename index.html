@@ -20,8 +20,15 @@
       size: auto;
     }
 
-    #contenedor-impresion {
-      display: none;
+ #contenedor-impresion {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 320px;
+      background: #fff;
+      color: #000;
+      font-family: 'Courier New', monospace;
+      padding: 10px;
     }
 
     @media print {
@@ -113,7 +120,8 @@
   </div>
 
   <div id="boton-conectar-impresora" style="position: fixed; top: 8px; left: 8px; z-index: 99999;">
-    <button onclick="conectarImpresoraGato()" style="height: 40px; padding: 0 14px; font-size: 14px; font-weight: bold; border: none; border-radius: 10px; background: #25D366; color: white; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
+    <button onclick="conectarImpresoraGato()"
+      style="height: 40px; padding: 0 14px; font-size: 14px; font-weight: bold; border: none; border-radius: 10px; background: #25D366; color: white; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
       🔵 Conectar impresora
     </button>
   </div>
@@ -2250,7 +2258,7 @@
         });
       }
 
-     async function generarImpresion() {
+      async function generarImpresion() {
         const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
         const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
         const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
@@ -2292,41 +2300,45 @@
         <p class="total-final">Total $ ${totalGeneral}</p>
       `;
 
-      document.getElementById('contenedor-impresion').innerHTML = contenido;
+        document.getElementById('contenedor-impresion').innerHTML = contenido;
         await imprimirEnGato();
       }
     </script>
   </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-<script type="module">
-  import { CatPrinter } from "https://cdn.jsdelivr.net/npm/@opuu/cat-printer/+esm";
+  <script type="module">
+    import { CatPrinter } from "https://cdn.jsdelivr.net/npm/@opuu/cat-printer/+esm";
 
-  let printerGato = null;
+    let printerGato = null;
 
-  window.conectarImpresoraGato = async function () {
-    try {
-      printerGato = new CatPrinter({ debug: true });
-      await printerGato.connect();
-      alert("Impresora conectada ✅");
-    } catch (err) {
-      alert("No se pudo conectar: " + err.message);
-    }
-  };
+    window.conectarImpresoraGato = async function () {
+      try {
+        printerGato = new CatPrinter({ debug: true });
+        await printerGato.connect();
+        alert("Impresora conectada ✅");
+      } catch (err) {
+        alert("No se pudo conectar: " + err.message);
+      }
+    };
+window.imprimirEnGato = async function () {
+      try {
+        if (!printerGato || !printerGato.isConnected()) {
+          alert("Primero conecta la impresora con el botón de Bluetooth.");
+          return;
+        }
+        const contenedor = document.getElementById('contenedor-impresion');
+        const canvas = await html2canvas(contenedor, { backgroundColor: '#ffffff' });
+        const dataUrl = canvas.toDataURL('image/png');
 
-  window.imprimirEnGato = async function () {
-    if (!printerGato || !printerGato.isConnected()) {
-      alert("Primero conecta la impresora con el botón de Bluetooth.");
-      return;
-    }
-    const contenedor = document.getElementById('contenedor-impresion');
-    const canvas = await html2canvas(contenedor, { backgroundColor: '#ffffff' });
-    const dataUrl = canvas.toDataURL('image/png');
-
-    await printerGato.printImage(dataUrl, { dither: 'floyd-steinberg' });
-    await printerGato.feed(80);
-  };
-</script>
+        await printerGato.printImage(dataUrl, { dither: 'floyd-steinberg' });
+        await printerGato.feed(80);
+      } catch (err) {
+        console.error(err);
+        alert("Error al imprimir: " + err.message);
+      }
+    };
+  </script>
   <script>
     let escalaActual = parseFloat(localStorage.getItem('zoom-nivel-tablet')) || 1;
     const wrapperZoom = document.getElementById('wrapper-zoom');
