@@ -15,111 +15,115 @@
 
 
   <style>
-    @page {
-      margin: 0;
-      size: auto;
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+ #contenedor-impresion {
+    --tam-base: 28px;   /* 👈 tamaño letra  premios, bulletes, monedas total y codigo */
+
+    position: absolute;
+    left: -9999px;
+    border: 2px solid red;
+    top: 0;
+    width: 384px;
+    background: #fff;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: var(--tam-base);
+    padding: 10px;
+    line-height: 1.5;
+  }
+
+  .cod {
+    font-size: var(--tam-base);
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 0;
+  }
+
+  .espacio-manual {
+    height: 40px;
+  }
+
+  .seccion-titulo {
+    font-weight: 900;
+    font-size: var(--tam-base);
+    margin: 18px 0 8px;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+.linea-premio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--tam-premios);   
+    font-weight: bold;
+    margin: 12px 0;
+    line-height: 1.5;
+}
+
+  .circulo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    border: 2px solid #000;
+    border-radius: 50%;
+    font-weight: 900;
+    font-size: calc(var(--tam-premios) - 4px);
+}
+  #contenedor-impresion hr {
+    --tam-base: 28px;   /* 👈 CAMBIA SOLO ESTE NÚMERO PARA AJUSTAR TODO EL RECIBO */
+    --tam-premios: 21px; /* 👈 /* tamaño letra para loteria, circulo*/
+    border: none;
+    border-top: 2px dashed #000;
+    margin: 18px 0;
+  }
+
+  .total-final {
+    font-size: calc(var(--tam-base) + 3px);
+    font-weight: bold;
+    text-align: left;
+    margin-top: 14px;
+    line-height: 1.8;
+  }
+
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    #contenedor-impresion,
+    #contenedor-impresion * {
+      visibility: visible;
     }
 
     #contenedor-impresion {
-      --tam-base: 28px;
-      /* tamaño letra premios, billetes, monedas total y código */
-      --tam-premios: 20px;
-      /* 👈 muévelo aquí, tamaño para lotería y círculo */
-      position: fixed;
-      left: 20px;
-      top: 20px;
-      z-index: 999999;
-      /* border: 2px solid red;  */
+      display: block;
+      position: absolute;
       top: 0;
-      width: 384px;
-      background: #fff;
-      color: #000;
-      font-family: 'Courier New', monospace;
-      font-size: var(--tam-base);
-      padding: 10px;
-      line-height: 1.5;
+      left: 0;
+      width: 100%;
     }
-
-    .cod {
-      font-size: var(--tam-base);
-      font-weight: bold;
-      text-align: left;
-      margin-bottom: 0;
-    }
-
-    .espacio-manual {
-      height: 40px;
-    }
-
-    .seccion-titulo {
-      font-weight: 900;
-      font-size: var(--tam-base);
-      margin: 18px 0 8px;
-      text-align: left;
-      line-height: 1.5;
-    }
-
-    .linea-premio {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: var(--tam-premios);
-      font-weight: bold;
-      margin: 12px 0;
-      line-height: 1.5;
-    }
-
-    .circulo {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 22px;
-      height: 22px;
-      min-width: 22px;
-      border: 2px solid #000;
-      border-radius: 50%;
-      font-weight: 900;
-      font-size: calc(var(--tam-premios) - 4px);
-    }
-
-    #contenedor-impresion hr {
-      border: none;
-      border-top: 2px dashed #000;
-      margin: 18px 0;
-    }
-
-    .total-final {
-      font-size: calc(var(--tam-base) + 3px);
-      font-weight: bold;
-      text-align: left;
-      margin-top: 14px;
-      line-height: 1.8;
-    }
-
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-
-      #contenedor-impresion,
-      #contenedor-impresion * {
-        visibility: visible;
-      }
-
-      #contenedor-impresion {
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 
 <body>
 
-
+  <div id="controles-zoom"
+    style="position: fixed; top: 8px; right: 8px; z-index: 99999; background: #8A2BE2; padding: 6px 10px; border-radius: 10px; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
+    <button onclick="cambiarZoom(-0.1)"
+      style="width: 32px; height: 32px; font-size: 18px; font-weight: bold; border: none; border-radius: 6px; background: white; color: #8A2BE2; cursor: pointer;">−</button>
+    <span id="zoomNivel" style="color: white; font-weight: bold; min-width: 40px; text-align: center;">100%</span>
+    <button onclick="cambiarZoom(0.1)"
+      style="width: 32px; height: 32px; font-size: 18px; font-weight: bold; border: none; border-radius: 6px; background: white; color: #8A2BE2; cursor: pointer;">+</button>
+  </div>
 
   <div id="boton-conectar-impresora" style="position: fixed; top: 8px; left: 8px; z-index: 99999;">
     <button onclick="conectarImpresoraGato()"
@@ -1516,7 +1520,7 @@
       </tbody>
     </table>
 
-
+  
 
     <footer class="footer">
       Powered by <strong>Jesús Sánchez para Fresa </strong>
@@ -2241,7 +2245,7 @@
     </script>
 
     <script>
-      window.imprimiendoAhora = false;
+    window.imprimiendoAhora = false;
 
       function mostrarConfirmacionImprimir() {
         if (window.imprimiendoAhora) return;
@@ -2264,53 +2268,54 @@
         });
       }
 
-      async function generarImpresion() {
+     async function generarImpresion() {
         if (window.imprimiendoAhora) return;
         window.imprimiendoAhora = true;
 
         try {
-          const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
-          const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
-          const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
-          const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
+        const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
+        const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
+        const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
+        const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
 
-          let premiosHTML = '';
-          for (let i = 1; i <= 30; i++) {
-            const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
-            const nombreInput = document.getElementById(idLoteria);
-            const nombre = nombreInput ? nombreInput.value.trim() : '';
+        let premiosHTML = '';
+        for (let i = 1; i <= 30; i++) {
+          const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+          const nombreInput = document.getElementById(idLoteria);
+          const nombre = nombreInput ? nombreInput.value.trim() : '';
 
-            if (nombre) {
-              const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
-              const valorInput = document.querySelector(`input.input${i * 2}`);
-              const cantidad = cantidadInput?.value.trim() || '0';
-              const valor = valorInput?.value.trim() || '0';
+          if (nombre) {
+            const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
+            const valorInput = document.querySelector(`input.input${i * 2}`);
+            const cantidad = cantidadInput?.value.trim() || '0';
+            const valor = valorInput?.value.trim() || '0';
 
-              premiosHTML += `
+            premiosHTML += `
             <div class="linea-premio">
-              <span> ${nombre}</span>
+              <span>* ${nombre}</span>
               <span class="circulo">${cantidad}</span>
-              <span> ${valor}</span>
+              <span>$ ${valor}</span>
             </div>`;
-            }
           }
+        }
 
-          if (!premiosHTML) {
-            premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
-          }
-const contenido = `
-<p class="cod">Cod 088388</p>
-<div class="espacio-manual"></div>
-<p class="seccion-titulo">Premios: $ ${premiosTotal}</p>
-${premiosHTML}
-<p class="seccion-titulo">Billetes: $ ${billetesTotal}</p>
-<p class="seccion-titulo">Monedas: $ ${monedasTotal}</p>
-<hr>
-<p class="total-final">Total: $ ${totalGeneral}</p>
-`;
+        if (!premiosHTML) {
+          premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
+        }
 
-          document.getElementById('contenedor-impresion').innerHTML = contenido;
-          await imprimirEnGato();
+        const contenido = `
+        <p class="cod">Cod 088388</p>
+        <div class="espacio-manual"></div>
+        <p class="seccion-titulo">Premios: $ ${premiosTotal}</p>
+        ${premiosHTML}
+        <p class="seccion-titulo">Billetes: $ ${billetesTotal}</p>
+        <p class="seccion-titulo">Monedas: $ ${monedasTotal}</p>
+        <hr>
+        <p class="total-final">Total: $ ${totalGeneral}</p>
+      `;
+
+     document.getElementById('contenedor-impresion').innerHTML = contenido;
+        await imprimirEnGato();
         } finally {
           window.imprimiendoAhora = false;
         }
@@ -2341,7 +2346,7 @@ ${premiosHTML}
           alert("Primero conecta la impresora con el botón de Bluetooth.");
           return;
         }
-        await printerGato.feed(20);
+       await printerGato.feed(20);
 
         const contenedor = document.getElementById('contenedor-impresion');
         const canvas = await html2canvas(contenedor, {
@@ -2358,7 +2363,23 @@ ${premiosHTML}
       }
     };
   </script>
+  <script>
+    let escalaActual = parseFloat(localStorage.getItem('zoom-nivel-tablet')) || 1;
+    const wrapperZoom = document.getElementById('wrapper-zoom');
 
+    function aplicarZoom() {
+      wrapperZoom.style.zoom = escalaActual;
+      document.getElementById('zoomNivel').textContent = Math.round(escalaActual * 100) + '%';
+      localStorage.setItem('zoom-nivel-tablet', escalaActual);
+    }
+
+    function cambiarZoom(delta) {
+      escalaActual = Math.min(1.5, Math.max(0.3, +(escalaActual + delta).toFixed(2)));
+      aplicarZoom();
+    }
+
+    aplicarZoom();
+  </script>
 
 </body>
 
