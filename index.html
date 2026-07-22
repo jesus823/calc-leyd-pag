@@ -23,8 +23,10 @@
     #contenedor-impresion {
       --tam-base: 30px;
       --tam-premios: 20px;
-      position: absolute;
-      left: -9999px;
+     position: fixed;
+    left: 20px;
+    top: 20px;
+    z-index: 999999;
       border: 2px solid rgb(101, 100, 100);
       top: 0;
       width: 420px;
@@ -186,7 +188,7 @@
               <img
                 src="https://media.istockphoto.com/id/1408463718/es/vector/recordatorio-en-calendario-fecha-l%C3%ADmite-del-calendario-mensaje-push-de-notificaci%C3%B3n-de.jpg?s=612x612&w=0&k=20&c=MyiTsnAG5L-A139FJV9t-fvmVmhA6nDM4LUaqiEFp04="
                 alt="" style="width: 35px; height: 35px; border-radius: 50%;">
-              <span id="fechaHoraActual" style="font-size: 13px;"></span>
+              <span class="fechaHoraActual" style="font-size: 13px;"></span>
             </div>
           </th>
 
@@ -2217,9 +2219,9 @@
     </script>
 
 
-    <td id="fechaHoraActual" style="font-weight: bold; color: blue;"></td>
+    <td class="fechaHoraActual" style="font-weight: bold; color: blue;"></td>
 
-    <td id="fechaHoraActual" style="font-weight: bold; color: blue;"></td>
+    <td class="fechaHoraActual" style="font-weight: bold; color: blue;"></td>
 
     <script>
       function ponerFechaHora() {
@@ -2236,7 +2238,9 @@
         };
 
         const fechaHora = ahora.toLocaleString("es-CO", opciones);
-        document.getElementById("fechaHoraActual").textContent = fechaHora;
+        document.querySelectorAll(".fechaHoraActual").forEach(el => {
+          el.textContent = fechaHora;
+        });
       }
 
       document.addEventListener("DOMContentLoaded", () => {
@@ -2274,105 +2278,84 @@
     </script>
 
     <script>
-      window.imprimiendoAhora = false;
+  window.imprimiendoAhora = false;
 
-      function calcularFechaImpresion(esAyer) {
-        const fecha = new Date();
-        if (esAyer) fecha.setDate(fecha.getDate() - 1);
-        const anio = fecha.getFullYear();
-        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-        const dia = String(fecha.getDate()).padStart(2, '0');
-        return `${anio}-${mes}-${dia}`;
-      }
+function calcularFechaImpresion(esAyer) {
+  const fecha = new Date();
+  fecha.setHours(12, 0, 0, 0);
+  if (esAyer) fecha.setDate(fecha.getDate() - 1);
+  const anio = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  return `${anio}-${mes}-${dia}`;
+}
 
-      async function mostrarConfirmacionImprimir() {
-        if (window.imprimiendoAhora) return;
+function preguntarConBotones(titulo, opciones) {
+  // opciones: [{ id, texto, valor }, ...]
+  return new Promise((resolve) => {
+    const botonesHTML = opciones.map(op => `
+      <button id="${op.id}" type="button" style="font-size:22px; font-weight:bold; padding:14px; border:none; border-radius:10px; background:#3085d6; color:#fff; cursor:pointer;">
+        ${op.texto}
+      </button>
+    `).join('<div style="height:22px;"></div>');
 
-        // 1) Ventana: Hoy o Ayer (HTML propio, texto grande y visible)
-        const { value: fechaSeleccion, isConfirmed: fechaConfirmada } = await Swal.fire({
-          title: '¿Qué fecha deseas imprimir?',
-          html: `
-      <div style="display:flex; flex-direction:column; gap:16px; align-items:flex-start; margin-top:10px;">
-        <label style="display:flex; align-items:center; gap:10px; font-size:24px; font-weight:bold; color:#fff; cursor:pointer;">
-          <input type="radio" name="fechaSel" value="hoy" checked style="width:26px; height:26px; accent-color:#3085d6; cursor:pointer;">
-          Hoy
-        </label>
-        <label style="display:flex; align-items:center; gap:10px; font-size:24px; font-weight:bold; color:#fff; cursor:pointer;">
-          <input type="radio" name="fechaSel" value="ayer" style="width:26px; height:26px; accent-color:#3085d6; cursor:pointer;">
-          Ayer
-        </label>
-      </div>
-    `,
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: 'Continuar',
-          cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          background: '#1a1a1a',
-          color: '#fff',
-          reverseButtons: true,
-          width: '30em',
-          padding: '2em',
-          preConfirm: () => {
-            const seleccionado = document.querySelector('input[name="fechaSel"]:checked');
-            if (!seleccionado) {
-              Swal.showValidationMessage('Debes seleccionar Hoy o Ayer');
-              return false;
-            }
-            return seleccionado.value;
-          }
+    let respondido = false;
+
+    Swal.fire({
+      title: titulo,
+      icon: 'question',
+      html: `<div style="display:flex; flex-direction:column; margin-top:10px;">${botonesHTML}</div>`,
+      showConfirmButton: false,
+      showCancelButton: true,
+      cancelButtonText: 'Cancelar',
+      cancelButtonColor: '#d33',
+      background: '#1a1a1a',
+      color: '#fff',
+      width: '30em',
+      padding: '2em',
+      allowOutsideClick: false,
+      didOpen: () => {
+        opciones.forEach(op => {
+          document.getElementById(op.id).addEventListener('click', () => {
+            respondido = true;
+            resolve(op.valor);
+            Swal.close();
+          });
         });
-
-        if (!fechaConfirmada || !fechaSeleccion) return;
-
-        const fechaImpresion = calcularFechaImpresion(fechaSeleccion === 'ayer');
-
-        // 2) Ventana: Aceptar/Cancelar + cuántas copias (HTML propio, texto grande y visible)
-        const { value: copias, isConfirmed } = await Swal.fire({
-          title: '¿Deseas imprimir?',
-          icon: 'question',
-          html: `
-      <div style="display:flex; flex-direction:column; gap:16px; align-items:flex-start; margin-top:10px;">
-        <label style="display:flex; align-items:center; gap:10px; font-size:24px; font-weight:bold; color:#fff; cursor:pointer;">
-          <input type="radio" name="copiasSel" value="1" checked style="width:26px; height:26px; accent-color:#3085d6; cursor:pointer;">
-          1 impresión
-        </label>
-        <label style="display:flex; align-items:center; gap:10px; font-size:24px; font-weight:bold; color:#fff; cursor:pointer;">
-          <input type="radio" name="copiasSel" value="2" style="width:26px; height:26px; accent-color:#3085d6; cursor:pointer;">
-          2 impresiones
-        </label>
-      </div>
-    `,
-          showCancelButton: true,
-          confirmButtonText: 'Aceptar',
-          cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          background: '#1a1a1a',
-          color: '#fff',
-          reverseButtons: true,
-          width: '30em',
-          padding: '2em',
-          customClass: {
-            confirmButton: 'boton-swal-grande',
-            cancelButton: 'boton-swal-grande'
-          },
-          preConfirm: () => {
-            const seleccionado = document.querySelector('input[name="copiasSel"]:checked');
-            if (!seleccionado) {
-              Swal.showValidationMessage('Debes elegir cuántas impresiones deseas');
-              return false;
-            }
-            return seleccionado.value;
-          }
-        });
-
-        if (isConfirmed && copias) {
-          await generarImpresion(fechaImpresion, parseInt(copias, 10));
-        }
       }
+    }).then(() => {
+      // Si se cerró sin haber respondido (cancelado o clic afuera), resolvemos null
+      if (!respondido) resolve(null);
+    });
+  });
+}
 
+async function mostrarConfirmacionImprimir() {
+  if (window.imprimiendoAhora) return;
+
+  // 1) Ventana: Hoy o Ayer
+  const fechaSeleccion = await preguntarConBotones('¿Qué fecha deseas imprimir?', [
+    { id: 'btnFechaHoy', texto: 'Hoy', valor: 'hoy' },
+    { id: 'btnFechaAyer', texto: 'Ayer', valor: 'ayer' },
+    { id: 'btnFechaSinFecha', texto: 'Sin fecha', valor: 'sin-fecha' }
+  ]);
+
+  if (!fechaSeleccion) return;
+
+  const fechaImpresion = fechaSeleccion === 'sin-fecha'
+    ? ''
+    : calcularFechaImpresion(fechaSeleccion === 'ayer');
+
+  // 2) Ventana: cuántas copias
+  const copias = await preguntarConBotones('¿Cuántas impresiones deseas?', [
+    { id: 'btnCopias1', texto: '1 impresión', valor: '1' },
+    { id: 'btnCopias2', texto: '2 impresiones', valor: '2' }
+  ]);
+
+  if (!copias) return;
+
+  await generarImpresion(fechaImpresion, parseInt(copias, 10));
+}
       async function generarImpresion(fechaImpresion, copias = 1) {
         if (window.imprimiendoAhora) return;
         window.imprimiendoAhora = true;
@@ -2410,7 +2393,7 @@
 
           const contenido = `
       <p class="cod">Cod 088388</p>
-      <p class="cod">Fecha: ${fechaImpresion}</p>
+      ${fechaImpresion ? `<p class="cod">Fecha: ${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
       <p class="seccion-titulo">Premios: $ ${premiosTotal}</p>
       ${premiosHTML}
@@ -2421,6 +2404,7 @@
     `;
 
           document.getElementById('contenedor-impresion').innerHTML = contenido;
+          await new Promise(resolve => requestAnimationFrame(resolve));
 
           for (let i = 0; i < copias; i++) {
             await imprimirEnGato();
