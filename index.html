@@ -20,8 +20,9 @@
     size: auto;
   }
 
- #contenedor-impresion {
-    --tam-base: 28px;   /* 👈 tamaño letra  premios, bulletes, monedas total y codigo */
+#contenedor-impresion {
+    --tam-base: 28px;    /* tamaño letra premios, billetes, monedas total y código */
+    --tam-premios: 22px; /* 👈 muévelo aquí, tamaño para lotería y círculo */
 
     position: fixed;
     left: 20px;
@@ -36,7 +37,7 @@
     font-size: var(--tam-base);
     padding: 10px;
     line-height: 1.5;
-  }
+}
 
   .cod {
     font-size: var(--tam-base);
@@ -79,13 +80,11 @@
     font-weight: 900;
     font-size: calc(var(--tam-premios) - 4px);
 }
-  #contenedor-impresion hr {
-    --tam-base: 28px;   /* 👈 CAMBIA SOLO ESTE NÚMERO PARA AJUSTAR TODO EL RECIBO */
-    --tam-premios: 28px; /* 👈 /* tamaño letra para loteria, circulo*/
+#contenedor-impresion hr {
     border: none;
     border-top: 2px dashed #000;
     margin: 18px 0;
-  }
+}
 
   .total-final {
     font-size: calc(var(--tam-base) + 3px);
