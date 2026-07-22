@@ -269,3 +269,8 @@ input[id^="loteria"],    /* nombre de la lotería */
 td[class^="r"]:not([class*="resultado"]) {  /* SOLO r1, r2, r3... nunca "resultado*" */
   font-size: var(--tam-premios) !important;
 }
+.boton-swal-grande {
+  font-size: 18px !important;
+  padding: 12px 30px !important;
+  margin: 0 15px !important;
+}
