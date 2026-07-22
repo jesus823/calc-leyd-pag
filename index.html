@@ -2276,7 +2276,7 @@
     <script>
       window.imprimiendoAhora = false;
 
-      function mostrarConfirmacionImprimir() {
+   function mostrarConfirmacionImprimir() {
         if (window.imprimiendoAhora) return;
 
         Swal.fire({
@@ -2289,7 +2289,9 @@
           cancelButtonColor: '#d33',
           background: '#1a1a1a',
           color: '#fff',
-          reverseButtons: true
+          reverseButtons: true,
+          width: '30em',
+          padding: '2em'
         }).then((result) => {
           if (result.isConfirmed) {
             generarImpresion();
