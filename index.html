@@ -21,6 +21,8 @@
   }
 
  #contenedor-impresion {
+    --tam-base: 25px;   /* 👈 CAMBIA SOLO ESTE NÚMERO PARA AJUSTAR TODO EL RECIBO */
+
     position: absolute;
     left: -9999px;
     border: 2px solid red;
@@ -29,13 +31,13 @@
     background: #fff;
     color: #000;
     font-family: 'Courier New', monospace;
-    font-size: 18px;
+    font-size: var(--tam-base);
     padding: 10px;
     line-height: 1.5;
   }
 
   .cod {
-    font-size: 18px;
+    font-size: var(--tam-base);
     font-weight: bold;
     text-align: left;
     margin-bottom: 0;
@@ -47,7 +49,7 @@
 
   .seccion-titulo {
     font-weight: 900;
-    font-size: 18px;
+    font-size: var(--tam-base);
     margin: 18px 0 8px;
     text-align: left;
     line-height: 1.5;
@@ -57,8 +59,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 18px;
-     font-weight: bold;
+    font-size: var(--tam-base);
+    font-weight: bold;
     margin: 12px 0;
     line-height: 1.5;
   }
@@ -73,7 +75,7 @@
     border: 2px solid #000;
     border-radius: 50%;
     font-weight: 900;
-    font-size: 12px;
+    font-size: calc(var(--tam-base) - 4px);
   }
 
   #contenedor-impresion hr {
@@ -83,7 +85,7 @@
   }
 
   .total-final {
-    font-size: 20px;
+    font-size: calc(var(--tam-base) + 3px);
     font-weight: bold;
     text-align: left;
     margin-top: 14px;
