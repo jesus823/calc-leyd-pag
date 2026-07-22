@@ -20,7 +20,7 @@
       size: auto;
     }
 
- #contenedor-impresion {
+  #contenedor-impresion {
       position: absolute;
       left: -9999px;
       top: 0;
@@ -2321,6 +2321,7 @@
         alert("No se pudo conectar: " + err.message);
       }
     };
+
 window.imprimirEnGato = async function () {
       try {
         if (!printerGato || !printerGato.isConnected()) {
