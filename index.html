@@ -116,14 +116,7 @@
 
 <body>
 
-  <div id="controles-zoom"
-    style="position: fixed; top: 8px; right: 8px; z-index: 99999; background: #8A2BE2; padding: 6px 10px; border-radius: 10px; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
-    <button onclick="cambiarZoom(-0.1)"
-      style="width: 32px; height: 32px; font-size: 18px; font-weight: bold; border: none; border-radius: 6px; background: white; color: #8A2BE2; cursor: pointer;">−</button>
-    <span id="zoomNivel" style="color: white; font-weight: bold; min-width: 40px; text-align: center;">100%</span>
-    <button onclick="cambiarZoom(0.1)"
-      style="width: 32px; height: 32px; font-size: 18px; font-weight: bold; border: none; border-radius: 6px; background: white; color: #8A2BE2; cursor: pointer;">+</button>
-  </div>
+
 
   <div id="boton-conectar-impresora" style="position: fixed; top: 8px; left: 8px; z-index: 99999;">
     <button onclick="conectarImpresoraGato()"
@@ -2363,23 +2356,7 @@
       }
     };
   </script>
-  <script>
-    let escalaActual = parseFloat(localStorage.getItem('zoom-nivel-tablet')) || 1;
-    const wrapperZoom = document.getElementById('wrapper-zoom');
 
-    function aplicarZoom() {
-      wrapperZoom.style.zoom = escalaActual;
-      document.getElementById('zoomNivel').textContent = Math.round(escalaActual * 100) + '%';
-      localStorage.setItem('zoom-nivel-tablet', escalaActual);
-    }
-
-    function cambiarZoom(delta) {
-      escalaActual = Math.min(1.5, Math.max(0.3, +(escalaActual + delta).toFixed(2)));
-      aplicarZoom();
-    }
-
-    aplicarZoom();
-  </script>
 
 </body>
 
