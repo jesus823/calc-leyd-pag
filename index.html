@@ -15,118 +15,98 @@
 
 
   <style>
-    @page {
-      margin: 0;
-      size: auto;
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  #contenedor-impresion {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: 384px;
+    background: #fff;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    padding: 10px;
+    line-height: 1.5;
+  }
+
+  .cod {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 0;
+  }
+
+  .espacio-manual {
+    height: 40px;
+  }
+
+  .seccion-titulo {
+    font-weight: bold;
+    font-size: 16px;
+    margin: 18px 0 8px;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+  .linea-premio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    margin: 12px 0;
+    line-height: 1.5;
+  }
+
+  .circulo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    border: 2px solid #000;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 12px;
+  }
+
+  #contenedor-impresion hr {
+    border: none;
+    border-top: 2px dashed #000;
+    margin: 18px 0;
+  }
+
+  .total-final {
+    font-size: 19px;
+    font-weight: bold;
+    text-align: left;
+    margin-top: 14px;
+    line-height: 1.8;
+  }
+
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    #contenedor-impresion,
+    #contenedor-impresion * {
+      visibility: visible;
     }
 
     #contenedor-impresion {
+      display: block;
       position: absolute;
-      left: -9999px;
       top: 0;
-      width: 380px;
-       overflow: hidden;
-      word-wrap: break-word;
-      background: #fff;
-      color: #000;
-      font-family: monospace;
-      font-size: 16px;
-      padding: 10px;
-      line-height: 1.5;
+      left: 0;
+      width: 100%;
     }
-
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-
-      #contenedor-impresion,
-      #contenedor-impresion * {
-        visibility: visible;
-      }
-
-      #contenedor-impresion {
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background: #fff;
-        color: #000;
-        font-family: 'Courier New', monospace;
-        padding: 10px;
-      }
-
-      .cod {
-        font-size: 16px;
-        font-weight: bold;
-        text-align: left;
-        margin-bottom: 0;
-      }
-
-      .espacio-manual {
-        height: 40px;
-      }
-
-      .seccion-titulo {
-        font-weight: bold;
-        font-size: 16px;
-        margin: 20px 0 12px;
-        text-align: left;
-        line-height: 1.5;
-      }
-
-      .linea-premio {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 15px;           /* un poco más pequeño para que quepa mejor */
-  margin: 12px 0;            /* más separación vertical */
-  line-height: 1.6;
-  padding: 0 4px;
-}
-
-.nombre-premio {
-  flex: 1;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;   /* si es muy largo, pone "…" */
-  max-width: 155px;
-}
-
-.cantidad-premio {
-  width: 38px;
-  text-align: center;
-  font-weight: bold;
-  border: 2px solid #000;
-  border-radius: 50%;
-  padding: 2px 0;
-  font-size: 13px;
-}
-
-.valor-premio {
-  width: 95px;
-  text-align: right;
-  font-weight: bold;
-}
-
-      hr {
-        border: none;
-        border-top: 2px dashed #000;
-        margin: 18px 0;
-      }
-
-      .total-final {
-        font-size: 19px;
-        font-weight: bold;
-        text-align: left;
-        margin-top: 14px;
-        /* antes era 8px */
-        line-height: 1.8;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 
 <body>
@@ -2297,7 +2277,12 @@
             const cantidad = cantidadInput?.value.trim() || '0';
             const valor = valorInput?.value.trim() || '0';
 
-           premiosHTML = '<div class="linea-premio"><span class="nombre-premio">*</span><span class="cantidad-premio"></span><span class="valor-premio"></span></div>';
+            premiosHTML += `
+            <div class="linea-premio">
+              <span>* ${nombre}</span>
+              <span class="circulo">${cantidad}</span>
+              <span>$ ${valor}</span>
+            </div>`;
           }
         }
 
