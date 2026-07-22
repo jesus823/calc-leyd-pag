@@ -20,9 +20,12 @@
     size: auto;
   }
 
-  #contenedor-impresion {
-    position: absolute;
-    left: -9999px;
+ #contenedor-impresion {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    z-index: 999999;
+    border: 2px solid red;
     top: 0;
     width: 384px;
     background: #fff;
@@ -2259,57 +2262,51 @@
         });
       }
 
-  async function generarImpresion() {
-  const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
-  const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
-  const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
-  const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
+      async function generarImpresion() {
+        const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
+        const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
+        const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
+        const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
 
-  const estiloFila = "font-size:16px; font-family:'Courier New',monospace; padding:4px 0;";
-  const estiloCirculo = "display:inline-block; width:22px; height:22px; line-height:18px; border:2px solid #000; border-radius:50%; text-align:center; font-weight:bold; font-size:12px;";
+        let premiosHTML = '';
+        for (let i = 1; i <= 30; i++) {
+          const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+          const nombreInput = document.getElementById(idLoteria);
+          const nombre = nombreInput ? nombreInput.value.trim() : '';
 
-  let premiosHTML = '';
-  for (let i = 1; i <= 30; i++) {
-    const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
-    const nombreInput = document.getElementById(idLoteria);
-    const nombre = nombreInput ? nombreInput.value.trim() : '';
+          if (nombre) {
+            const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
+            const valorInput = document.querySelector(`input.input${i * 2}`);
+            const cantidad = cantidadInput?.value.trim() || '0';
+            const valor = valorInput?.value.trim() || '0';
 
-    if (nombre) {
-      const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
-      const valorInput = document.querySelector(`input.input${i * 2}`);
-      const cantidad = cantidadInput?.value.trim() || '0';
-      const valor = valorInput?.value.trim() || '0';
+            premiosHTML += `
+            <div class="linea-premio">
+              <span>* ${nombre}</span>
+              <span class="circulo">${cantidad}</span>
+              <span>$ ${valor}</span>
+            </div>`;
+          }
+        }
 
-      premiosHTML += `
-        <tr>
-          <td style="${estiloFila} text-align:left;">* ${nombre}</td>
-          <td style="${estiloFila} text-align:center;"><span style="${estiloCirculo}">${cantidad}</span></td>
-          <td style="${estiloFila} text-align:right;">$ ${valor}</td>
-        </tr>`;
-    }
-  }
+        if (!premiosHTML) {
+          premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
+        }
 
-  if (!premiosHTML) {
-    premiosHTML = `
-      <tr><td style="${estiloFila}">*</td><td></td><td></td></tr>
-      <tr><td style="${estiloFila}">*</td><td></td><td></td></tr>`;
-  }
+        const contenido = `
+        <p class="cod">Cod 088388</p>
+        <div class="espacio-manual"></div>
+        <p class="seccion-titulo">Premios $ ${premiosTotal}</p>
+        ${premiosHTML}
+        <p class="seccion-titulo">Billetes $ ${billetesTotal}</p>
+        <p class="seccion-titulo">Monedas $ ${monedasTotal}</p>
+        <hr>
+        <p class="total-final">Total $ ${totalGeneral}</p>
+      `;
 
-  const contenido = `
-    <table style="width:100%; border-collapse:collapse; font-family:'Courier New',monospace;">
-      <tr><td colspan="3" style="font-size:16px; font-weight:bold; padding-bottom:20px;">Cod 088388</td></tr>
-      <tr><td colspan="3" style="font-size:16px; font-weight:bold; padding:10px 0;">Premios $ ${premiosTotal}</td></tr>
-      ${premiosHTML}
-      <tr><td colspan="3" style="font-size:16px; font-weight:bold; padding:14px 0 4px;">Billetes $ ${billetesTotal}</td></tr>
-      <tr><td colspan="3" style="font-size:16px; font-weight:bold; padding:4px 0 14px;">Monedas $ ${monedasTotal}</td></tr>
-      <tr><td colspan="3" style="border-top:2px dashed #000; padding:0;"></td></tr>
-      <tr><td colspan="3" style="font-size:19px; font-weight:bold; padding-top:14px;">Total $ ${totalGeneral}</td></tr>
-    </table>
-  `;
-
-  document.getElementById('contenedor-impresion').innerHTML = contenido;
-  await imprimirEnGato();
-}
+        document.getElementById('contenedor-impresion').innerHTML = contenido;
+        await imprimirEnGato();
+      }
     </script>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
