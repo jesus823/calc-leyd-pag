@@ -15,27 +15,29 @@
 
 
   <style>
-  @page {
-    margin: 0;
-    size: auto;
-  }
-#contenedor-impresion {
-    --tam-base: 28px;
-    --tam-premios: 20px;
-    position: fixed;
-    left: 20px;
-    top: 20px;
-    z-index: 999999;
-    display: flow-root;   /* 👈 bloquea el colapso de márgenes sin necesitar borde */
-    top: 0;
-    width: 384px;
-    background: #fff;
-    color: #000;
-    font-family: 'Courier New', monospace;
-    font-size: var(--tam-base);
-    padding: 10px;
-    line-height: 1.5;
-}
+    @page {
+      margin: 0;
+      size: auto;
+    }
+
+    #contenedor-impresion {
+      --tam-base: 28px;
+      --tam-premios: 20px;
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      z-index: 999999;
+      display: flow-root;
+      /* 👈 bloquea el colapso de márgenes sin necesitar borde */
+      top: 0;
+      width: 384px;
+      background: #fff;
+      color: #000;
+      font-family: 'Courier New', monospace;
+      font-size: var(--tam-base);
+      padding: 10px;
+      line-height: 1.5;
+    }
 
     .cod {
       font-size: var(--tam-base);
@@ -111,8 +113,7 @@
         width: 100%;
       }
     }
-
-</style>
+  </style>
 </head>
 
 <body>
@@ -1514,7 +1515,7 @@
       </tbody>
     </table>
 
-  
+
 
     <footer class="footer">
       Powered by <strong>Jesús Sánchez para Fresa </strong>
@@ -2239,7 +2240,7 @@
     </script>
 
     <script>
-    window.imprimiendoAhora = false;
+      window.imprimiendoAhora = false;
 
       function mostrarConfirmacionImprimir() {
         if (window.imprimiendoAhora) return;
@@ -2262,42 +2263,42 @@
         });
       }
 
-     async function generarImpresion() {
+      async function generarImpresion() {
         if (window.imprimiendoAhora) return;
         window.imprimiendoAhora = true;
 
         try {
-        const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
-        const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
-        const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
-        const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
+          const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
+          const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
+          const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
+          const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
 
-        let premiosHTML = '';
-        for (let i = 1; i <= 30; i++) {
-          const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
-          const nombreInput = document.getElementById(idLoteria);
-          const nombre = nombreInput ? nombreInput.value.trim() : '';
+          let premiosHTML = '';
+          for (let i = 1; i <= 30; i++) {
+            const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+            const nombreInput = document.getElementById(idLoteria);
+            const nombre = nombreInput ? nombreInput.value.trim() : '';
 
-          if (nombre) {
-            const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
-            const valorInput = document.querySelector(`input.input${i * 2}`);
-            const cantidad = cantidadInput?.value.trim() || '0';
-            const valor = valorInput?.value.trim() || '0';
+            if (nombre) {
+              const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
+              const valorInput = document.querySelector(`input.input${i * 2}`);
+              const cantidad = cantidadInput?.value.trim() || '0';
+              const valor = valorInput?.value.trim() || '0';
 
-            premiosHTML += `
+              premiosHTML += `
             <div class="linea-premio">
-              <span>* ${nombre}</span>
+              <span> ${nombre}</span>
               <span class="circulo">${cantidad}</span>
-              <span>$ ${valor}</span>
+              <span> ${valor}</span>
             </div>`;
+            }
           }
-        }
 
-        if (!premiosHTML) {
-          premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
-        }
+          if (!premiosHTML) {
+            premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
+          }
 
-        const contenido = `
+          const contenido = `
         <p class="cod">Cod 088388</p>
         <div class="espacio-manual"></div>
         <p class="seccion-titulo">Premios: $ ${premiosTotal}</p>
@@ -2308,8 +2309,8 @@
         <p class="total-final">Total: $ ${totalGeneral}</p>
       `;
 
-     document.getElementById('contenedor-impresion').innerHTML = contenido;
-        await imprimirEnGato();
+          document.getElementById('contenedor-impresion').innerHTML = contenido;
+          await imprimirEnGato();
         } finally {
           window.imprimiendoAhora = false;
         }
@@ -2340,7 +2341,7 @@
           alert("Primero conecta la impresora con el botón de Bluetooth.");
           return;
         }
-       await printerGato.feed(20);
+        await printerGato.feed(20);
 
         const contenedor = document.getElementById('contenedor-impresion');
         const canvas = await html2canvas(contenedor, {
