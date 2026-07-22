@@ -21,96 +21,100 @@
   }
 
  #contenedor-impresion {
-    --tam-base: 28px;   /* 👈 tamaño letra  premios, bulletes, monedas total y codigo */
-
-    position: absolute;
-    left: -9999px;
-    border: 2px solid red;
-    top: 0;
-    width: 384px;
-    background: #fff;
-    color: #000;
-    font-family: 'Courier New', monospace;
-    font-size: var(--tam-base);
-    padding: 10px;
-    line-height: 1.5;
-  }
-
-  .cod {
-    font-size: var(--tam-base);
-    font-weight: bold;
-    text-align: left;
-    margin-bottom: 0;
-  }
-
-  .espacio-manual {
-    height: 40px;
-  }
-
-  .seccion-titulo {
-    font-weight: 900;
-    font-size: var(--tam-base);
-    margin: 18px 0 8px;
-    text-align: left;
-    line-height: 1.5;
-  }
-
-.linea-premio {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: var(--tam-premios);   
-    font-weight: bold;
-    margin: 12px 0;
-    line-height: 1.5;
-}
-
-  .circulo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    min-width: 22px;
-    border: 2px solid #000;
-    border-radius: 50%;
-    font-weight: 900;
-    font-size: calc(var(--tam-premios) - 4px);
-}
-  #contenedor-impresion hr {
-    --tam-base: 28px;   /* 👈 CAMBIA SOLO ESTE NÚMERO PARA AJUSTAR TODO EL RECIBO */
-    --tam-premios: 21px; /* 👈 /* tamaño letra para loteria, circulo*/
-    border: none;
-    border-top: 2px dashed #000;
-    margin: 18px 0;
-  }
-
-  .total-final {
-    font-size: calc(var(--tam-base) + 3px);
-    font-weight: bold;
-    text-align: left;
-    margin-top: 14px;
-    line-height: 1.8;
-  }
-
-  @media print {
-    body * {
-      visibility: hidden;
-    }
-
-    #contenedor-impresion,
-    #contenedor-impresion * {
-      visibility: visible;
-    }
-
-    #contenedor-impresion {
-      display: block;
-      position: absolute;
+      --tam-base: 28px;
+      /* tamaño letra premios, billetes, monedas total y código */
+      --tam-premios: 20px;
+      /* 👈 muévelo aquí, tamaño para lotería y círculo */
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      z-index: 999999;
+      /* border: 2px solid red;  */
       top: 0;
-      left: 0;
-      width: 100%;
+      width: 384px;
+      background: #fff;
+      color: #000;
+      font-family: 'Courier New', monospace;
+      font-size: var(--tam-base);
+      padding: 10px;
+      line-height: 1.5;
     }
-  }
+
+    .cod {
+      font-size: var(--tam-base);
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0;
+    }
+
+    .espacio-manual {
+      height: 40px;
+    }
+
+    .seccion-titulo {
+      font-weight: 900;
+      font-size: var(--tam-base);
+      margin: 18px 0 8px;
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .linea-premio {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: var(--tam-premios);
+      font-weight: bold;
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+
+    .circulo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border: 2px solid #000;
+      border-radius: 50%;
+      font-weight: 900;
+      font-size: calc(var(--tam-premios) - 4px);
+    }
+
+    #contenedor-impresion hr {
+      border: none;
+      border-top: 2px dashed #000;
+      margin: 18px 0;
+    }
+
+    .total-final {
+      font-size: calc(var(--tam-base) + 3px);
+      font-weight: bold;
+      text-align: left;
+      margin-top: 14px;
+      line-height: 1.8;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #contenedor-impresion,
+      #contenedor-impresion * {
+        visibility: visible;
+      }
+
+      #contenedor-impresion {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+    }
+
 </style>
 </head>
 
