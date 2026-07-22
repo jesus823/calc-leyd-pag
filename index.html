@@ -11,6 +11,93 @@
 
   <title>Contador Diario Pagatodo</title>
 
+
+
+  <style>
+   @page {
+      margin: 0;
+      size: auto;
+    }
+
+    #contenedor-impresion {
+      display: none;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #contenedor-impresion,
+      #contenedor-impresion * {
+        visibility: visible;
+      }
+
+      #contenedor-impresion {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        color: #000;
+        font-family: 'Courier New', monospace;
+        padding: 10px;
+      }
+
+      .cod {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: left;
+        margin-bottom: 0;
+      }
+
+      .espacio-manual {
+        height: 30px;
+      }
+
+      .seccion-titulo {
+        font-weight: bold;
+        font-size: 16px;
+        margin: 10px 0 4px;
+        text-align: left;
+      }
+
+      .linea-premio {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        margin: 3px 0;
+      }
+
+      .circulo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        border: 2px solid #000;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      hr {
+        border: none;
+        border-top: 2px dashed #000;
+        margin: 12px 0;
+      }
+
+      .total-final {
+        font-size: 19px;
+        font-weight: bold;
+        text-align: left;
+        margin-top: 8px;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -121,14 +208,14 @@
         <td><textarea></textarea></td>
 
         <td style="position: relative; height: 40px; width: 60px;">
-          <img src="stich.webp" alt="" style="
+          <img src="stich.webp" alt="" onclick="mostrarConfirmacionImprimir()" style="
          position: absolute;
-         top: 15px; /* Mueve la imagen hacia arriba */
+         top: 15px;
          left: 50%;
          transform: translateX(-50%);
          width: 150px;
          border-radius: 80px;
-         pointer-events: none;
+         cursor: pointer;
        ">
         </td>
 
@@ -1398,6 +1485,8 @@
     </tbody>
   </table>
 
+  <div id="contenedor-impresion"></div>
+
   <footer class="footer">
     Powered by <strong>Jesús Sánchez para Fresa </strong>
   </footer>
@@ -1656,7 +1745,7 @@
       "Lote Cundi", "Lote Tolima", "Lote Cruz Roja", "Lote Huila", "Lote Meta", "Lote Valle",
       "Lote Manizales", "Lote Bogota", "Lote Quindio", "Lote Risaralda", "Lote Medellin",
       "Lote Santander", "Lote Boyaca", "Lote Cauca", "Extra Colombia", "Quinta", "Astro",
-      "Miloto", "Baloto", "Colorloto", "Pagamillonario", "Chancemillonario", "RaspaTodo",
+      "Miloto", "Baloto", "Colorloto", "Pagamillonario", "Chancemillonario", "Raspas",
       "Pagatón", "Maxichance", "Betplay", "Paga Triple", "Linea Cundi", "Linea Tolima",
       "Linea Cruz Roja", "Linea Huila", "Linea Meta", "Linea Valle", "Linea Manizales",
       "Linea Bogota", "Linea Quindio", "Linea Risaralda", "Linea Medellin", "Linea Santander",
@@ -2120,7 +2209,72 @@
       });
   </script>
 
+  <script>
+    function mostrarConfirmacionImprimir() {
+      Swal.fire({
+        title: '¿Deseas imprimir?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Aceptar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        background: '#1a1a1a',
+        color: '#fff',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          generarImpresion();
+        }
+      });
+    }
 
+    function generarImpresion() {
+      const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
+      const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
+      const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
+      const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
+
+      let premiosHTML = '';
+      for (let i = 1; i <= 30; i++) {
+        const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+        const nombreInput = document.getElementById(idLoteria);
+        const nombre = nombreInput ? nombreInput.value.trim() : '';
+
+        if (nombre) {
+          const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
+          const valorInput = document.querySelector(`input.input${i * 2}`);
+          const cantidad = cantidadInput?.value.trim() || '0';
+          const valor = valorInput?.value.trim() || '0';
+
+          premiosHTML += `
+            <div class="linea-premio">
+              <span>* ${nombre}</span>
+              <span class="circulo">${cantidad}</span>
+              <span>$ ${valor}</span>
+            </div>`;
+        }
+      }
+
+      if (!premiosHTML) {
+        premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
+      }
+
+      const contenido = `
+        <p class="cod">Cod 088388</p>
+        <div class="espacio-manual"></div>
+        <p class="seccion-titulo">Premios $ ${premiosTotal}</p>
+        ${premiosHTML}
+        <p class="seccion-titulo">Billetes $ ${billetesTotal}</p>
+        <p class="seccion-titulo">Monedas $ ${monedasTotal}</p>
+        <hr>
+        <p class="total-final">Total $ ${totalGeneral}</p>
+      `;
+
+      document.getElementById('contenedor-impresion').innerHTML = contenido;
+      window.print();
+    }
+  </script>
 </body>
 
 </html>

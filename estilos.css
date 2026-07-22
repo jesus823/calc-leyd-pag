@@ -1,18 +1,22 @@
 body {
   font-family: sans-serif;
   padding: 20px;
-  color: white; /* Aplica color blanco al texto */
+  color: white;
+  /* Aplica color blanco al texto */
   background-color: #000000;
 }
 
 table {
   border-collapse: collapse;
   width: 100%;
-  border: 2px solid #8A2BE2; /* ← borde exterior de la tabla */
+  border: 2px solid #8A2BE2;
+  /* ← borde exterior de la tabla */
 }
 
-th, td {
-  border: 2px solid #8A2BE2; /* ← borde de cada celda */
+th,
+td {
+  border: 2px solid #8A2BE2;
+  /* ← borde de cada celda */
   padding: 4px;
   text-align: center;
   background-color: #000000;
@@ -33,7 +37,8 @@ textarea {
   font-family: sans-serif;
   box-sizing: border-box;
   background-color: #000000;
-  color: white; /* ← Texto blanco dentro del textarea */
+  color: white;
+  /* ← Texto blanco dentro del textarea */
 }
 
 
@@ -58,7 +63,7 @@ textarea {
   padding: 4px;
   font-weight: bold;
   font-size: 17px;
- 
+
 }
 
 ul.sugerencias {
@@ -69,7 +74,8 @@ ul.sugerencias {
   list-style: none;
   max-height: 200px;
   overflow-y: auto;
-  width: 200px; /* o el ancho que tú desees fijo */
+  width: 200px;
+  /* o el ancho que tú desees fijo */
   box-sizing: border-box;
   padding: 5px;
   margin: 15px;
@@ -77,12 +83,13 @@ ul.sugerencias {
   border-color: #dd0707;
   border-radius: 10;
 }
+
 .img-container {
   width: 70px;
   height: 60px;
   overflow: hidden;
   margin: 2px auto;
- 
+
 }
 
 .img-container img {
@@ -92,12 +99,16 @@ ul.sugerencias {
   border-radius: 5px;
   cursor: pointer;
 }
+
 tr {
-  height: 20px; /* o el valor que necesites */
+  height: 20px;
+  /* o el valor que necesites */
 }
+
 .img-flotante {
   position: absolute;
-  top: 5px; /* Ajusta según lo necesites */
+  top: 5px;
+  /* Ajusta según lo necesites */
   right: 5px;
   width: 60px;
   height: 60px;
@@ -106,132 +117,135 @@ tr {
   cursor: pointer;
   z-index: 10;
 }
+
 .celda-con-boton {
-  position: relative; /* ¡Esto es esencial para que funcione la posición absoluta del hijo! */
+  position: relative;
+  /* ¡Esto es esencial para que funcione la posición absoluta del hijo! */
 }
 
 
 
 /* -------------------------------------------*/
 
-    .peer-controls {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 10000;
-      background: rgb(251, 247, 247);
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      max-width: 300px;
-      border: 2px solid #4CAF50;
-    }
+.peer-controls {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 10000;
+  background: rgb(251, 247, 247);
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  max-width: 300px;
+  border: 2px solid #4CAF50;
+}
 
-    .peer-button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-bottom: 5px;
-      font-weight: bold;
-      width: 100%;
-      transition: all 0.3s;
-    }
+.peer-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 5px;
+  font-weight: bold;
+  width: 100%;
+  transition: all 0.3s;
+}
 
-    .peer-button:hover {
-      opacity: 0.9;
-      transform: translateY(-2px);
-    }
+.peer-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
 
-    .peer-button.connect {
-      background: #2196F3;
-    }
+.peer-button.connect {
+  background: #2196F3;
+}
 
-    .peer-button.disconnect {
-      background: #f44336;
-    }
+.peer-button.disconnect {
+  background: #f44336;
+}
 
-    .peer-button.guardar {
-      background: #9C27B0;
-    }
+.peer-button.guardar {
+  background: #9C27B0;
+}
 
-    .peer-button.guardar:hover {
-      background: #7B1FA2;
-    }
+.peer-button.guardar:hover {
+  background: #7B1FA2;
+}
 
-    .peer-status {
-      margin-top: 5px;
-      padding: 5px;
-      border-radius: 3px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: bold;
-    }
+.peer-status {
+  margin-top: 5px;
+  padding: 5px;
+  border-radius: 3px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+}
 
-    .connected {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
+.connected {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
 
-    .disconnected {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
+.disconnected {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
 
-    /* Estilos para las sugerencias de autocompletado */
-    .sugerencias {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 1000;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
+/* Estilos para las sugerencias de autocompletado */
+.sugerencias {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-    .sugerencias li {
-      padding: 8px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-    }
+.sugerencias li {
+  padding: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
 
-    .sugerencias li:hover {
-      background-color: #f0f0f0;
-    }
+.sugerencias li:hover {
+  background-color: #f0f0f0;
+}
 
-    /* Estilos para estados */
-    .exacto {
-      background-color: yellow !important;
-    }
+/* Estilos para estados */
+.exacto {
+  background-color: yellow !important;
+}
 
-    .sobra {
-      background-color: lightgreen !important;
-    }
+.sobra {
+  background-color: lightgreen !important;
+}
 
-    .falta {
-      background-color: salmon !important;
-    }
+.falta {
+  background-color: salmon !important;
+}
 
-    @media (max-width: 1200px) {
-      .peer-controls {
-        position: relative;
-        top: 0;
-        right: 0;
-        width: 100%;
-        max-width: 100%;
-        margin-bottom: 10px;
-      }
-    }
+@media (max-width: 1200px) {
+  .peer-controls {
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
 /* Estilos para modo solo lectura */
 .bloqueado {
   pointer-events: none;
