@@ -32,7 +32,7 @@
       width: 420px;
       background: #fff;
       color: #000;
-      font-family: 'Courier New', monospace;
+      font-family: Arial, Helvetica, sans-serif;
       font-size: var(--tam-base);
       padding: 6px 3px;
       line-height: 1.5;
@@ -477,8 +477,8 @@
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
-          <td><textarea></textarea></td>
-          <td><textarea></textarea></td>
+          <td><textarea>Cantidad</textarea></td>
+          <td><textarea>Valor</textarea></td>
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
 
@@ -1610,6 +1610,10 @@
           }
         });
 
+        for (let i = 1; i <= 58; i++) {
+          calcularResultado(i);
+        }
+
         // Guardar todos los <td> con clase rX
         function guardarCeldasTd() {
           celdas.forEach((celda, index) => {
@@ -1960,6 +1964,12 @@
 
         if (!inputA || !inputB || !celdaResultado) return;
 
+        if (inputA.value.trim() === '' || inputB.value.trim() === '') {
+          celdaResultado.textContent = '';
+          sumarResultados();
+          return;
+        }
+
         const valA = limpiarMiles(inputA.value);
         const valB = limpiarMiles(inputB.value);
 
@@ -2287,7 +2297,7 @@ function calcularFechaImpresion(esAyer) {
   const anio = fecha.getFullYear();
   const mes = String(fecha.getMonth() + 1).padStart(2, '0');
   const dia = String(fecha.getDate()).padStart(2, '0');
-  return `${anio}-${mes}-${dia}`;
+  return `${dia}-${mes}-${anio}`;
 }
 
 function preguntarConBotones(titulo, opciones) {
@@ -2393,7 +2403,7 @@ async function mostrarConfirmacionImprimir() {
 
           const contenido = `
       <p class="cod">Cod 088388</p>
-      ${fechaImpresion ? `<p class="cod">Fecha: ${fechaImpresion}</p>` : ''}
+      ${fechaImpresion ? `<p class="cod">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
       <p class="seccion-titulo">Premios: $ ${premiosTotal}</p>
       ${premiosHTML}
