@@ -19,17 +19,17 @@
       margin: 0;
       size: auto;
     }
-
-  #contenedor-impresion {
-      position: absolute;
-      left: -9999px;
-      top: 0;
-      width: 320px;
-      background: #fff;
-      color: #000;
-      font-family: 'Courier New', monospace;
-      padding: 10px;
-    }
+#contenedor-impresion {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 320px;
+  background: #fff;
+  color: #000;
+  font-family: 'Courier New', monospace;
+  padding: 10px;
+  line-height: 1.8; /* 👈 espacio entre líneas dentro del texto */
+}
 
     @media print {
       body * {
@@ -61,13 +61,13 @@
       }
 
       .espacio-manual {
-        height: 30px;
+        height: 40px;
       }
 
       .seccion-titulo {
         font-weight: bold;
         font-size: 16px;
-        margin: 10px 0 4px;
+        margin: 16px 0 4px;
         text-align: left;
       }
 
@@ -76,8 +76,9 @@
         align-items: center;
         gap: 8px;
         font-size: 13px;
-        margin: 3px 0;
-      }
+          margin: 8px 0;        /* antes era 3px 0 */
+    line-height: 1.8;
+  }
 
       .circulo {
         display: inline-flex;
@@ -95,15 +96,16 @@
       hr {
         border: none;
         border-top: 2px dashed #000;
-        margin: 12px 0;
+        margin: 18px 0;
       }
 
       .total-final {
-        font-size: 19px;
-        font-weight: bold;
-        text-align: left;
-        margin-top: 8px;
-      }
+    font-size: 19px;
+    font-weight: bold;
+    text-align: left;
+    margin-top: 14px;     /* antes era 8px */
+    line-height: 1.8;
+  }
     }
   </style>
 </head>
