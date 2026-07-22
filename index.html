@@ -21,13 +21,15 @@
     }
 
     #contenedor-impresion {
-      --tam-base: 28px; /* tamaño letra premios, billetes, monedas total y código */
-      --tam-premios: 20px;  /* 👈 muévelo aquí, tamaño para lotería y círculo */
+      --tam-base: 28px;
+      /* tamaño letra premios, billetes, monedas total y código */
+      --tam-premios: 20px;
+      /* 👈 muévelo aquí, tamaño para lotería y círculo */
       position: fixed;
       left: 20px;
       top: 20px;
       z-index: 999999;
-     /* border: 2px solid red;  */
+      /* border: 2px solid red;  */
       top: 0;
       width: 384px;
       background: #fff;
@@ -2297,12 +2299,12 @@
             premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
           }
 
-          const contenido = `
+const contenido = `
 <p class="cod">Cod 088388</p>
 <div class="espacio-manual"></div>
 <p class="seccion-titulo">Premios: $ ${premiosTotal}</p>
 ${premiosHTML}
-<p class="seccion-titulo">Billetes: $ ${billetesTotal}</p>
+<p class="seccion-titulo" style="margin-bottom: 0px;">Billetes: $ ${billetesTotal}</p>
 <p class="seccion-titulo" style="margin-top: 4px;">Monedas: $ ${monedasTotal}</p>
 <hr>
 <p class="total-final">Total: $ ${totalGeneral}</p>
