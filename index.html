@@ -20,24 +20,22 @@
       size: auto;
     }
 
-    #contenedor-impresion {
-      --tam-base: 28px;
-      --tam-premios: 20px;
-      position: fixed;
-      left: 20px;
-      top: 20px;
-      z-index: 999999;
-      display: flow-root;
-      /* 👈 bloquea el colapso de márgenes sin necesitar borde */
-      top: 0;
-      width: 384px;
-      background: #fff;
-      color: #000;
-      font-family: 'Courier New', monospace;
-      font-size: var(--tam-base);
-      padding: 10px;
-      line-height: 1.5;
-    }
+#contenedor-impresion {
+    --tam-base: 28px;
+    --tam-premios: 20px;
+    position: fixed;
+    left: 20px;
+    top: 20px;
+    z-index: 999999;
+    top: 0;
+    width: 384px;
+    background: #fff;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: var(--tam-base);
+    padding: 10px;
+    line-height: 1.5;
+}
 
     .cod {
       font-size: var(--tam-base);
@@ -50,23 +48,23 @@
       height: 40px;
     }
 
-    .seccion-titulo {
-      font-weight: 900;
-      font-size: var(--tam-base);
-      margin: 18px 0 8px;
-      text-align: left;
-      line-height: 1.5;
-    }
+.seccion-titulo {
+  font-weight: 900;
+  font-size: var(--tam-base);
+  padding: 18px 0 8px 0;
+  text-align: left;
+  line-height: 1.5;
+}
 
-    .linea-premio {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: var(--tam-premios);
-      font-weight: bold;
-      margin: 12px 0;
-      line-height: 1.5;
-    }
+.linea-premio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--tam-premios);
+  font-weight: bold;
+  padding: 12px 0;
+  line-height: 1.5;
+}
 
     .circulo {
       display: inline-flex;
@@ -86,14 +84,13 @@
       border-top: 2px dashed #000;
       margin: 18px 0;
     }
-
-    .total-final {
-      font-size: calc(var(--tam-base) + 3px);
-      font-weight: bold;
-      text-align: left;
-      margin-top: 14px;
-      line-height: 1.8;
-    }
+.total-final {
+  font-size: calc(var(--tam-base) + 3px);
+  font-weight: bold;
+  text-align: left;
+  padding-top: 14px;
+  line-height: 1.8;
+}
 
     @media print {
       body * {
