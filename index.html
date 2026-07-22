@@ -23,10 +23,8 @@
    #contenedor-impresion {
     --tam-base: 28px;
     --tam-premios: 20px;
-    position: fixed;
-    left: 20px;
-    top: 20px;
-    z-index: 999999;
+  position: absolute;
+    left: -9999px;
     border: 2px solid rgb(101, 100, 100);  
     top: 0;
     width: 420px;
@@ -132,6 +130,23 @@
         width: 100%;
       }
     }
+    .spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
   </style>
 </head>
 
@@ -139,10 +154,10 @@
 
 
 
-  <div id="boton-conectar-impresora" style="position: fixed; top: 8px; left: 8px; z-index: 99999;">
-    <button onclick="conectarImpresoraGato()"
-      style="height: 40px; padding: 0 14px; font-size: 14px; font-weight: bold; border: none; border-radius: 10px; background: #25D366; color: white; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
-      🔵 Conectar impresora
+ <div id="boton-conectar-impresora" style="position: fixed; top: 8px; left: 8px; z-index: 99999;">
+    <button id="btnConectarImpresora" onclick="conectarImpresoraGato()"
+      style="height: 40px; padding: 0 14px; font-size: 14px; font-weight: bold; border: none; border-radius: 10px; background: #2196F3; color: white; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.5); transition: background 0.3s;">
+      <span id="textoBtnImpresora">🔵 Conectar impresora</span>
     </button>
   </div>
 
@@ -2344,13 +2359,29 @@
 
     let printerGato = null;
 
-    window.conectarImpresoraGato = async function () {
+window.conectarImpresoraGato = async function () {
+      const btn = document.getElementById('btnConectarImpresora');
+      const texto = document.getElementById('textoBtnImpresora');
+
+      // Estado: conectando / esperando confirmación
+      btn.disabled = true;
+      btn.style.background = '#2196F3';
+      texto.innerHTML = '<span class="spinner"></span> Conectando, espere...';
+
       try {
         printerGato = new CatPrinter({ debug: true });
         await printerGato.connect();
-        alert("Impresora conectada ✅");
+
+        // Estado: conectado con éxito → botón verde
+        btn.style.background = '#25D366';
+        texto.innerHTML = '✅ Impresora conectada';
       } catch (err) {
+        // Estado: falló → vuelve a azul
+        btn.style.background = '#2196F3';
+        texto.innerHTML = '🔵 Conectar impresora';
         alert("No se pudo conectar: " + err.message);
+      } finally {
+        btn.disabled = false;
       }
     };
 
