@@ -24,16 +24,13 @@
       position: absolute;
       left: -9999px;
       top: 0;
-
-      /* IMPORTANTE: ancho real para impresora térmica pequeña */
-      width: 310px;
-
+      width: 380px;
+       overflow: hidden;
+      word-wrap: break-word;
       background: #fff;
       color: #000;
-
       font-family: monospace;
       font-size: 16px;
-
       padding: 10px;
       line-height: 1.5;
     }
@@ -74,34 +71,45 @@
       .seccion-titulo {
         font-weight: bold;
         font-size: 16px;
-        margin: 18px 0 8px;
+        margin: 20px 0 12px;
         text-align: left;
         line-height: 1.5;
       }
 
       .linea-premio {
-        display: grid;
-        grid-template-columns: 150px 35px 100px;
-        column-gap: 8px;
-        align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;           /* un poco más pequeño para que quepa mejor */
+  margin: 12px 0;            /* más separación vertical */
+  line-height: 1.6;
+  padding: 0 4px;
+}
 
-        font-size: 16px;
-        margin: 8px 0;
-        line-height: 1.8;
-      }
+.nombre-premio {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;   /* si es muy largo, pone "…" */
+  max-width: 155px;
+}
 
-      .circulo {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 22px;
-        height: 22px;
-        min-width: 22px;
-        border: 2px solid #000;
-        border-radius: 50%;
-        font-weight: bold;
-        font-size: 12px;
-      }
+.cantidad-premio {
+  width: 38px;
+  text-align: center;
+  font-weight: bold;
+  border: 2px solid #000;
+  border-radius: 50%;
+  padding: 2px 0;
+  font-size: 13px;
+}
+
+.valor-premio {
+  width: 95px;
+  text-align: right;
+  font-weight: bold;
+}
 
       hr {
         border: none;
@@ -2289,12 +2297,7 @@
             const cantidad = cantidadInput?.value.trim() || '0';
             const valor = valorInput?.value.trim() || '0';
 
-            premiosHTML += `
-            <div class="linea-premio">
-              <span>* ${nombre}</span>
-              <span class="circulo">${cantidad}</span>
-              <span>$ ${valor}</span>
-            </div>`;
+           premiosHTML = '<div class="linea-premio"><span class="nombre-premio">*</span><span class="cantidad-premio"></span><span class="valor-premio"></span></div>';
           }
         }
 
