@@ -2535,12 +2535,34 @@
       }
     };
 
-    window.imprimirEnGato = async function () {
+window.imprimirEnGato = async function () {
       try {
         if (!printerGato || !printerGato.isConnected()) {
           alert("Primero conecta la impresora con el botón de Bluetooth.");
           return;
         }
+
+        // Revisamos el estado ANTES de imprimir. Si está sobrecalentada, sin
+        // papel, con batería baja o con la tapa abierta, mejor avisar ahora
+        // que mandar la imagen a ciegas y que se corte a mitad.
+        const estadoInicial = await printerGato.getState();
+        if (estadoInicial?.outOfPaper) {
+          alert("⚠️ La impresora no tiene papel. Recarga el rollo e intenta de nuevo.");
+          return;
+        }
+        if (estadoInicial?.coverOpen) {
+          alert("⚠️ La tapa de la impresora está abierta. Ciérrala e intenta de nuevo.");
+          return;
+        }
+        if (estadoInicial?.overheat) {
+          alert("⚠️ La impresora está sobrecalentada. Espera un momento a que se enfríe e intenta de nuevo.");
+          return;
+        }
+        if (estadoInicial?.lowPower) {
+          alert("⚠️ La batería de la impresora está baja. Cárgala antes de seguir imprimiendo.");
+          return;
+        }
+
         await printerGato.feed(20);
 
         const contenedor = document.getElementById('contenedor-impresion');
@@ -2552,6 +2574,19 @@
 
         await printerGato.printImage(dataUrl, { dither: 'threshold' });
         await printerGato.feed(80);
+
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        // Revisamos otra vez DESPUÉS de imprimir, para detectar si algo pasó
+        // a mitad del trabajo (por ejemplo que se recalentó mientras imprimía).
+        const estadoFinal = await printerGato.getState();
+        if (estadoFinal?.overheat) {
+          alert("🔥 La impresora se sobrecalentó durante la impresión. Es probable que el ticket haya salido incompleto — espera a que se enfríe antes de volver a imprimir.");
+        } else if (estadoFinal?.outOfPaper) {
+          alert("📄 Se quedó sin papel durante la impresión. El ticket pudo salir incompleto.");
+        } else if (estadoFinal?.lowPower) {
+          alert("🔋 La batería quedó baja después de imprimir. Si el ticket salió incompleto, carga la impresora.");
+        }
       } catch (err) {
         console.error(err);
         alert("Error al imprimir: " + err.message);
