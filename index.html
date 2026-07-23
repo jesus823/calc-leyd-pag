@@ -39,6 +39,13 @@
     }
 
     .cod {
+      font-size: 43px;
+      font-weight: bold;
+      text-align: left;
+      margin-bottom: 0;
+    }
+
+    .fecha-ticket {
       font-size: var(--tam-base);
       font-weight: bold;
       text-align: left;
@@ -2402,8 +2409,8 @@
           }
 
           const contenido = `
-      <p class="cod">Cod 088388</p>
-      ${fechaImpresion ? `<p class="cod">${fechaImpresion}</p>` : ''}
+      <p class="cod">Cod. 088388</p>
+      ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
       <p class="seccion-titulo">Premios: $ ${premiosTotal}</p>
       ${premiosHTML}
