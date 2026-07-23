@@ -2572,8 +2572,8 @@ window.imprimirEnGato = async function () {
         });
         const dataUrl = canvas.toDataURL('image/png');
 
-        await printerGato.printImage(dataUrl, { dither: 'threshold' });
-        await printerGato.feed(80);
+      await printerGato.printImage(dataUrl, { dither: 'threshold' });
+        await printerGato.feed(140);
 
         await new Promise(resolve => setTimeout(resolve, 3000));
 
