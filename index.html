@@ -23,10 +23,12 @@
     #contenedor-impresion {
       --tam-base: 34px;
       --tam-premios: 20px;
-      position: fixed;
+      /* position: fixed;
       left: 20px;
       top: 20px;
-      z-index: 999999;
+      z-index: 999999; */
+      position: absolute;
+      left: -9999px;
       border: 2px solid rgb(101, 100, 100);
       top: 0;
       width: 420px;
@@ -52,7 +54,7 @@
       margin-bottom: 0;
     }
 
-    .ticket-copia + .ticket-copia {
+    .ticket-copia+.ticket-copia {
       margin-top: 90px;
       padding-top: 20px;
     }
@@ -79,7 +81,7 @@
       line-height: 1.5;
     }
 
-  .circulo {
+    .circulo {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -2308,13 +2310,13 @@
 
       function calcularFechaImpresion(esAyer) {
         const fecha = new Date();
-  fecha.setHours(12, 0, 0, 0);
-  if (esAyer) fecha.setDate(fecha.getDate() - 1);
-  const anio = fecha.getFullYear();
-  const mes = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'][fecha.getMonth()];
-  const dia = String(fecha.getDate()).padStart(2, '0');
-  return `${dia} - ${mes} - ${anio}`;
-}
+        fecha.setHours(12, 0, 0, 0);
+        if (esAyer) fecha.setDate(fecha.getDate() - 1);
+        const anio = fecha.getFullYear();
+        const mes = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'][fecha.getMonth()];
+        const dia = String(fecha.getDate()).padStart(2, '0');
+        return `${dia} - ${mes} - ${anio}`;
+      }
 
       function preguntarConBotones(titulo, opciones) {
         // opciones: [{ id, texto, valor }, ...]
@@ -2359,7 +2361,7 @@
       async function mostrarConfirmacionImprimir() {
         if (window.imprimiendoAhora) return;
 
-        // 1) Ventana: Hoy o Ayer
+        // 1) Ventana: Hoy, Ayer o Sin fecha
         const fechaSeleccion = await preguntarConBotones('¿Qué fecha deseas imprimir?', [
           { id: 'btnFechaHoy', texto: 'Hoy', valor: 'hoy' },
           { id: 'btnFechaAyer', texto: 'Ayer', valor: 'ayer' },
@@ -2372,15 +2374,39 @@
           ? ''
           : calcularFechaImpresion(fechaSeleccion === 'ayer');
 
-        // 2) Ventana: cuántas copias
-        const copias = await preguntarConBotones('¿Cuántas impresiones deseas?', [
-          { id: 'btnCopias1', texto: '1 impresión', valor: '1' },
-          { id: 'btnCopias2', texto: '2 impresiones', valor: '2' }
-        ]);
+        const etiquetasFecha = { hoy: 'Hoy', ayer: 'Ayer', 'sin-fecha': 'Sin fecha' };
+        const textoFecha = fechaSeleccion === 'sin-fecha'
+          ? etiquetasFecha[fechaSeleccion]
+          : `${etiquetasFecha[fechaSeleccion]} - ${fechaImpresion}`;
 
-        if (!copias) return;
+        // 2) Ventana: confirmar antes de imprimir (siempre 1 impresión)
+        const confirmacion = await Swal.fire({
+          title: 'Confirmar impresión',
+          text: `Vas a imprimir: ${textoFecha}`,
+          icon: 'question',
+          showCancelButton: true,
+          reverseButtons: true,
+          confirmButtonText: 'Aceptar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          didOpen: () => {
+            const btnConfirm = Swal.getConfirmButton();
+            const btnCancel = Swal.getCancelButton();
+            if (btnConfirm) {
+              btnConfirm.style.fontSize = '20px';
+              btnConfirm.style.padding = '14px 34px';
+            }
+            if (btnCancel) {
+              btnCancel.style.fontSize = '20px';
+              btnCancel.style.padding = '14px 34px';
+            }
+          }
+        });
 
-        await generarImpresion(fechaImpresion, parseInt(copias, 10));
+        if (!confirmacion.isConfirmed) return;
+
+        await generarImpresion(fechaImpresion, 1);
       }
       async function generarImpresion(fechaImpresion, copias = 1) {
         if (window.imprimiendoAhora) return;
@@ -2428,10 +2454,10 @@
       <hr>
       <p class="total-final">Total: $ ${totalGeneral}</p>
     `;
-document.getElementById('contenedor-impresion').innerHTML = contenido;
+          document.getElementById('contenedor-impresion').innerHTML = contenido;
           await new Promise(resolve => requestAnimationFrame(resolve));
 
-       // html2canvas captura el ticket con scale:2, así que la altura REAL en píxeles
+          // html2canvas captura el ticket con scale:2, así que la altura REAL en píxeles
           // que recibe la impresora es el doble de offsetHeight. Si no se multiplica acá,
           // la espera calculada queda muy corta y el segundo ticket empieza a imprimirse
           // encima del primero (por eso se corta cerca del final).
