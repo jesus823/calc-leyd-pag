@@ -2417,7 +2417,7 @@
             premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
           }
 
-          const ticketHTML = `
+          const contenido = `
       <p class="cod">Cod. 088388</p>
       ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
@@ -2429,11 +2429,15 @@
       <p class="total-final">Total: $ ${totalGeneral}</p>
     `;
 
-          const contenido = Array.from({ length: copias }, () => `<div class="ticket-copia">${ticketHTML}</div>`).join('');
           document.getElementById('contenedor-impresion').innerHTML = contenido;
           await new Promise(resolve => requestAnimationFrame(resolve));
 
-          await imprimirEnGato();
+          for (let i = 0; i < copias; i++) {
+            await imprimirEnGato();
+            if (i < copias - 1) {
+              await new Promise(resolve => setTimeout(resolve, 10000));
+            }
+          }
         } finally {
           window.imprimiendoAhora = false;
         }
