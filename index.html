@@ -2431,12 +2431,12 @@
 document.getElementById('contenedor-impresion').innerHTML = contenido;
           await new Promise(resolve => requestAnimationFrame(resolve));
 
-          // Calculamos cuánto puede tardar la impresora en función del alto del ticket.
-          // Estas impresoras térmicas Bluetooth imprimen a una velocidad limitada;
-          // si mandamos la siguiente imagen antes de que termine de imprimir físicamente
-          // la anterior, el segundo ticket sale cortado o a la mitad.
-          const alturaTicket = document.getElementById('contenedor-impresion').offsetHeight || 800;
-          const esperaEntreCopias = Math.max(15000, alturaTicket * 20); // mínimo 15s, escalando con el largo
+       // html2canvas captura el ticket con scale:2, así que la altura REAL en píxeles
+          // que recibe la impresora es el doble de offsetHeight. Si no se multiplica acá,
+          // la espera calculada queda muy corta y el segundo ticket empieza a imprimirse
+          // encima del primero (por eso se corta cerca del final).
+          const alturaTicket = (document.getElementById('contenedor-impresion').offsetHeight || 800) * 2;
+          const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000; // mínimo 20s + margen extra de seguridad
 
           for (let i = 0; i < copias; i++) {
             await imprimirEnGato();
