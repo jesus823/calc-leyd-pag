@@ -2412,10 +2412,10 @@
       <p class="cod">Cod. 088388</p>
       ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
-      <p class="seccion-titulo">Premios: $ ${premiosTotal}</p>
+      <p class="seccion-titulo">PREMIOS: $ ${premiosTotal}</p>
       ${premiosHTML}
-      <p class="seccion-titulo">Billetes: $ ${billetesTotal}</p>
-      <p class="seccion-titulo">Monedas: $ ${monedasTotal}</p>
+      <p class="seccion-titulo">BILLETES: $ ${billetesTotal}</p>
+      <p class="seccion-titulo">MONEDAS: $ ${monedasTotal}</p>
       <hr>
       <p class="total-final">Total: $ ${totalGeneral}</p>
     `;
@@ -2425,6 +2425,9 @@
 
           for (let i = 0; i < copias; i++) {
             await imprimirEnGato();
+            if (i < copias - 1) {
+              await new Promise(resolve => setTimeout(resolve, 2500));
+            }
           }
         } finally {
           window.imprimiendoAhora = false;
