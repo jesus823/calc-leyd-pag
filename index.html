@@ -52,6 +52,11 @@
       margin-bottom: 0;
     }
 
+    .ticket-copia + .ticket-copia {
+      margin-top: 90px;
+      padding-top: 20px;
+    }
+
     .espacio-manual {
       height: 40px;
     }
@@ -2412,7 +2417,7 @@
             premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
           }
 
-          const contenido = `
+          const ticketHTML = `
       <p class="cod">Cod. 088388</p>
       ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
@@ -2424,15 +2429,11 @@
       <p class="total-final">Total: $ ${totalGeneral}</p>
     `;
 
+          const contenido = Array.from({ length: copias }, () => `<div class="ticket-copia">${ticketHTML}</div>`).join('');
           document.getElementById('contenedor-impresion').innerHTML = contenido;
           await new Promise(resolve => requestAnimationFrame(resolve));
 
-          for (let i = 0; i < copias; i++) {
-            await imprimirEnGato();
-            if (i < copias - 1) {
-              await new Promise(resolve => setTimeout(resolve, 2500));
-            }
-          }
+          await imprimirEnGato();
         } finally {
           window.imprimiendoAhora = false;
         }
