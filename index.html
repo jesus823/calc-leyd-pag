@@ -36,7 +36,7 @@
       color: #000;
       font-family: Arial, Helvetica, sans-serif;
       font-size: var(--tam-base);
-      padding: 6px 3px;
+      padding: 4px 3px;
       line-height: 1.5;
     }
 
@@ -2534,7 +2534,6 @@
         btn.disabled = false;
       }
     };
-
 window.imprimirEnGato = async function () {
       try {
         if (!printerGato || !printerGato.isConnected()) {
@@ -2565,16 +2564,50 @@ window.imprimirEnGato = async function () {
 
         await printerGato.feed(20);
 
+        // Capturamos el ticket completo UNA sola vez, en escala 1 (no 2). Un
+        // ticket largo en escala 2 genera una imagen enorme, y mandarla
+        // completa de un solo golpe por Bluetooth es justo lo que hace que la
+        // impresora se quede corta cerca del final: su buffer interno es
+        // pequeño y no alcanza a imprimir físicamente tanta información
+        // seguida antes de que seguramente el navegador ya terminó de enviarla.
         const contenedor = document.getElementById('contenedor-impresion');
-        const canvas = await html2canvas(contenedor, {
+        const canvasCompleto = await html2canvas(contenedor, {
           backgroundColor: '#ffffff',
-          scale: 2
+          scale: 1
         });
-        const dataUrl = canvas.toDataURL('image/png');
 
-      await printerGato.printImage(dataUrl, { dither: 'threshold' });
+        // En vez de un solo printImage() con todo el ticket, lo partimos en
+        // pedazos verticales chicos y los mandamos uno por uno, esperando
+        // entre cada pedazo a que la impresora lo digiera físicamente. Es el
+        // mismo principio que ya comprobamos que funciona entre copias,
+        // aplicado ahora DENTRO de un mismo ticket largo.
+        const ALTO_MAX_PEDAZO = 500; // píxeles de canvas por pedazo
+        const anchoTotal = canvasCompleto.width;
+        const altoTotal = canvasCompleto.height;
+        const numPedazos = Math.ceil(altoTotal / ALTO_MAX_PEDAZO);
+
+        for (let i = 0; i < numPedazos; i++) {
+          const y = i * ALTO_MAX_PEDAZO;
+          const altoPedazo = Math.min(ALTO_MAX_PEDAZO, altoTotal - y);
+
+          const canvasPedazo = document.createElement('canvas');
+          canvasPedazo.width = anchoTotal;
+          canvasPedazo.height = altoPedazo;
+          const ctx = canvasPedazo.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, anchoTotal, altoPedazo);
+          ctx.drawImage(canvasCompleto, 0, y, anchoTotal, altoPedazo, 0, 0, anchoTotal, altoPedazo);
+
+          const dataUrlPedazo = canvasPedazo.toDataURL('image/png');
+          await printerGato.printImage(dataUrlPedazo, { dither: 'threshold' });
+
+          // Esperamos a que la impresora alcance a imprimir físicamente este
+          // pedazo antes de mandar el siguiente.
+          const esperaPedazo = Math.max(4000, altoPedazo * 25);
+          await new Promise(resolve => setTimeout(resolve, esperaPedazo));
+        }
+
         await printerGato.feed(140);
-
         await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Revisamos otra vez DESPUÉS de imprimir, para detectar si algo pasó
