@@ -2436,7 +2436,7 @@ document.getElementById('contenedor-impresion').innerHTML = contenido;
           // la espera calculada queda muy corta y el segundo ticket empieza a imprimirse
           // encima del primero (por eso se corta cerca del final).
           const alturaTicket = (document.getElementById('contenedor-impresion').offsetHeight || 800) * 2;
-          const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000; // mínimo 20s + margen extra de seguridad
+          const esperaEntreCopias = Math.max(20000, alturaTicket * 30) + 6000; // mínimo 20s + margen extra de seguridad
 
           for (let i = 0; i < copias; i++) {
             await imprimirEnGato();
