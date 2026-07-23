@@ -2428,14 +2428,20 @@
       <hr>
       <p class="total-final">Total: $ ${totalGeneral}</p>
     `;
-
-          document.getElementById('contenedor-impresion').innerHTML = contenido;
+document.getElementById('contenedor-impresion').innerHTML = contenido;
           await new Promise(resolve => requestAnimationFrame(resolve));
+
+          // Calculamos cuánto puede tardar la impresora en función del alto del ticket.
+          // Estas impresoras térmicas Bluetooth imprimen a una velocidad limitada;
+          // si mandamos la siguiente imagen antes de que termine de imprimir físicamente
+          // la anterior, el segundo ticket sale cortado o a la mitad.
+          const alturaTicket = document.getElementById('contenedor-impresion').offsetHeight || 800;
+          const esperaEntreCopias = Math.max(15000, alturaTicket * 20); // mínimo 15s, escalando con el largo
 
           for (let i = 0; i < copias; i++) {
             await imprimirEnGato();
             if (i < copias - 1) {
-              await new Promise(resolve => setTimeout(resolve, 10000));
+              await new Promise(resolve => setTimeout(resolve, esperaEntreCopias));
             }
           }
         } finally {
