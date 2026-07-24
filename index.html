@@ -2462,7 +2462,8 @@ async function generarImpresion(fechaImpresion, copias = 1) {
       <p class="seccion-titulo">BILLETES: $ ${billetesTotal}</p>
       <p class="seccion-titulo">MONEDAS: $ ${monedasTotal}</p>
       <hr>
-      <p class="total-final">Total: $ ${totalGeneral}</p>
+  <p class="total-final">Total: $ ${totalGeneral}</p>
+      <div style="height: 60px;"></div>
     `;
     document.getElementById('contenedor-impresion').innerHTML = contenido;
     await new Promise(resolve => requestAnimationFrame(resolve));
