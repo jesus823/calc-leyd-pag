@@ -23,12 +23,15 @@
     #contenedor-impresion {
       --tam-base: 34px;
       --tam-premios: 20px;
-      /* position: fixed;
+       position: fixed;
       left: 20px;
       top: 20px;
-      z-index: 999999; */
-      position: absolute;
-      left: -9999px;
+      z-index: 999999; 
+
+     /*  position: absolute;
+      left: -9999px;*/
+
+
       border: 2px solid rgb(101, 100, 100);
       top: 0;
       width: 420px;
@@ -100,11 +103,12 @@
       margin: 18px 0;
     }
 
-    .total-final {
+ .total-final {
       font-size: calc(var(--tam-base) + 3px);
       font-weight: bold;
       text-align: left;
       margin-top: 14px;
+      margin-bottom: 40px;
       line-height: 1.8;
     }
 
@@ -2408,72 +2412,74 @@
 
         await generarImpresion(fechaImpresion, 1);
       }
-      async function generarImpresion(fechaImpresion, copias = 1) {
-        if (window.imprimiendoAhora) return;
-        window.imprimiendoAhora = true;
+async function generarImpresion(fechaImpresion, copias = 1) {
+  if (window.imprimiendoAhora) return;
+  window.imprimiendoAhora = true;
 
-        try {
-          const premiosTotal = document.querySelector('.cantidad3')?.textContent.trim() || '0';
-          const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
-          const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
-          const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
+  try {
+    const premiosDiv = document.querySelector('.cantidad3');
+    const premiosTotal = premiosDiv?.textContent.trim() || '0';
+    const premiosValorRaw = parseFloat(premiosDiv?.dataset.valor || '0') || 0;
 
-          let premiosHTML = '';
-          for (let i = 1; i <= 30; i++) {
-            const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
-            const nombreInput = document.getElementById(idLoteria);
-            const nombre = nombreInput ? nombreInput.value.trim() : '';
+    const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
+    const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
+    const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
 
-            if (nombre) {
-              const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
-              const valorInput = document.querySelector(`input.input${i * 2}`);
-              const cantidad = cantidadInput?.value.trim() || '0';
-              const valor = valorInput?.value.trim() || '0';
+    let premiosHTML = '';
+    for (let i = 1; i <= 30; i++) {
+      const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+      const nombreInput = document.getElementById(idLoteria);
+      const nombre = nombreInput ? nombreInput.value.trim() : '';
 
-              premiosHTML += `
+      if (nombre) {
+        const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
+        const valorInput = document.querySelector(`input.input${i * 2}`);
+        const cantidad = cantidadInput?.value.trim() || '0';
+        const valor = valorInput?.value.trim() || '0';
+
+        premiosHTML += `
       <div class="linea-premio">
         <span> ${nombre}</span>
         <span class="circulo">${cantidad}</span>
         <span> ${valor}</span>
       </div>`;
-            }
-          }
+      }
+    }
 
-          if (!premiosHTML) {
-            premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
-          }
+    if (!premiosHTML) {
+      premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
+    }
 
-          const contenido = `
+    const seccionPremios = premiosValorRaw > 0 ? `
+      <p class="seccion-titulo">PREMIOS: $ ${premiosTotal}</p>
+      ${premiosHTML}` : '';
+
+    const contenido = `
       <p class="cod">Cod. 088388</p>
       ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
-      <p class="seccion-titulo">PREMIOS: $ ${premiosTotal}</p>
-      ${premiosHTML}
+      ${seccionPremios}
       <p class="seccion-titulo">BILLETES: $ ${billetesTotal}</p>
       <p class="seccion-titulo">MONEDAS: $ ${monedasTotal}</p>
       <hr>
       <p class="total-final">Total: $ ${totalGeneral}</p>
     `;
-          document.getElementById('contenedor-impresion').innerHTML = contenido;
-          await new Promise(resolve => requestAnimationFrame(resolve));
+    document.getElementById('contenedor-impresion').innerHTML = contenido;
+    await new Promise(resolve => requestAnimationFrame(resolve));
 
-          // html2canvas captura el ticket con scale:2, así que la altura REAL en píxeles
-          // que recibe la impresora es el doble de offsetHeight. Si no se multiplica acá,
-          // la espera calculada queda muy corta y el segundo ticket empieza a imprimirse
-          // encima del primero (por eso se corta cerca del final).
-          const alturaTicket = (document.getElementById('contenedor-impresion').offsetHeight || 800) * 2;
-          const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000; // mínimo 20s + margen extra de seguridad
+    const alturaTicket = (document.getElementById('contenedor-impresion').offsetHeight || 800) * 2;
+    const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000;
 
-          for (let i = 0; i < copias; i++) {
-            await imprimirEnGato();
-            if (i < copias - 1) {
-              await new Promise(resolve => setTimeout(resolve, esperaEntreCopias));
-            }
-          }
-        } finally {
-          window.imprimiendoAhora = false;
-        }
-      }     
+    for (let i = 0; i < copias; i++) {
+      await imprimirEnGato();
+      if (i < copias - 1) {
+        await new Promise(resolve => setTimeout(resolve, esperaEntreCopias));
+      }
+    }
+  } finally {
+    window.imprimiendoAhora = false;
+  }
+}
     </script>
   </div>
   <div id="contenedor-impresion"></div>
