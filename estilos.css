@@ -11,6 +11,7 @@ table {
   width: 100%;
   border: 2px solid #8A2BE2;
   /* ← borde exterior de la tabla */
+  
 }
 
 th,
@@ -264,13 +265,28 @@ tr {
   --tam-premios: 15px;
 }
 
-input[class^="input"],   /* input1, input2, input3... (cantidad y valor de premios) */
-input[id^="loteria"],    /* nombre de la lotería */
-td[class^="r"]:not([class*="resultado"]) {  /* SOLO r1, r2, r3... nunca "resultado*" */
+input[class^="input"],
+/* input1, input2, input3... (cantidad y valor de premios) */
+input[id^="loteria"],
+/* nombre de la lotería */
+td[class^="r"]:not([class*="resultado"]) {
+  /* SOLO r1, r2, r3... nunca "resultado*" */
   font-size: var(--tam-premios) !important;
 }
+
 .boton-swal-grande {
   font-size: 18px !important;
   padding: 12px 30px !important;
   margin: 0 15px !important;
+}
+
+.etiqueta-grande {
+  font-size: 22px !important;
+  font-weight: bold !important;
+  text-decoration: underline !important;
+}
+table th:nth-child(18),
+table td:nth-child(18) {
+  width: 100px !important;
+  min-width: 100px !important;
 }

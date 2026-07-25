@@ -20,7 +20,7 @@
       size: auto;
     }
 
- #contenedor-impresion {
+    #contenedor-impresion {
       --tam-base: 34px;
       --tam-premios: 20px;
       position: absolute;
@@ -36,7 +36,7 @@
       line-height: 1.5;
     }
 
-#contenedor-impresion.vista-activa {
+    #contenedor-impresion.vista-activa {
       position: fixed;
       left: 50%;
       top: 15%;
@@ -51,7 +51,7 @@
       outline-offset: 3px;
     }
 
-  .cod {
+    .cod {
       font-size: 46px;
       font-weight: bold;
       text-align: left;
@@ -112,7 +112,7 @@
       margin: 18px 0;
     }
 
- .total-final {
+    .total-final {
       font-size: calc(var(--tam-base) + 3px);
       font-weight: bold;
       text-align: left;
@@ -206,7 +206,7 @@
           <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
           <th style="border: 3px solid;color: black; width: 105px;">Total</th>
           <th style="background-color: white; width: 30px;"></th>
-        <th style=" border: 3px solid;"></th>
+          <th style=" border: 3px solid;"></th>
           <th style=" border: 3px solid;"></th>
           <th>
             <button type="button" onclick="toggleVistaPrevia()" id="btnVistaPrevia"
@@ -224,7 +224,7 @@
             </div>
           </th>
 
-          <th style="width: 105px;"></th>
+        <th style="width: 100px;"></th>
         </tr>
       </thead>
       <tbody>
@@ -509,9 +509,13 @@
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
-          <td><textarea>Cantidad</textarea></td>
-          <td><textarea>Valor</textarea></td>
-          <td><textarea></textarea></td>
+         <td><textarea class="etiqueta-grande">Cantidad</textarea></td>
+          <td><textarea class="etiqueta-grande">Valor</textarea></td>
+          <td>
+            <button type="button" onclick="confirmarBorradoPremios()" style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: #f44336; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
+              🗑️ Borrar Info Premios
+            </button>
+          </td>
           <td><textarea></textarea></td>
 
         </tr>
@@ -1675,11 +1679,67 @@
         location.reload();
       }
 
-      function confirmarBorrado() {
+   function confirmarBorrado() {
         const confirmacion = confirm("¿Estás seguro de que deseas borrar todos los datos?");
         if (confirmacion) {
           borrarTodo();
         }
+      }
+
+      // Borra las 4 columnas de premios: nombre de lotería, cantidad,
+      // valor y el resultado (rX) de las 30 filas de premios.
+      function borrarInfoPremios() {
+        for (let i = 1; i <= 30; i++) {
+          const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+          const inputLoteria = document.getElementById(idLoteria);
+          if (inputLoteria) inputLoteria.value = '';
+
+          const inputCantidad = document.querySelector(`input.input${(i * 2) - 1}`);
+          const inputValor = document.querySelector(`input.input${i * 2}`);
+          if (inputCantidad) { inputCantidad.value = ''; inputCantidad.dataset.valor = '0'; }
+          if (inputValor) { inputValor.value = ''; inputValor.dataset.valor = '0'; }
+
+          const celdaResultado = document.querySelector(`.r${i}`);
+          if (celdaResultado) celdaResultado.textContent = '';
+
+          localStorage.setItem(idLoteria, '');
+        }
+
+        // Sincronizamos localStorage con las mismas claves por índice que usa
+        // el guardado automático, para que al recargar no vuelva a aparecer
+        // lo que acabamos de borrar.
+        const campos = document.querySelectorAll("textarea, input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
+        campos.forEach((campo, index) => {
+          localStorage.setItem(`input-${index}`, campo.value);
+        });
+
+        const celdas = document.querySelectorAll("td[class^='r']");
+        celdas.forEach((celda, index) => {
+          localStorage.setItem(`td-${index}`, celda.textContent.trim());
+        });
+
+        // Recalculamos todo, incluida la vista previa si está abierta.
+        sumarInputsImpares();
+        sumarResultados();
+        calcularTotales();
+        actualizarVistaPreviaSiActiva();
+      }
+
+      function confirmarBorradoPremios() {
+        Swal.fire({
+          title: '¿Seguro de eliminar info de premios?',
+          icon: 'warning',
+          showCancelButton: true,
+          reverseButtons: true,
+          confirmButtonText: 'Aceptar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            borrarInfoPremios();
+          }
+        });
       }
 
 
@@ -1883,8 +1943,7 @@
                   localStorage.setItem(input.id || input.name, dep); // ✅ guardar valor
                   sugerencias.style.display = 'none';
 
-                  // También podrías disparar manualmente un evento input o change si lo necesitas:
-                  input.dispatchEvent(new Event('input')); // Opcional
+                  input.dispatchEvent(new Event('input', { bubbles: true }));
                 };
                 sugerencias.appendChild(li);
               });
@@ -2427,52 +2486,52 @@
         await generarImpresion(fechaImpresion, 1);
       }
 
-function construirContenidoTicket(fechaImpresion) {
-  const premiosDiv = document.querySelector('.cantidad3');
-  const premiosTotal = premiosDiv?.textContent.trim() || '0';
-  const premiosValorRaw = parseFloat(premiosDiv?.dataset.valor || '0') || 0;
+      function construirContenidoTicket(fechaImpresion) {
+        const premiosDiv = document.querySelector('.cantidad3');
+        const premiosTotal = premiosDiv?.textContent.trim() || '0';
+        const premiosValorRaw = parseFloat(premiosDiv?.dataset.valor || '0') || 0;
 
-  const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
-  const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
-  const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
+        const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
+        const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
+        const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
 
-  let premiosHTML = '';
-  for (let i = 1; i <= 30; i++) {
-    const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
-    const nombreInput = document.getElementById(idLoteria);
-    const nombre = nombreInput ? nombreInput.value.trim() : '';
+        let premiosHTML = '';
+        for (let i = 1; i <= 30; i++) {
+          const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+          const nombreInput = document.getElementById(idLoteria);
+          const nombre = nombreInput ? nombreInput.value.trim() : '';
 
-    if (nombre) {
-      const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
-      const valorInput = document.querySelector(`input.input${i * 2}`);
-      const cantidadTexto = cantidadInput?.value.trim() || '';
-      const valorTexto = valorInput?.value.trim() || '';
+          if (nombre) {
+            const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
+            const valorInput = document.querySelector(`input.input${i * 2}`);
+            const cantidadTexto = cantidadInput?.value.trim() || '';
+            const valorTexto = valorInput?.value.trim() || '';
 
-      // Convertimos a número real (quitando puntos de miles) para comparar
-      const cantidadNum = parseFloat(limpiarMiles(cantidadTexto)) || 0;
-      const valorNum = parseFloat(limpiarMiles(valorTexto)) || 0;
+            // Convertimos a número real (quitando puntos de miles) para comparar
+            const cantidadNum = parseFloat(limpiarMiles(cantidadTexto)) || 0;
+            const valorNum = parseFloat(limpiarMiles(valorTexto)) || 0;
 
-      // Si cantidad o valor están vacíos/en 0, no se muestra esa línea
-      if (cantidadNum > 0 && valorNum > 0) {
-        premiosHTML += `
+            // Si cantidad o valor están vacíos/en 0, no se muestra esa línea
+            if (cantidadNum > 0 && valorNum > 0) {
+              premiosHTML += `
       <div class="linea-premio">
         <span> ${nombre}</span>
         <span class="circulo">${cantidadTexto}</span>
         <span> ${valorTexto}</span>
       </div>`;
-      }
-    }
-  }
+            }
+          }
+        }
 
-  if (!premiosHTML) {
-    premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
-  }
+        if (!premiosHTML) {
+          premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
+        }
 
-  const seccionPremios = premiosValorRaw > 0 ? `
+        const seccionPremios = premiosValorRaw > 0 ? `
       <p class="seccion-titulo">PREMIOS: $ ${premiosTotal}</p>
       ${premiosHTML}` : '';
 
-  return `
+        return `
       <p class="cod">Cod. 088388</p>
       ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
@@ -2483,42 +2542,42 @@ function construirContenidoTicket(fechaImpresion) {
       <p class="total-final">Total: $ ${totalGeneral}</p>
       <div style="height: 60px;"></div>
     `;
-}
-async function generarImpresion(fechaImpresion, copias = 1) {
-  if (window.imprimiendoAhora) return;
-  window.imprimiendoAhora = true;
-
-  try {
-    document.getElementById('contenedor-impresion').innerHTML = construirContenidoTicket(fechaImpresion);
-    await new Promise(resolve => requestAnimationFrame(resolve));
-
-    const alturaTicket = (document.getElementById('contenedor-impresion').offsetHeight || 800) * 2;
-    const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000;
-
-    for (let i = 0; i < copias; i++) {
-      await imprimirEnGato();
-      if (i < copias - 1) {
-        await new Promise(resolve => setTimeout(resolve, esperaEntreCopias));
       }
-    }
-  } finally {
-    window.imprimiendoAhora = false;
-  }
-}
+      async function generarImpresion(fechaImpresion, copias = 1) {
+        if (window.imprimiendoAhora) return;
+        window.imprimiendoAhora = true;
 
-let vistaPreviaActiva = false;
-let fechaVistaPreviaActual = '';
+        try {
+          document.getElementById('contenedor-impresion').innerHTML = construirContenidoTicket(fechaImpresion);
+          await new Promise(resolve => requestAnimationFrame(resolve));
 
-function agregarBotonCerrarVista() {
-  const cont = document.getElementById('contenedor-impresion');
-  if (!cont) return;
-  if (cont.querySelector('#btnCerrarVistaPrevia')) return; // ya existe, no duplicar
+          const alturaTicket = (document.getElementById('contenedor-impresion').offsetHeight || 800) * 2;
+          const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000;
 
-  const btnCerrar = document.createElement('button');
-  btnCerrar.id = 'btnCerrarVistaPrevia';
-  btnCerrar.type = 'button';
-  btnCerrar.innerHTML = '✕';
-btnCerrar.style.cssText = `
+          for (let i = 0; i < copias; i++) {
+            await imprimirEnGato();
+            if (i < copias - 1) {
+              await new Promise(resolve => setTimeout(resolve, esperaEntreCopias));
+            }
+          }
+        } finally {
+          window.imprimiendoAhora = false;
+        }
+      }
+
+      let vistaPreviaActiva = false;
+      let fechaVistaPreviaActual = '';
+
+      function agregarBotonCerrarVista() {
+        const cont = document.getElementById('contenedor-impresion');
+        if (!cont) return;
+        if (cont.querySelector('#btnCerrarVistaPrevia')) return; // ya existe, no duplicar
+
+        const btnCerrar = document.createElement('button');
+        btnCerrar.id = 'btnCerrarVistaPrevia';
+        btnCerrar.type = 'button';
+        btnCerrar.innerHTML = '✕';
+        btnCerrar.style.cssText = `
     position: absolute;
     top: 10px;
     right: 10px;
@@ -2539,102 +2598,122 @@ btnCerrar.style.cssText = `
     transform: scale(1.8);
     transform-origin: top right;
   `;
-  btnCerrar.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (vistaPreviaActiva) toggleVistaPrevia();
-  });
-  cont.appendChild(btnCerrar);
-}
+        btnCerrar.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (vistaPreviaActiva) toggleVistaPrevia();
+        });
+        cont.appendChild(btnCerrar);
+      }
 
-function toggleVistaPrevia() {
-  const cont = document.getElementById('contenedor-impresion');
-  const btn = document.getElementById('btnVistaPrevia');
-  vistaPreviaActiva = !vistaPreviaActiva;
+      function toggleVistaPrevia() {
+        const cont = document.getElementById('contenedor-impresion');
+        const btn = document.getElementById('btnVistaPrevia');
+        vistaPreviaActiva = !vistaPreviaActiva;
 
-  if (vistaPreviaActiva) {
-   // Limpiamos cualquier posición que haya quedado de un arrastre anterior,
-    // así siempre abre en la posición original del CSS
-    cont.style.setProperty('--drag-x', '0px');
-    cont.style.setProperty('--drag-y', '0px');
+        if (vistaPreviaActiva) {
+          // Limpiamos cualquier posición que haya quedado de un arrastre anterior,
+          // así siempre abre en la posición original del CSS
+          cont.style.setProperty('--drag-x', '0px');
+          cont.style.setProperty('--drag-y', '0px');
 
-    fechaVistaPreviaActual = calcularFechaImpresion(false);
-    cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
-    cont.classList.add('vista-activa');
-    agregarBotonCerrarVista();
-    if (btn) btn.innerHTML = '❌ Cerrar Vista';
- } else {
-    cont.classList.remove('vista-activa');
-    cont.style.setProperty('--drag-x', '0px');
-    cont.style.setProperty('--drag-y', '0px');
-    cont.innerHTML = '';
-    if (btn) btn.innerHTML = '🧾 Vista de la Impresión';
-  }
-}
+          fechaVistaPreviaActual = calcularFechaImpresion(false);
+          cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
+          cont.classList.add('vista-activa');
+          agregarBotonCerrarVista();
+          if (btn) btn.innerHTML = '❌ Cerrar Vista';
+        } else {
+          cont.classList.remove('vista-activa');
+          cont.style.setProperty('--drag-x', '0px');
+          cont.style.setProperty('--drag-y', '0px');
+          cont.innerHTML = '';
+          if (btn) btn.innerHTML = '🧾 Vista de la Impresión';
+        }
+      }
 
-// Refresca el CONTENIDO del ticket (no su posición ni tamaño) cada vez
-// que algo cambia en la tabla, pero solo si la vista previa está abierta.
-function actualizarVistaPreviaSiActiva() {
-  const cont = document.getElementById('contenedor-impresion');
-  if (cont && cont.classList.contains('vista-activa')) {
-    cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
-    agregarBotonCerrarVista();
-  }
-}
+      // Refresca el CONTENIDO del ticket (no su posición ni tamaño) cada vez
+      // que algo cambia en la tabla, pero solo si la vista previa está abierta.
+      function actualizarVistaPreviaSiActiva() {
+        const cont = document.getElementById('contenedor-impresion');
+        if (cont && cont.classList.contains('vista-activa')) {
+          cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
+          agregarBotonCerrarVista();
+        }
+      }
 
-// Escucha CUALQUIER escritura en la página (inputs, textareas, autocompletado
-// de loterías, etc.) y refresca la vista previa en vivo si está abierta.
-document.addEventListener('input', actualizarVistaPreviaSiActiva);
+      // Escucha la escritura en la página para refrescar la vista previa en vivo,
+      // PERO si el campo es uno de los inputs de lotería (loteria, loteria2, ...),
+      // solo refrescamos cuando el texto ya coincide EXACTO con un nombre de la
+      // lista de loterías. Así, mientras estás buscando (por ejemplo escribiendo
+      // "C" para buscar "Lote Cundi") el ticket no muestra la letra suelta, y
+      // el nombre completo solo aparece una vez que seleccionas la lotería
+      // correcta (de la lista de sugerencias o escribiéndola completa).
+      document.addEventListener('input', (e) => {
+        const campo = e.target;
 
-function setupArrastreVistaPrevia() {
-  const cont = document.getElementById('contenedor-impresion');
-  if (!cont) return;
+        if (campo.id && campo.id.startsWith('loteria')) {
+          const valorLimpio = campo.value.trim();
+          const coincideExacto = loterias.some(
+            dep => dep.toLowerCase() === valorLimpio.toLowerCase()
+          );
+          // Dejamos pasar si es un nombre válido O si el campo quedó vacío
+          // (por ejemplo, lo borraste). Solo bloqueamos cuando está a medias
+          // (una letra suelta que no es ni nombre completo ni vacío).
+          if (!coincideExacto && valorLimpio !== '') return;
+        }
 
-  let arrastrando = false;
-  let inicioX = 0;
-  let inicioY = 0;
-  let dragXInicial = 0;
-  let dragYInicial = 0;
+        actualizarVistaPreviaSiActiva();
+      });
 
-  function leerDragActual() {
-    const estilos = getComputedStyle(cont);
-    const x = parseFloat(estilos.getPropertyValue('--drag-x')) || 0;
-    const y = parseFloat(estilos.getPropertyValue('--drag-y')) || 0;
-    return { x, y };
-  }
+      function setupArrastreVistaPrevia() {
+        const cont = document.getElementById('contenedor-impresion');
+        if (!cont) return;
 
-  cont.addEventListener('touchstart', (e) => {
-    if (!cont.classList.contains('vista-activa')) return;
-    arrastrando = true;
+        let arrastrando = false;
+        let inicioX = 0;
+        let inicioY = 0;
+        let dragXInicial = 0;
+        let dragYInicial = 0;
 
-    const touch = e.touches[0];
-    inicioX = touch.clientX;
-    inicioY = touch.clientY;
+        function leerDragActual() {
+          const estilos = getComputedStyle(cont);
+          const x = parseFloat(estilos.getPropertyValue('--drag-x')) || 0;
+          const y = parseFloat(estilos.getPropertyValue('--drag-y')) || 0;
+          return { x, y };
+        }
 
-    const dragActual = leerDragActual();
-    dragXInicial = dragActual.x;
-    dragYInicial = dragActual.y;
-  }, { passive: true });
+        cont.addEventListener('touchstart', (e) => {
+          if (!cont.classList.contains('vista-activa')) return;
+          arrastrando = true;
 
-  cont.addEventListener('touchmove', (e) => {
-    if (!arrastrando) return;
-    e.preventDefault();
-    const touch = e.touches[0];
+          const touch = e.touches[0];
+          inicioX = touch.clientX;
+          inicioY = touch.clientY;
 
-    // El desplazamiento se suma en píxeles de pantalla reales, sin tocar
-    // el scale ni el transform-origin, así el tamaño nunca cambia.
-    const deltaX = touch.clientX - inicioX;
-    const deltaY = touch.clientY - inicioY;
+          const dragActual = leerDragActual();
+          dragXInicial = dragActual.x;
+          dragYInicial = dragActual.y;
+        }, { passive: true });
 
-    cont.style.setProperty('--drag-x', (dragXInicial + deltaX) + 'px');
-    cont.style.setProperty('--drag-y', (dragYInicial + deltaY) + 'px');
-  }, { passive: false });
+        cont.addEventListener('touchmove', (e) => {
+          if (!arrastrando) return;
+          e.preventDefault();
+          const touch = e.touches[0];
 
-  cont.addEventListener('touchend', () => {
-    arrastrando = false;
-  });
-}
+          // El desplazamiento se suma en píxeles de pantalla reales, sin tocar
+          // el scale ni el transform-origin, así el tamaño nunca cambia.
+          const deltaX = touch.clientX - inicioX;
+          const deltaY = touch.clientY - inicioY;
 
-document.addEventListener('DOMContentLoaded', setupArrastreVistaPrevia);
+          cont.style.setProperty('--drag-x', (dragXInicial + deltaX) + 'px');
+          cont.style.setProperty('--drag-y', (dragYInicial + deltaY) + 'px');
+        }, { passive: false });
+
+        cont.addEventListener('touchend', () => {
+          arrastrando = false;
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', setupArrastreVistaPrevia);
 
 
 
@@ -2698,7 +2777,7 @@ document.addEventListener('DOMContentLoaded', setupArrastreVistaPrevia);
         btn.disabled = false;
       }
     };
-window.imprimirEnGato = async function () {
+    window.imprimirEnGato = async function () {
       try {
         if (!printerGato || !printerGato.isConnected()) {
           alert("Primero conecta la impresora con el botón de Bluetooth.");
