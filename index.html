@@ -20,20 +20,13 @@
       size: auto;
     }
 
-    #contenedor-impresion {
+ #contenedor-impresion {
       --tam-base: 34px;
       --tam-premios: 20px;
-       position: fixed;
-      left: 20px;
-      top: 20px;
-      z-index: 999999; 
-
-     /*  position: absolute;
-      left: -9999px;*/
-
-
-      border: 2px solid rgb(101, 100, 100);
+      position: absolute;
+      left: -9999px;
       top: 0;
+      border: 2px solid rgb(101, 100, 100);
       width: 420px;
       background: #fff;
       color: #000;
@@ -41,6 +34,16 @@
       font-size: var(--tam-base);
       padding: 4px 3px;
       line-height: 1.5;
+    }
+
+#contenedor-impresion.vista-activa {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 999999;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
   .cod {
@@ -198,9 +201,14 @@
           <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
           <th style="border: 3px solid;color: black; width: 105px;">Total</th>
           <th style="background-color: white; width: 30px;"></th>
+        <th style=" border: 3px solid;"></th>
           <th style=" border: 3px solid;"></th>
-          <th style=" border: 3px solid;"></th>
-          <th></th>
+          <th>
+            <button type="button" onclick="toggleVistaPrevia()" id="btnVistaPrevia"
+              style="font-size: 11px; font-weight: bold; padding: 4px 8px; border: none; border-radius: 6px; background: #9C27B0; color: white; cursor: pointer;">
+              👁️ Vista Impresión
+            </button>
+          </th>
           <th
             style="background-color: #ccc; text-align: center; font-weight: bold; color: black; font-size: 12px; vertical-align: middle; padding: 5px;">
             <div style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
@@ -2413,49 +2421,45 @@
 
         await generarImpresion(fechaImpresion, 1);
       }
-async function generarImpresion(fechaImpresion, copias = 1) {
-  if (window.imprimiendoAhora) return;
-  window.imprimiendoAhora = true;
+function construirContenidoTicket(fechaImpresion) {
+  const premiosDiv = document.querySelector('.cantidad3');
+  const premiosTotal = premiosDiv?.textContent.trim() || '0';
+  const premiosValorRaw = parseFloat(premiosDiv?.dataset.valor || '0') || 0;
 
-  try {
-    const premiosDiv = document.querySelector('.cantidad3');
-    const premiosTotal = premiosDiv?.textContent.trim() || '0';
-    const premiosValorRaw = parseFloat(premiosDiv?.dataset.valor || '0') || 0;
+  const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
+  const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
+  const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
 
-    const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
-    const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
-    const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
+  let premiosHTML = '';
+  for (let i = 1; i <= 30; i++) {
+    const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+    const nombreInput = document.getElementById(idLoteria);
+    const nombre = nombreInput ? nombreInput.value.trim() : '';
 
-    let premiosHTML = '';
-    for (let i = 1; i <= 30; i++) {
-      const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
-      const nombreInput = document.getElementById(idLoteria);
-      const nombre = nombreInput ? nombreInput.value.trim() : '';
+    if (nombre) {
+      const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
+      const valorInput = document.querySelector(`input.input${i * 2}`);
+      const cantidad = cantidadInput?.value.trim() || '0';
+      const valor = valorInput?.value.trim() || '0';
 
-      if (nombre) {
-        const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
-        const valorInput = document.querySelector(`input.input${i * 2}`);
-        const cantidad = cantidadInput?.value.trim() || '0';
-        const valor = valorInput?.value.trim() || '0';
-
-        premiosHTML += `
+      premiosHTML += `
       <div class="linea-premio">
         <span> ${nombre}</span>
         <span class="circulo">${cantidad}</span>
         <span> ${valor}</span>
       </div>`;
-      }
     }
+  }
 
-    if (!premiosHTML) {
-      premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
-    }
+  if (!premiosHTML) {
+    premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
+  }
 
-    const seccionPremios = premiosValorRaw > 0 ? `
+  const seccionPremios = premiosValorRaw > 0 ? `
       <p class="seccion-titulo">PREMIOS: $ ${premiosTotal}</p>
       ${premiosHTML}` : '';
 
-    const contenido = `
+  return `
       <p class="cod">Cod. 088388</p>
       ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
@@ -2463,10 +2467,68 @@ async function generarImpresion(fechaImpresion, copias = 1) {
       <p class="seccion-titulo">BILLETES: $ ${billetesTotal}</p>
       <p class="seccion-titulo">MONEDAS: $ ${monedasTotal}</p>
       <hr>
-  <p class="total-final">Total: $ ${totalGeneral}</p>
+      <p class="total-final">Total: $ ${totalGeneral}</p>
       <div style="height: 60px;"></div>
     `;
-    document.getElementById('contenedor-impresion').innerHTML = contenido;
+}
+
+function construirContenidoTicket(fechaImpresion) {
+  const premiosDiv = document.querySelector('.cantidad3');
+  const premiosTotal = premiosDiv?.textContent.trim() || '0';
+  const premiosValorRaw = parseFloat(premiosDiv?.dataset.valor || '0') || 0;
+
+  const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
+  const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
+  const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
+
+  let premiosHTML = '';
+  for (let i = 1; i <= 30; i++) {
+    const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
+    const nombreInput = document.getElementById(idLoteria);
+    const nombre = nombreInput ? nombreInput.value.trim() : '';
+
+    if (nombre) {
+      const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
+      const valorInput = document.querySelector(`input.input${i * 2}`);
+      const cantidad = cantidadInput?.value.trim() || '0';
+      const valor = valorInput?.value.trim() || '0';
+
+      premiosHTML += `
+      <div class="linea-premio">
+        <span> ${nombre}</span>
+        <span class="circulo">${cantidad}</span>
+        <span> ${valor}</span>
+      </div>`;
+    }
+  }
+
+  if (!premiosHTML) {
+    premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
+  }
+
+  const seccionPremios = premiosValorRaw > 0 ? `
+      <p class="seccion-titulo">PREMIOS: $ ${premiosTotal}</p>
+      ${premiosHTML}` : '';
+
+  return `
+      <p class="cod">Cod. 088388</p>
+      ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
+      <div class="espacio-manual"></div>
+      ${seccionPremios}
+      <p class="seccion-titulo">BILLETES: $ ${billetesTotal}</p>
+      <p class="seccion-titulo">MONEDAS: $ ${monedasTotal}</p>
+      <hr>
+      <p class="total-final">Total: $ ${totalGeneral}</p>
+      <div style="height: 60px;"></div>
+    `;
+}
+
+async function generarImpresion(fechaImpresion, copias = 1) {
+  if (window.imprimiendoAhora) return;
+  window.imprimiendoAhora = true;
+
+  try {
+    document.getElementById('contenedor-impresion').innerHTML = construirContenidoTicket(fechaImpresion);
     await new Promise(resolve => requestAnimationFrame(resolve));
 
     const alturaTicket = (document.getElementById('contenedor-impresion').offsetHeight || 800) * 2;
@@ -2482,6 +2544,26 @@ async function generarImpresion(fechaImpresion, copias = 1) {
     window.imprimiendoAhora = false;
   }
 }
+
+let vistaPreviaActiva = false;
+function toggleVistaPrevia() {
+  const cont = document.getElementById('contenedor-impresion');
+  const btn = document.getElementById('btnVistaPrevia');
+  vistaPreviaActiva = !vistaPreviaActiva;
+
+  if (vistaPreviaActiva) {
+    cont.innerHTML = construirContenidoTicket(calcularFechaImpresion(false));
+    cont.classList.add('vista-activa');
+    if (btn) btn.innerHTML = '❌ Cerrar Vista';
+  } else {
+    cont.classList.remove('vista-activa');
+    cont.innerHTML = '';
+    if (btn) btn.innerHTML = '👁️ Vista Impresión';
+  }
+}
+
+
+
     </script>
   </div>
   <div id="contenedor-impresion"></div>
