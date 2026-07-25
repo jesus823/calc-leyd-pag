@@ -40,7 +40,7 @@
       position: fixed;
       left: 50%;
       top: 15%;
-      transform: translate(-50%, 0) scale(0.6);
+      transform: translate(-50%, 0) scale(0.4);
       transform-origin: top center;
       z-index: 999999;
       max-height: 90vh;
@@ -2555,15 +2555,64 @@ function toggleVistaPrevia() {
   vistaPreviaActiva = !vistaPreviaActiva;
 
   if (vistaPreviaActiva) {
+    // Limpiamos cualquier posición que haya quedado de un arrastre anterior,
+    // así siempre abre en la posición original del CSS
+    cont.style.left = '';
+    cont.style.top = '';
+    cont.style.transform = '';
+    cont.style.transformOrigin = '';
+
     cont.innerHTML = construirContenidoTicket(calcularFechaImpresion(false));
     cont.classList.add('vista-activa');
     if (btn) btn.innerHTML = '❌ Cerrar Vista';
   } else {
     cont.classList.remove('vista-activa');
+    cont.style.left = '';
+    cont.style.top = '';
+    cont.style.transform = '';
+    cont.style.transformOrigin = '';
     cont.innerHTML = '';
     if (btn) btn.innerHTML = '👁️ Vista Impresión';
   }
 }
+
+function setupArrastreVistaPrevia() {
+  const cont = document.getElementById('contenedor-impresion');
+  if (!cont) return;
+
+  let arrastrando = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  cont.addEventListener('touchstart', (e) => {
+    if (!cont.classList.contains('vista-activa')) return;
+    arrastrando = true;
+
+    const rect = cont.getBoundingClientRect();
+    const touch = e.touches[0];
+    offsetX = touch.clientX - rect.left;
+    offsetY = touch.clientY - rect.top;
+
+    cont.style.left = rect.left + 'px';
+    cont.style.top = rect.top + 'px';
+    cont.style.transformOrigin = 'top left';
+    cont.style.transform = 'scale(0.6)';
+  }, { passive: true });
+
+  cont.addEventListener('touchmove', (e) => {
+    if (!arrastrando) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    cont.style.left = (touch.clientX - offsetX) + 'px';
+    cont.style.top = (touch.clientY - offsetY) + 'px';
+  }, { passive: false });
+
+  cont.addEventListener('touchend', () => {
+    arrastrando = false;
+  });
+}
+
+document.addEventListener('DOMContentLoaded', setupArrastreVistaPrevia);
 
 
 
