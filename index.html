@@ -2424,6 +2424,7 @@
 
         await generarImpresion(fechaImpresion, 1);
       }
+
 function construirContenidoTicket(fechaImpresion) {
   const premiosDiv = document.querySelector('.cantidad3');
   const premiosTotal = premiosDiv?.textContent.trim() || '0';
@@ -2442,15 +2443,22 @@ function construirContenidoTicket(fechaImpresion) {
     if (nombre) {
       const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
       const valorInput = document.querySelector(`input.input${i * 2}`);
-      const cantidad = cantidadInput?.value.trim() || '0';
-      const valor = valorInput?.value.trim() || '0';
+      const cantidadTexto = cantidadInput?.value.trim() || '';
+      const valorTexto = valorInput?.value.trim() || '';
 
-      premiosHTML += `
+      // Convertimos a número real (quitando puntos de miles) para comparar
+      const cantidadNum = parseFloat(limpiarMiles(cantidadTexto)) || 0;
+      const valorNum = parseFloat(limpiarMiles(valorTexto)) || 0;
+
+      // Si cantidad o valor están vacíos/en 0, no se muestra esa línea
+      if (cantidadNum > 0 && valorNum > 0) {
+        premiosHTML += `
       <div class="linea-premio">
         <span> ${nombre}</span>
-        <span class="circulo">${cantidad}</span>
-        <span> ${valor}</span>
+        <span class="circulo">${cantidadTexto}</span>
+        <span> ${valorTexto}</span>
       </div>`;
+      }
     }
   }
 
@@ -2474,58 +2482,6 @@ function construirContenidoTicket(fechaImpresion) {
       <div style="height: 60px;"></div>
     `;
 }
-
-function construirContenidoTicket(fechaImpresion) {
-  const premiosDiv = document.querySelector('.cantidad3');
-  const premiosTotal = premiosDiv?.textContent.trim() || '0';
-  const premiosValorRaw = parseFloat(premiosDiv?.dataset.valor || '0') || 0;
-
-  const billetesTotal = document.getElementById('total-general-bilteles')?.textContent.trim() || '0';
-  const monedasTotal = document.getElementById('total-general-monedas')?.textContent.trim() || '0';
-  const totalGeneral = document.getElementById('suma-total')?.textContent.trim() || '0';
-
-  let premiosHTML = '';
-  for (let i = 1; i <= 30; i++) {
-    const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
-    const nombreInput = document.getElementById(idLoteria);
-    const nombre = nombreInput ? nombreInput.value.trim() : '';
-
-    if (nombre) {
-      const cantidadInput = document.querySelector(`input.input${(i * 2) - 1}`);
-      const valorInput = document.querySelector(`input.input${i * 2}`);
-      const cantidad = cantidadInput?.value.trim() || '0';
-      const valor = valorInput?.value.trim() || '0';
-
-      premiosHTML += `
-      <div class="linea-premio">
-        <span> ${nombre}</span>
-        <span class="circulo">${cantidad}</span>
-        <span> ${valor}</span>
-      </div>`;
-    }
-  }
-
-  if (!premiosHTML) {
-    premiosHTML = '<div class="linea-premio">*</div><div class="linea-premio">*</div>';
-  }
-
-  const seccionPremios = premiosValorRaw > 0 ? `
-      <p class="seccion-titulo">PREMIOS: $ ${premiosTotal}</p>
-      ${premiosHTML}` : '';
-
-  return `
-      <p class="cod">Cod. 088388</p>
-      ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
-      <div class="espacio-manual"></div>
-      ${seccionPremios}
-      <p class="seccion-titulo">BILLETES: $ ${billetesTotal}</p>
-      <p class="seccion-titulo">MONEDAS: $ ${monedasTotal}</p>
-      <hr>
-      <p class="total-final">Total: $ ${totalGeneral}</p>
-      <div style="height: 60px;"></div>
-    `;
-}
-
 async function generarImpresion(fechaImpresion, copias = 1) {
   if (window.imprimiendoAhora) return;
   window.imprimiendoAhora = true;
@@ -2549,6 +2505,43 @@ async function generarImpresion(fechaImpresion, copias = 1) {
 }
 
 let vistaPreviaActiva = false;
+let fechaVistaPreviaActual = '';
+
+function agregarBotonCerrarVista() {
+  const cont = document.getElementById('contenedor-impresion');
+  if (!cont) return;
+  if (cont.querySelector('#btnCerrarVistaPrevia')) return; // ya existe, no duplicar
+
+  const btnCerrar = document.createElement('button');
+  btnCerrar.id = 'btnCerrarVistaPrevia';
+  btnCerrar.type = 'button';
+  btnCerrar.innerHTML = '✕';
+  btnCerrar.style.cssText = `
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    background: #f44336;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 26px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 1000000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    padding: 0;
+  `;
+  btnCerrar.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (vistaPreviaActiva) toggleVistaPrevia();
+  });
+  cont.appendChild(btnCerrar);
+}
+
 function toggleVistaPrevia() {
   const cont = document.getElementById('contenedor-impresion');
   const btn = document.getElementById('btnVistaPrevia');
@@ -2562,8 +2555,10 @@ function toggleVistaPrevia() {
     cont.style.transform = '';
     cont.style.transformOrigin = '';
 
-    cont.innerHTML = construirContenidoTicket(calcularFechaImpresion(false));
+    fechaVistaPreviaActual = calcularFechaImpresion(false);
+    cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
     cont.classList.add('vista-activa');
+    agregarBotonCerrarVista();
     if (btn) btn.innerHTML = '❌ Cerrar Vista';
   } else {
     cont.classList.remove('vista-activa');
@@ -2575,6 +2570,20 @@ function toggleVistaPrevia() {
     if (btn) btn.innerHTML = '👁️ Vista Impresión';
   }
 }
+
+// Refresca el CONTENIDO del ticket (no su posición ni tamaño) cada vez
+// que algo cambia en la tabla, pero solo si la vista previa está abierta.
+function actualizarVistaPreviaSiActiva() {
+  const cont = document.getElementById('contenedor-impresion');
+  if (cont && cont.classList.contains('vista-activa')) {
+    cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
+    agregarBotonCerrarVista();
+  }
+}
+
+// Escucha CUALQUIER escritura en la página (inputs, textareas, autocompletado
+// de loterías, etc.) y refresca la vista previa en vivo si está abierta.
+document.addEventListener('input', actualizarVistaPreviaSiActiva);
 
 function setupArrastreVistaPrevia() {
   const cont = document.getElementById('contenedor-impresion');
