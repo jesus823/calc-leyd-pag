@@ -40,7 +40,9 @@
       position: fixed;
       left: 50%;
       top: 15%;
-      transform: translate(-50%, 0) scale(0.4);
+      --drag-x: 0px;
+      --drag-y: 0px;
+      transform: translate(calc(-50% + var(--drag-x)), var(--drag-y)) scale(0.6);
       transform-origin: top center;
       z-index: 999999;
       max-height: 90vh;
@@ -209,7 +211,7 @@
           <th>
             <button type="button" onclick="toggleVistaPrevia()" id="btnVistaPrevia"
               style="font-size: 11px; font-weight: bold; padding: 4px 8px; border: none; border-radius: 6px; background: #9C27B0; color: white; cursor: pointer;">
-              👁️ Vista Impresión
+              🧾 Vista de la Impresión
             </button>
           </th>
           <th
@@ -2550,26 +2552,22 @@ function toggleVistaPrevia() {
   vistaPreviaActiva = !vistaPreviaActiva;
 
   if (vistaPreviaActiva) {
-    // Limpiamos cualquier posición que haya quedado de un arrastre anterior,
+   // Limpiamos cualquier posición que haya quedado de un arrastre anterior,
     // así siempre abre en la posición original del CSS
-    cont.style.left = '';
-    cont.style.top = '';
-    cont.style.transform = '';
-    cont.style.transformOrigin = '';
+    cont.style.setProperty('--drag-x', '0px');
+    cont.style.setProperty('--drag-y', '0px');
 
     fechaVistaPreviaActual = calcularFechaImpresion(false);
     cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
     cont.classList.add('vista-activa');
     agregarBotonCerrarVista();
     if (btn) btn.innerHTML = '❌ Cerrar Vista';
-  } else {
+ } else {
     cont.classList.remove('vista-activa');
-    cont.style.left = '';
-    cont.style.top = '';
-    cont.style.transform = '';
-    cont.style.transformOrigin = '';
+    cont.style.setProperty('--drag-x', '0px');
+    cont.style.setProperty('--drag-y', '0px');
     cont.innerHTML = '';
-    if (btn) btn.innerHTML = '🧾 Vista Impresión';
+    if (btn) btn.innerHTML = '🧾 Vista de la Impresión';
   }
 }
 
@@ -2592,30 +2590,43 @@ function setupArrastreVistaPrevia() {
   if (!cont) return;
 
   let arrastrando = false;
-  let offsetX = 0;
-  let offsetY = 0;
+  let inicioX = 0;
+  let inicioY = 0;
+  let dragXInicial = 0;
+  let dragYInicial = 0;
+
+  function leerDragActual() {
+    const estilos = getComputedStyle(cont);
+    const x = parseFloat(estilos.getPropertyValue('--drag-x')) || 0;
+    const y = parseFloat(estilos.getPropertyValue('--drag-y')) || 0;
+    return { x, y };
+  }
 
   cont.addEventListener('touchstart', (e) => {
     if (!cont.classList.contains('vista-activa')) return;
     arrastrando = true;
 
-    const rect = cont.getBoundingClientRect();
     const touch = e.touches[0];
-    offsetX = touch.clientX - rect.left;
-    offsetY = touch.clientY - rect.top;
+    inicioX = touch.clientX;
+    inicioY = touch.clientY;
 
-    cont.style.left = rect.left + 'px';
-    cont.style.top = rect.top + 'px';
-    cont.style.transformOrigin = 'top left';
-    cont.style.transform = 'scale(0.6)';
+    const dragActual = leerDragActual();
+    dragXInicial = dragActual.x;
+    dragYInicial = dragActual.y;
   }, { passive: true });
 
   cont.addEventListener('touchmove', (e) => {
     if (!arrastrando) return;
     e.preventDefault();
     const touch = e.touches[0];
-    cont.style.left = (touch.clientX - offsetX) + 'px';
-    cont.style.top = (touch.clientY - offsetY) + 'px';
+
+    // El desplazamiento se suma en píxeles de pantalla reales, sin tocar
+    // el scale ni el transform-origin, así el tamaño nunca cambia.
+    const deltaX = touch.clientX - inicioX;
+    const deltaY = touch.clientY - inicioY;
+
+    cont.style.setProperty('--drag-x', (dragXInicial + deltaX) + 'px');
+    cont.style.setProperty('--drag-y', (dragYInicial + deltaY) + 'px');
   }, { passive: false });
 
   cont.addEventListener('touchend', () => {
