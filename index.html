@@ -1899,6 +1899,7 @@
 
           // Cantidad1: solo números, sin formato de miles
           if (celdaCantidad) {
+            celdaCantidad.setAttribute('inputmode', 'numeric');
             celdaCantidad.addEventListener('input', () => {
               const cursor = celdaCantidad.selectionStart;
               const antes = celdaCantidad.value.length;
