@@ -211,23 +211,12 @@ tr {
   list-style: none;
   padding: 0;
   margin: 0;
-  scrollbar-width: auto;
-  scrollbar-color: #1565C0 #e0e0e0;
+  scrollbar-width: none; /* Firefox: oculta el scroll nativo */
 }
 
 .sugerencias::-webkit-scrollbar {
-  width: 26px;
-}
-
-.sugerencias::-webkit-scrollbar-track {
-  background: #e0e0e0;
-  border-radius: 8px;
-}
-
-.sugerencias::-webkit-scrollbar-thumb {
-  background-color: #1565C0;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  width: 0px; /* Chrome/Safari/Android: oculta el scroll nativo */
+  background: transparent;
 }
 
 .sugerencias li {
