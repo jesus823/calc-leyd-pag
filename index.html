@@ -2481,7 +2481,7 @@ function aplicarEspaciadoAnulados(nivel) {
         "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas", "Keno"
       ];
 
-function actualizarIndicadorScroll(ul) {
+      function actualizarIndicadorScroll(ul) {
   let indicador = ul.querySelector('.indicador-scroll');
   if (!indicador) {
     indicador = document.createElement('div');
@@ -2490,24 +2490,15 @@ function actualizarIndicadorScroll(ul) {
     ul.addEventListener('scroll', () => actualizarIndicadorScroll(ul));
   }
 
-  const { scrollHeight, clientHeight } = ul;
+  const { scrollTop, scrollHeight, clientHeight } = ul;
   if (scrollHeight <= clientHeight) {
     indicador.style.display = 'none';
     return;
   }
   indicador.style.display = 'block';
-
-  const maxScroll = scrollHeight - clientHeight;
-
-  // 👇 Evita que el "rebote" (bounce) del scroll en celulares mande el
-  // valor fuera de rango y haga que la barra se dibuje fuera del contenedor.
-  const scrollTopSeguro = Math.max(0, Math.min(ul.scrollTop, maxScroll));
-
   const alturaThumb = Math.max((clientHeight / scrollHeight) * clientHeight, 20);
-  const posicion = maxScroll > 0
-    ? (scrollTopSeguro / maxScroll) * (clientHeight - alturaThumb)
-    : 0;
-
+  const maxScroll = scrollHeight - clientHeight;
+  const posicion = maxScroll > 0 ? (scrollTop / maxScroll) * (clientHeight - alturaThumb) : 0;
   indicador.style.height = alturaThumb + 'px';
   indicador.style.top = posicion + 'px';
 }

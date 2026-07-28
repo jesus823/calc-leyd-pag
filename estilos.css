@@ -207,17 +207,27 @@ tr {
   border-radius: 3px;
   max-height: 200px;
   overflow-y: auto;
-  overscroll-behavior: contain;
   z-index: 1000;
   list-style: none;
   padding: 0;
   margin: 0;
-  scrollbar-width: none;
+  scrollbar-width: auto;
+  scrollbar-color: #1565C0 #e0e0e0;
 }
 
 .sugerencias::-webkit-scrollbar {
-  width: 0px; /* Chrome/Safari/Android: oculta el scroll nativo */
-  background: transparent;
+  width: 26px;
+}
+
+.sugerencias::-webkit-scrollbar-track {
+  background: #e0e0e0;
+  border-radius: 8px;
+}
+
+.sugerencias::-webkit-scrollbar-thumb {
+  background-color: #1565C0;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
 .sugerencias li {
