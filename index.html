@@ -2498,10 +2498,11 @@ function aplicarEspaciadoAnulados(nivel) {
 
             if (coincidencias.length > 0) {
               sugerencias.style.display = 'block';
-              coincidencias.forEach(dep => {
+             coincidencias.forEach(dep => {
                 const li = document.createElement('li');
                 li.textContent = dep;
                 li.style.cursor = 'pointer';
+                li.addEventListener('mousedown', (e) => e.preventDefault());
                 li.onclick = () => {
                   input.value = dep;
                   localStorage.setItem(input.id || input.name, dep); // ✅ guardar valor
@@ -2585,10 +2586,11 @@ function aplicarEspaciadoAnulados(nivel) {
 
             if (coincidencias.length > 0) {
               sugerencias.style.display = 'block';
-              coincidencias.forEach(dep => {
+           coincidencias.forEach(dep => {
                 const li = document.createElement('li');
                 li.textContent = dep;
                 li.style.cursor = 'pointer';
+                li.addEventListener('mousedown', (e) => e.preventDefault());
                 li.onclick = () => {
                   input.value = dep;
                   localStorage.setItem(input.id || input.name, dep);
