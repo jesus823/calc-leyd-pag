@@ -3156,7 +3156,7 @@ input.addEventListener('blur', () => {
 
                 const estadoFinal = await printerGato.getState();
                 if (estadoFinal?.overheat) {
-                    alert("🔥 La impresora se sobrecalentó durante la impresión. Es probable que el ticket haya salido incompleto — espera a que se enfríe antes de volver a imprimir.");
+                    alert("🔥 La impresora se sobrecalenttó durante la impresión. Es probable que el ticket haya salido incompleto — espera a que se enfríe antes de volver a imprimir.");
                 } else if (estadoFinal?.outOfPaper) {
                     alert("📄 Se quedó sin papel durante la impresión. El ticket pudo salir incompleto.");
                 } else if (estadoFinal?.lowPower) {
