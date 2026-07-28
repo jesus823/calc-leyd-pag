@@ -294,3 +294,13 @@ table td:nth-child(2) textarea {
   cursor: not-allowed;
   opacity: 0.5;
 }
+
+table th:nth-child(2),
+table td:nth-child(2) {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden;
+}
