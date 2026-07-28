@@ -262,14 +262,12 @@ tr {
 
 /* 👇 Tamaño de letra SOLO de la fila de premios (cantidad, valor, lotería, resultado) */
 :root {
-  --tam-premios: 15px;
+  --tam-premios: 14px;
 }
 
 input[class^="input"],
 /* input1, input2, input3... (cantidad y valor de premios) */
 input[id^="loteria"],
-#juego1,
-/* nombre de la lotería */
 td[class^="r"]:not([class*="resultado"]) {
   /* SOLO r1, r2, r3... nunca "resultado*" */
   font-size: var(--tam-premios) !important;
