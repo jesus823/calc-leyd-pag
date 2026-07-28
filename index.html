@@ -890,8 +890,8 @@
           <td><textarea></textarea></td>
           <td style="text-align:center;">
             <button type="button" onclick="pedirEspaciadoAnulados()" id="btnAnulados"
-              style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: #607D8B; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
-              Anulados
+              style="font-size: 15px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: #607D8B; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
+              Anulados:
             </button>
           </td>
           <td><textarea></textarea></td>
@@ -2467,7 +2467,7 @@ function aplicarEspaciadoAnulados(nivel) {
 
        const btn = document.getElementById('btnAnulados');
         if (btn) {
-          btn.textContent = `Anulados ${nivel || '0'}`;
+          btn.textContent = `Anulados: ${nivel || '0'}`;
         }
       }
       const loterias = [
