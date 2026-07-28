@@ -2481,6 +2481,28 @@ function aplicarEspaciadoAnulados(nivel) {
         "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas", "Keno"
       ];
 
+      function actualizarIndicadorScroll(ul) {
+  let indicador = ul.querySelector('.indicador-scroll');
+  if (!indicador) {
+    indicador = document.createElement('div');
+    indicador.className = 'indicador-scroll';
+    ul.appendChild(indicador);
+    ul.addEventListener('scroll', () => actualizarIndicadorScroll(ul));
+  }
+
+  const { scrollTop, scrollHeight, clientHeight } = ul;
+  if (scrollHeight <= clientHeight) {
+    indicador.style.display = 'none';
+    return;
+  }
+  indicador.style.display = 'block';
+  const alturaThumb = Math.max((clientHeight / scrollHeight) * clientHeight, 20);
+  const maxScroll = scrollHeight - clientHeight;
+  const posicion = maxScroll > 0 ? (scrollTop / maxScroll) * (clientHeight - alturaThumb) : 0;
+  indicador.style.height = alturaThumb + 'px';
+  indicador.style.top = posicion + 'px';
+}
+
       function setupAutoComplete(inputId, sugerenciasId) {
         const input = document.getElementById(inputId);
         const sugerencias = document.getElementById(sugerenciasId);
@@ -2496,8 +2518,9 @@ function aplicarEspaciadoAnulados(nivel) {
               dep.toLowerCase().includes(valor)
             );
 
-            if (coincidencias.length > 0) {
+           if (coincidencias.length > 0) {
               sugerencias.style.display = 'block';
+              actualizarIndicadorScroll(sugerencias);
              coincidencias.forEach(dep => {
                 const li = document.createElement('li');
                 li.textContent = dep;
@@ -2586,6 +2609,7 @@ function aplicarEspaciadoAnulados(nivel) {
 
             if (coincidencias.length > 0) {
               sugerencias.style.display = 'block';
+              actualizarIndicadorScroll(sugerencias);
            coincidencias.forEach(dep => {
                 const li = document.createElement('li');
                 li.textContent = dep;
