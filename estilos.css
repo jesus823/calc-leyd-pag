@@ -268,6 +268,8 @@ tr {
 input[class^="input"],
 /* input1, input2, input3... (cantidad y valor de premios) */
 input[id^="loteria"],
+input[id^="juego"],
+/* juego1, juego2, juego3... (nombres de raspas: Zoo, Caramelo, etc.) */
 td[class^="r"]:not([class*="resultado"]) {
   /* SOLO r1, r2, r3... nunca "resultado*" */
   font-size: var(--tam-premios) !important;
