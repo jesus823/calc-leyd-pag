@@ -1948,20 +1948,52 @@ function pedirClaveAdmin() {
         }
     });
 }
-
-function abrirModoEdicionAdmin() {
-    const filasHTML = juegos.map((nombre, index) => `
-        <div style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
-            <input type="text" class="admin-nombre" data-index="${index}" value="${nombre}"
+function crearFilaAdminHTML(nombre = '', valor = 0) {
+    return `
+        <div class="fila-admin-juego" style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
+            <input type="text" class="admin-nombre" value="${nombre}"
                 style="flex:1; padding:6px; border-radius:6px; border:1px solid #999;">
-            <input type="tel" class="admin-valor" data-index="${index}" value="${valoresJuegos[nombre] || 0}"
-                style="width:110px; padding:6px; border-radius:6px; border:1px solid #999; text-align:center;">
-        </div>
-    `).join('');
+            <input type="tel" class="admin-valor" value="${valor}"
+                style="width:100px; padding:6px; border-radius:6px; border:1px solid #999; text-align:center;">
+            <button type="button" onclick="confirmarBorrarFilaAdmin(this)"
+                style="width:34px; height:34px; border:none; border-radius:6px; background:#f44336; color:white; font-weight:bold; font-size:16px; cursor:pointer; flex-shrink:0;">
+                ✕
+            </button>
+        </div>`;
+}
+function configurarListenersFilasAdmin() {
+    document.querySelectorAll('.admin-valor').forEach(inp => {
+        if (inp.dataset.listenerAgregado) return;
+        inp.dataset.listenerAgregado = 'true';
+        inp.addEventListener('input', () => {
+            inp.value = inp.value.replace(/\D/g, '');
+        });
+    });
+}
+function confirmarBorrarFilaAdmin(boton) {
+    const fila = boton.closest('.fila-admin-juego');
+    if (!fila) return;
+
+    const inputNombre = fila.querySelector('.admin-nombre');
+    const nombre = inputNombre ? inputNombre.value.trim() : '';
+    const etiqueta = nombre ? `"${nombre}"` : 'esta fila vacía';
+
+    const confirmado = confirm(`¿Estás seguro de borrar ${etiqueta}?`);
+    if (confirmado) {
+        fila.remove();
+    }
+}
+function abrirModoEdicionAdmin() {
+    const filasHTML = juegos.map((nombre) => crearFilaAdminHTML(nombre, valoresJuegos[nombre] || 0)).join('');
 
     Swal.fire({
         title: '⚙️ Modo Edición - Juegos',
-        html: `<div style="max-height:400px; overflow-y:auto; text-align:left;">${filasHTML}</div>`,
+        html: `
+            <div id="listaFilasAdmin" style="max-height:400px; overflow-y:auto; text-align:left;">${filasHTML}</div>
+            <button type="button" id="btnAgregarFilaAdmin" style="margin-top:10px; width:100%; padding:10px; border:none; border-radius:6px; background:#4CAF50; color:white; font-weight:bold; font-size:15px; cursor:pointer;">
+                ➕ Agregar Nuevo Raspa
+            </button>
+        `,
         width: '500px',
         showCancelButton: true,
         showDenyButton: true,
@@ -1972,10 +2004,16 @@ function abrirModoEdicionAdmin() {
         denyButtonColor: '#f44336',
         cancelButtonColor: '#999',
         didOpen: () => {
-            document.querySelectorAll('.admin-valor').forEach(inp => {
-                inp.addEventListener('input', () => {
-                    inp.value = inp.value.replace(/\D/g, '');
-                });
+            configurarListenersFilasAdmin();
+
+            document.getElementById('btnAgregarFilaAdmin').addEventListener('click', () => {
+                const contenedor = document.getElementById('listaFilasAdmin');
+                contenedor.insertAdjacentHTML('beforeend', crearFilaAdminHTML('', 0));
+                configurarListenersFilasAdmin();
+                contenedor.scrollTop = contenedor.scrollHeight;
+
+                const nombresActuales = contenedor.querySelectorAll('.admin-nombre');
+                nombresActuales[nombresActuales.length - 1].focus();
             });
         },
         preConfirm: () => {
@@ -2037,17 +2075,15 @@ function confirmarGuardarAdmin(datosCapturados) {
     });
 }
 
-function guardarCambiosAdmin(datosCapturados) {
+async function guardarCambiosAdmin(datosCapturados) {
     const { nuevosJuegos, nuevosValores } = datosCapturados;
 
     juegos.length = 0;
     juegos.push(...nuevosJuegos);
     valoresJuegos = nuevosValores;
 
-    // Guarda nombre, valor Y orden en Supabase (esa es la única fuente de verdad)
-    juegos.forEach((nombre, index) => {
-        guardarValorJuegoSupabase(nombre, valoresJuegos[nombre] || 0, index);
-    });
+    // Sincroniza Supabase por completo: borra todo y reinserta la lista actual
+    await guardarTodosLosJuegosSupabase(juegos, valoresJuegos);
 
     Swal.fire({
         title: '¡Guardado!',
@@ -2553,7 +2589,26 @@ async function guardarValorJuegoSupabase(nombre, valor, orden) {
       .upsert({ nombre, valor, orden });
 }
 
+async function guardarTodosLosJuegosSupabase(listaJuegos, valores) {
+    // Borra TODAS las filas actuales para evitar nombres viejos duplicados
+    await supabaseClient
+      .from('juegos_config')
+      .delete()
+      .not('nombre', 'is', null);
 
+    // Inserta la lista completa y ya limpia
+    const filas = listaJuegos.map((nombre, index) => ({
+        nombre,
+        valor: valores[nombre] || 0,
+        orden: index
+    }));
+
+    if (filas.length > 0) {
+        await supabaseClient
+          .from('juegos_config')
+          .insert(filas);
+    }
+}
 </script>
         <!-- Librería XLSX necesaria para exportar -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
