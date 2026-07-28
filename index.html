@@ -2564,15 +2564,15 @@ input.addEventListener('blur', () => {
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhndXR4YWR1ZWx5ZnBmcnJnd3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMzgwMzQsImV4cCI6MjEwMDgxNDAzNH0.8az-xwyMrVkXeo64CIM_q9dTF5uVP8WDzFbZO5odPHM";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  async function guardarValorJuegoSupabase(nombre, valor) {
+async function guardarValorJuegoSupabase(nombre, valor) {
     await supabaseClient
-      .from('valores_juegos')
+      .from('juegos_config')
       .upsert({ nombre, valor });
-  }
+}
 
-  async function cargarValoresJuegosSupabase() {
+async function cargarValoresJuegosSupabase() {
     const { data, error } = await supabaseClient
-      .from('valores_juegos')
+      .from('juegos_config')
       .select('*');
 
     if (error || !data) return;
@@ -2580,7 +2580,7 @@ input.addEventListener('blur', () => {
     data.forEach(fila => {
       valoresJuegos[fila.nombre] = fila.valor;
     });
-  }
+}
 </script>
         <!-- Librería XLSX necesaria para exportar -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
