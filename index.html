@@ -1968,12 +1968,13 @@
           }
         });
       }
-      function crearFilaAdminHTML(nombre = '', valor = 0) {
+  function crearFilaAdminHTML(nombre = '', valor = 0) {
+        const valorFormateado = valor ? Number(valor).toLocaleString('es-CO') : '';
         return `
         <div class="fila-admin-juego" style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
             <input type="text" class="admin-nombre" value="${nombre}"
                 style="flex:1; padding:6px; border-radius:6px; border:1px solid #999;">
-            <input type="tel" class="admin-valor" value="${valor}"
+            <input type="tel" class="admin-valor" value="${valorFormateado}"
                 style="width:100px; padding:6px; border-radius:6px; border:1px solid #999; text-align:center;">
             <button type="button" onclick="confirmarBorrarFilaAdmin(this)"
                 style="width:34px; height:34px; border:none; border-radius:6px; background:#f44336; color:white; font-weight:bold; font-size:16px; cursor:pointer; flex-shrink:0;">
@@ -1981,12 +1982,13 @@
             </button>
         </div>`;
       }
-      function configurarListenersFilasAdmin() {
+    function configurarListenersFilasAdmin() {
         document.querySelectorAll('.admin-valor').forEach(inp => {
           if (inp.dataset.listenerAgregado) return;
           inp.dataset.listenerAgregado = 'true';
           inp.addEventListener('input', () => {
-            inp.value = inp.value.replace(/\D/g, '');
+            const soloNumeros = inp.value.replace(/\D/g, '');
+            inp.value = soloNumeros === '' ? '' : parseInt(soloNumeros, 10).toLocaleString('es-CO');
           });
         });
       }
@@ -2093,7 +2095,7 @@
         const filasHTML = juegos.map((nombre) => crearFilaAdminHTML(nombre, valoresJuegos[nombre] || 0)).join('');
 
         Swal.fire({
-          title: '⚙️ Modo Edición - Juegos',
+          title: '⚙️ Modo Edición - Raspas',
           html: `
             <div id="listaFilasAdmin" style="max-height:400px; overflow-y:auto; text-align:left;">${filasHTML}</div>
             <button type="button" id="btnAgregarFilaAdmin" style="margin-top:10px; width:100%; padding:10px; border:none; border-radius:6px; background:#4CAF50; color:white; font-weight:bold; font-size:15px; cursor:pointer;">
@@ -2130,9 +2132,9 @@
             const nuevosJuegos = [];
             const nuevosValores = {};
 
-            nombresInputs.forEach((inp, i) => {
+       nombresInputs.forEach((inp, i) => {
               const nombre = inp.value.trim();
-              const valor = parseInt(valoresInputs[i].value, 10) || 0;
+              const valor = parseInt(valoresInputs[i].value.replace(/\D/g, ''), 10) || 0;
               if (nombre) {
                 nuevosJuegos.push(nombre);
                 nuevosValores[nombre] = valor;
@@ -2183,7 +2185,7 @@
         });
       }
 
-      async function guardarCambiosAdmin(datosCapturados) {
+   async function guardarCambiosAdmin(datosCapturados) {
         const { nuevosJuegos, nuevosValores } = datosCapturados;
 
         juegos.length = 0;
@@ -2191,14 +2193,62 @@
         valoresJuegos = nuevosValores;
 
         // Sincroniza Supabase por completo: borra todo y reinserta la lista actual
-        await guardarTodosLosJuegosSupabase(juegos, valoresJuegos);
+        const exito = await guardarTodosLosJuegosSupabase(juegos, valoresJuegos);
 
-        Swal.fire({
-          title: '¡Guardado!',
-          icon: 'success',
-          timer: 1500,
-          showConfirmButton: false
+        if (exito) {
+          limpiarJuegosEliminados();
+
+          Swal.fire({
+            title: '¡Guardado!',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        } else {
+          Swal.fire({
+            title: 'No se pudo guardar en Supabase',
+            text: 'Abre la consola del navegador (F12) para ver el error exacto. Probablemente falta el permiso de ELIMINAR (política RLS) en la tabla juegos_config.',
+            icon: 'error'
+          });
+        }
+      }
+
+      // Revisa los campos "juego1"..."juego13" de la tabla principal. Si el
+      // nombre que tienen escrito ya no existe en la lista actualizada de
+      // raspas (porque se eliminó desde el Modo Edición), borra ese nombre
+      // y también la cantidad/valor de esa misma fila.
+      function limpiarJuegosEliminados() {
+        const inputsJuego = document.querySelectorAll('input[id^="juego"]');
+
+        inputsJuego.forEach(input => {
+          const valorActual = input.value.trim();
+          if (!valorActual) return;
+
+          const sigueExistiendo = juegos.some(
+            nombre => nombre.toLowerCase() === valorActual.toLowerCase()
+          );
+
+          if (!sigueExistiendo) {
+            input.value = '';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+
+            const fila = input.closest('tr');
+            const celdas = fila?.querySelectorAll('td');
+            const celdaCantidad = celdas?.[2]?.querySelector('textarea');
+            const celdaValor = celdas?.[3]?.querySelector('textarea');
+
+            if (celdaCantidad) {
+              celdaCantidad.value = '';
+              celdaCantidad.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (celdaValor) {
+              celdaValor.value = '';
+              celdaValor.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
         });
+
+        actualizarVistaPreviaSiActiva?.();
       }
 
       function calcularTotales() {
@@ -2785,12 +2835,17 @@ function aplicarEspaciadoAnulados(nivel) {
           .upsert({ nombre, valor, orden });
       }
 
-      async function guardarTodosLosJuegosSupabase(listaJuegos, valores) {
+     async function guardarTodosLosJuegosSupabase(listaJuegos, valores) {
         // Borra TODAS las filas actuales para evitar nombres viejos duplicados
-        await supabaseClient
+        const { error: errorBorrado } = await supabaseClient
           .from('juegos_config')
           .delete()
           .not('nombre', 'is', null);
+
+        if (errorBorrado) {
+          console.error('Error borrando juegos_config:', errorBorrado);
+          return false;
+        }
 
         // Inserta la lista completa y ya limpia
         const filas = listaJuegos.map((nombre, index) => ({
@@ -2800,10 +2855,17 @@ function aplicarEspaciadoAnulados(nivel) {
         }));
 
         if (filas.length > 0) {
-          await supabaseClient
+          const { error: errorInsercion } = await supabaseClient
             .from('juegos_config')
             .insert(filas);
+
+          if (errorInsercion) {
+            console.error('Error insertando juegos_config:', errorInsercion);
+            return false;
+          }
         }
+
+        return true;
       }
     </script>
     <!-- Librería XLSX necesaria para exportar -->
