@@ -218,7 +218,7 @@
 <th style="border: 3px solid; color: black;"></th>
  <th style="border: 3px solid black;">
             <button type="button" onclick="toggleVistaPrevia()" id="btnVistaPrevia"
-              style="font-size: 11px; font-weight: bold; padding: 4px 8px; border: none; border-radius: 6px; background: #9C27B0; color: white; cursor: pointer;">
+              style="font-size: 11px; font-weight: bold; padding: 4px 8px; border: none; border-radius: 6px;background: linear-gradient(to right, #6A1B9A, #BA68C8); color: white; cursor: pointer;">
               🧾 Vista de la Impresión
             </button>
           </th>
@@ -234,7 +234,7 @@
 
           <th style="width: 100px; border: 3px solid black;">
             <button type="button" onclick="pedirClaveAdmin()" id="btnAdmin"
-              style="font-size: 15px; font-weight: bold; padding: 4px 8px; border: none; border-radius: 6px; background: #000000; color: white; cursor: pointer;">
+              style="font-size: 15px; font-weight: bold; padding: 4px 8px; border: none; border-radius: 6px;background: linear-gradient(to right, #000000, #434343); color: white; cursor: pointer;">
               🔒 Admin
             </button>
           </th>
@@ -281,7 +281,7 @@
           <td><textarea></textarea></td>
           <td id="boton-conectar-impresora" style="text-align: center; border: 3px solid;">
             <button id="btnConectarImpresora" onclick="conectarImpresoraGato()"
-              style="height: 34px; padding: 0 8px; font-size: 12px; font-weight: bold; border: none; border-radius: 8px; background: #2196F3; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: background 0.3s; width: 100%;">
+              style="height: 34px; padding: 0 8px; font-size: 12px; font-weight: bold; border: none; border-radius: 8px;background: linear-gradient(to right, #0D47A1, #64B5F6); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: background 0.3s; width: 100%;">
               <span id="textoBtnImpresora">🔵 Conectar</span>
             </button>
           </td>
@@ -530,7 +530,7 @@
           <td><textarea class="etiqueta-grande">Valor</textarea></td>
           <td>
             <button type="button" onclick="confirmarBorradoPremios()"
-              style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: #f44336; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
+              style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: linear-gradient(to right, #B71C1C, #FF7961); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
               🗑️ Borrar Info Premios
             </button>
           </td>
@@ -628,7 +628,7 @@
         <tr>
           <td>
             <button type="button" onclick="confirmarBorradoNombres()"
-              style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: #ff9800; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
+              style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px;background: linear-gradient(to right, #E65100, #FFB74D); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
               🗑️ Borrar Info Raspas
             </button>
           </td>
@@ -890,7 +890,7 @@
           <td><textarea></textarea></td>
           <td style="text-align:center;">
             <button type="button" onclick="pedirEspaciadoAnulados()" id="btnAnulados"
-              style="font-size: 15px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: #607D8B; color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
+              style="font-size: 15px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: linear-gradient(to right, #37474F, #90A4AE); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
               Anulados:
             </button>
           </td>
@@ -1977,7 +1977,7 @@
             <input type="tel" class="admin-valor" value="${valorFormateado}"
                 style="width:100px; padding:6px; border-radius:6px; border:1px solid #999; text-align:center;">
             <button type="button" onclick="confirmarBorrarFilaAdmin(this)"
-                style="width:34px; height:34px; border:none; border-radius:6px; background:#f44336; color:white; font-weight:bold; font-size:16px; cursor:pointer; flex-shrink:0;">
+                style="width:34px; height:34px; border:none; border-radius:6px; background: linear-gradient(to right, #B71C1C, #FF7961); color:white; font-weight:bold; font-size:16px; cursor:pointer; flex-shrink:0;">
                 ✕
             </button>
         </div>`;
@@ -2058,8 +2058,8 @@
                 style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #ccc; font-size:15px; text-align:center; margin-bottom:8px;">
             <p id="error-password-generico" style="color:#d33; font-size:13px; min-height:16px; margin:0 0 10px;"></p>
             <div style="display:flex; gap:10px; justify-content:center;">
-                <button id="btn-cancelar-generico" style="flex:1; padding:10px; border:none; border-radius:8px; background:#d33; color:#fff; font-weight:bold; cursor:pointer;">Cancelar</button>
-                <button id="btn-aceptar-generico" style="flex:1; padding:10px; border:none; border-radius:8px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Aceptar</button>
+                <button id="btn-cancelar-generico" style="flex:1; padding:10px; border:none; border-radius:8px; background: linear-gradient(to right, #B71C1C, #FF7961); color:#fff; font-weight:bold; cursor:pointer;">Cancelar</button>
+                <button id="btn-aceptar-generico" style="flex:1; padding:10px; border:none; border-radius:8px; background: linear-gradient(to right, #0D47A1, #64B5F6); color:#fff; font-weight:bold; cursor:pointer;">Aceptar</button>
             </div>
         </div>
     `;
@@ -2098,7 +2098,7 @@
           title: '⚙️ Modo Edición - Raspas',
           html: `
             <div id="listaFilasAdmin" style="max-height:400px; overflow-y:auto; text-align:left;">${filasHTML}</div>
-            <button type="button" id="btnAgregarFilaAdmin" style="margin-top:10px; width:100%; padding:10px; border:none; border-radius:6px; background:#4CAF50; color:white; font-weight:bold; font-size:15px; cursor:pointer;">
+            <button type="button" id="btnAgregarFilaAdmin" style="margin-top:10px; width:100%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #2E7D32, #81C784); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
                 ➕ Agregar Nuevo Raspa
             </button>
         `,
