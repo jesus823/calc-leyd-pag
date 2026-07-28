@@ -291,3 +291,8 @@ table td:nth-child(18) {
   width: 100px !important;
   min-width: 100px !important;
 }
+table td:nth-child(2) textarea {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
