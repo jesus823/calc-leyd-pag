@@ -1692,7 +1692,8 @@
 
 
 
-           document.addEventListener("DOMContentLoaded", () => {
+         document.addEventListener("DOMContentLoaded", async () => {
+                await cargarJuegosDesdeSupabase();
                 configurarCamposNombresJuegos();
                 // === GUARDAR/RESTAURAR INPUTS y TEXTAREAS ===
                 const campos = document.querySelectorAll("textarea:not(.etiqueta-grande), input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
@@ -2043,12 +2044,9 @@ function guardarCambiosAdmin(datosCapturados) {
     juegos.push(...nuevosJuegos);
     valoresJuegos = nuevosValores;
 
-    localStorage.setItem('valoresJuegosData', JSON.stringify(valoresJuegos));
-    localStorage.setItem('juegosNombres', JSON.stringify(juegos));
-
-    // Guarda cada valor también en Supabase
-    juegos.forEach(nombre => {
-        guardarValorJuegoSupabase(nombre, valoresJuegos[nombre] || 0);
+    // Guarda nombre, valor Y orden en Supabase (esa es la única fuente de verdad)
+    juegos.forEach((nombre, index) => {
+        guardarValorJuegoSupabase(nombre, valoresJuegos[nombre] || 0, index);
     });
 
     Swal.fire({
@@ -2273,52 +2271,37 @@ function guardarCambiosAdmin(datosCapturados) {
                 });
             }
 
-       // Autocompletado para Nombre1 (lista de juegos)
+    // Autocompletado para Nombre1 (lista de juegos)
+            // Este arreglo es solo un valor "de emergencia" por si Supabase tarda;
+            // cargarJuegosDesdeSupabase() lo va a sobreescribir con los datos reales.
             const juegos = [
                 "Caramelo", "Cat vs Dog", "Chuza", "Hipica", "Zoo", "Calamar", "Ula Ula",
                 "Costelando", "Trono", "Partidazo", "Conejo Suerte", "Elemento", "Uno",
                 "Suerte Oro", "Minas", "Chiva", "Rubí", "La Copa"
             ];
 
-            // Si el admin ya guardó nombres editados, los cargamos en vez de los de arriba
-            const guardadoJuegos = localStorage.getItem('juegosNombres');
-            if (guardadoJuegos) {
-                try {
-                    const arr = JSON.parse(guardadoJuegos);
-                    if (Array.isArray(arr) && arr.length) {
-                        juegos.length = 0;
-                        juegos.push(...arr);
-                    }
-                } catch (e) {}
-            }
-
             // Objeto que guarda el valor por defecto de cada juego (ej: {"Chuza": 2000})
             let valoresJuegos = {};
 
-      function cargarValoresJuegos() {
-    const guardado = localStorage.getItem('valoresJuegosData');
-    if (guardado) {
-        try {
-            valoresJuegos = JSON.parse(guardado);
-        } catch (e) {
-            valoresJuegos = {};
-        }
+async function cargarJuegosDesdeSupabase() {
+    const { data, error } = await supabaseClient
+        .from('juegos_config')
+        .select('*')
+        .order('orden', { ascending: true });
+
+    if (error || !data) {
+        console.error('Error cargando juegos_config:', error);
+        return;
     }
-    juegos.forEach(nombre => {
-        if (valoresJuegos[nombre] === undefined) {
-            valoresJuegos[nombre] = 0;
-        }
+
+    juegos.length = 0;
+    valoresJuegos = {};
+
+    data.forEach(fila => {
+        juegos.push(fila.nombre);
+        valoresJuegos[fila.nombre] = fila.valor || 0;
     });
-
-    // Sobrescribe con lo que haya en Supabase (si ya cargó para ese momento)
-    if (typeof cargarValoresJuegosSupabase === 'function') {
-        cargarValoresJuegosSupabase();
-    }
 }
-
-cargarValoresJuegos();
-
-            cargarValoresJuegos();
 
             function setupAutoCompleteJuegos(inputId, sugerenciasId) {
                 const input = document.getElementById(inputId);
@@ -2564,23 +2547,13 @@ input.addEventListener('blur', () => {
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhndXR4YWR1ZWx5ZnBmcnJnd3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMzgwMzQsImV4cCI6MjEwMDgxNDAzNH0.8az-xwyMrVkXeo64CIM_q9dTF5uVP8WDzFbZO5odPHM";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function guardarValorJuegoSupabase(nombre, valor) {
+async function guardarValorJuegoSupabase(nombre, valor, orden) {
     await supabaseClient
       .from('juegos_config')
-      .upsert({ nombre, valor });
+      .upsert({ nombre, valor, orden });
 }
 
-async function cargarValoresJuegosSupabase() {
-    const { data, error } = await supabaseClient
-      .from('juegos_config')
-      .select('*');
 
-    if (error || !data) return;
-
-    data.forEach(fila => {
-      valoresJuegos[fila.nombre] = fila.valor;
-    });
-}
 </script>
         <!-- Librería XLSX necesaria para exportar -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
