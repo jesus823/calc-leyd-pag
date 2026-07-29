@@ -184,6 +184,15 @@
         transform: rotate(360deg);
       }
     }
+
+    .gris-fijo {
+  background-color: #1c1c1c !important;
+}
+
+td:has(.gris-fijo) {
+  padding: 0 !important;
+  background-color: #1c1c1c !important;
+}
   </style>
 </head>
 
@@ -279,7 +288,7 @@
               oninput="formatearMiles(this)"></td>
 
           <td><textarea></textarea></td>
-          <td id="boton-conectar-impresora" style="text-align: center; border: 3px solid;">
+        <td id="boton-conectar-impresora" style="text-align: center; border: 3px solid #8A2BE2;">
             <button id="btnConectarImpresora" onclick="conectarImpresoraGato()"
               style="height: 34px; padding: 0 8px; font-size: 12px; font-weight: bold; border: none; border-radius: 8px;background: linear-gradient(to right, #0D47A1, #64B5F6); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: background 0.3s; width: 100%;">
               <span id="textoBtnImpresora">🔵 Conectar</span>
@@ -316,15 +325,17 @@
               oninput="formatearMiles(this)"></td>
           <td><textarea></textarea></td>
 
-          <td style="position: relative; height: 40px; width: 60px;">
+      <td style="position: relative; height: 40px; width: 60px; z-index: 999;">
       <img src="stich.webp" alt="" id="btnStitchImprimir" onclick="mostrarConfirmacionImprimir()" style="
          position: absolute;
          top: 15px;
          left: 50%;
-         transform: translateX(-50%);
+         transform: translateX(-50%) translateZ(0);
          width: 150px;
+         height: 100px;
          border-radius: 80px;
          cursor: pointer;
+         z-index: 999;
        ">
           </td>
 
@@ -1695,13 +1706,50 @@
 
 
 
+function marcarColumnaGrisFija() {
+  // Empieza justo en la fila donde está "xxxxx" (la fila que tiene la celda r1)
+  const filaInicio = document.querySelector("#miTabla td.r1")?.closest("tr");
+  if (!filaInicio) return;
 
+  const todasLasFilas = Array.from(document.querySelectorAll("#miTabla tbody tr"));
+  const indiceInicio = todasLasFilas.indexOf(filaInicio);
+  if (indiceInicio === -1) return;
+
+  const filas = todasLasFilas.slice(indiceInicio);
+  let contador = 0;
+
+  filas.forEach(fila => {
+    if (contador >= 17) return;
+
+    const celdas = fila.querySelectorAll("td");
+    let numColumna = 0;
+
+    celdas.forEach((celda) => {
+      if (contador >= 17) return;
+
+      numColumna += 1;
+      const span = celda.colSpan || 1;
+
+      if (numColumna === 14) {
+        const textarea = celda.querySelector("textarea");
+        if (textarea && !textarea.classList.contains("etiqueta-grande")) {
+          textarea.classList.add('gris-fijo');
+          textarea.dataset.grisFijo = "true";
+          contador++;
+        }
+      }
+
+      numColumna += (span - 1);
+    });
+  });
+}
 
 
     document.addEventListener("DOMContentLoaded", async () => {
         await cargarJuegosDesdeSupabase();
         configurarCamposNombresJuegos();
         aplicarEspaciadoAnulados('0');
+        marcarColumnaGrisFija();
         // Bloquear edición de la columna 2 en todas las filas
         document.querySelectorAll("#miTabla tbody tr").forEach(fila => {
           const celdas = fila.querySelectorAll("td");
@@ -1719,7 +1767,7 @@
           celdas.forEach((celda) => {
             numColumna += 1; 
             const span = celda.colSpan || 1;
-if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4) {
+if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 15) {
               const textarea = celda.querySelector("textarea");
               if (textarea && !textarea.classList.contains("etiqueta-grande")) {
                 textarea.readOnly = true;
@@ -1763,7 +1811,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4) {
             }
           }
 
-          campo.addEventListener("input", () => {
+      campo.addEventListener("input", () => {
             localStorage.setItem(key, campo.value);
             sumarInputsImpares();
             if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
@@ -1773,6 +1821,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4) {
             calcularTotales?.();
             verificarCamposVacios?.();
             guardarCeldasTd(); // También guarda los <td class="rX">
+          
           });
         });
 
@@ -1787,12 +1836,13 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4) {
           }
         });
 
-        setTimeout(() => {
+       setTimeout(() => {
           if (typeof calcularResultado === 'function') {
             for (let i = 1; i <= 58; i++) {
               calcularResultado(i);
             }
           }
+         
         }, 0);
         // Guardar todos los <td> con clase rX
         function guardarCeldasTd() {
@@ -2789,8 +2839,10 @@ function aplicarEspaciadoAnulados(nivel) {
 
         if (!inputA || !inputB || !celdaResultado) return;
 
-        if (inputA.value.trim() === '' || inputB.value.trim() === '') {
-          celdaResultado.textContent = '';
+      if (inputA.value.trim() === '' || inputB.value.trim() === '') {
+          if (celdaResultado.textContent.trim() !== 'A') {
+            celdaResultado.textContent = '';
+          }
           sumarResultados();
           return;
         }
@@ -2809,6 +2861,8 @@ function aplicarEspaciadoAnulados(nivel) {
         sumarResultados();
       }
 
+
+     
 
       function sumarResultados() {
         let total = 0;
@@ -2839,7 +2893,8 @@ function aplicarEspaciadoAnulados(nivel) {
           totalEl.textContent = total.toLocaleString('es-CO');
         }
 
-        calcularTotales();
+      calcularTotales();
+      
       }
       function sumarInputsImpares() {
         let suma = 0;
@@ -3550,21 +3605,27 @@ function aplicarEspaciadoAnulados(nivel) {
       if (!img) return;
 
       const imgTemporal = new Image();
-      imgTemporal.crossOrigin = 'anonymous';
       imgTemporal.onload = function () {
-        const canvas = document.createElement('canvas');
-        canvas.width = imgTemporal.naturalWidth;
-        canvas.height = imgTemporal.naturalHeight;
-        const ctx = canvas.getContext('2d');
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = imgTemporal.naturalWidth;
+          canvas.height = imgTemporal.naturalHeight;
+          const ctx = canvas.getContext('2d');
 
-        // Pinta un fondo blanco sólido y ENCIMA la imagen original.
-        // Al combinarlas en el canvas, la transparencia queda "fundida"
-        // con el blanco de forma permanente en los píxeles resultantes.
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(imgTemporal, 0, 0);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(imgTemporal, 0, 0);
 
-        img.src = canvas.toDataURL('image/png');
+          img.src = canvas.toDataURL('image/png');
+        } catch (err) {
+          // Si el navegador bloquea el canvas (CORS), dejamos la imagen
+          // original pero con un fondo blanco puesto por CSS como respaldo.
+          console.warn('No se pudo solidificar la imagen de Stitch:', err);
+          img.classList.add('stitch-fondo-blanco');
+        }
+      };
+      imgTemporal.onerror = function () {
+        img.classList.add('stitch-fondo-blanco');
       };
       imgTemporal.src = img.src;
     }
