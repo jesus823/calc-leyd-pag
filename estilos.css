@@ -303,6 +303,24 @@ td[class^="r"]:not([class*="resultado"]) {
   font-weight: bold !important;
   text-decoration: underline !important;
 }
+
+.etiqueta-grande:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: inherit !important;
+}
+
+.etiqueta-grande[readonly] {
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
+}
+.celda-bloqueada {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.4;
+  background-color: #1a1a1a !important;
+}
+
 table th:nth-child(18),
 table td:nth-child(18) {
   width: 100px !important;
@@ -322,4 +340,11 @@ table td:nth-child(2) {
   padding: 0 !important;
   border: none !important;
   overflow: hidden;
+}
+
+.valor-bloqueado,
+.valor-bloqueado:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
 }

@@ -317,7 +317,7 @@
           <td><textarea></textarea></td>
 
           <td style="position: relative; height: 40px; width: 60px;">
-            <img src="stich.webp" alt="" onclick="mostrarConfirmacionImprimir()" style="
+      <img src="stich.webp" alt="" id="btnStitchImprimir" onclick="mostrarConfirmacionImprimir()" style="
          position: absolute;
          top: 15px;
          left: 50%;
@@ -526,8 +526,8 @@
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
-          <td><textarea class="etiqueta-grande">Cantidad</textarea></td>
-          <td><textarea class="etiqueta-grande">Valor</textarea></td>
+         <td><textarea class="etiqueta-grande" readonly>Cantidad</textarea></td>
+       <td><textarea class="etiqueta-grande" readonly>Valor</textarea></td>
           <td>
             <button type="button" onclick="confirmarBorradoPremios()"
               style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: linear-gradient(to right, #B71C1C, #FF7961); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
@@ -668,11 +668,11 @@
 
         </tr>
         <tr>
-          <td><textarea class="etiqueta-grande">Nombre</textarea></td>
+       <td><textarea class="etiqueta-grande" readonly>Nombre</textarea></td>
           <td>
           </td>
-          <td><textarea class="etiqueta-grande">Cant.</textarea></td>
-          <td><textarea class="etiqueta-grande">Valor</textarea></td>
+      <td><textarea class="etiqueta-grande" readonly>Cant.</textarea></td>
+        <td><textarea class="etiqueta-grande" readonly>Valor</textarea></td>
           <td><textarea></textarea></td>
           <td colspan="2"
             style="font-weight: bold; font-size: 17px; background-color: rgb(7, 134, 7);border: 3px solid;">
@@ -1712,6 +1712,25 @@
           }
         });
       
+ // Bloquear todas las casillas sin función; quedan libres la columna 3 (Sumar a la Venta/Gastos/Nequi) y la 14 (notas)
+        document.querySelectorAll("#miTabla tbody tr").forEach(fila => {
+          const celdas = fila.querySelectorAll("td");
+          let numColumna = 0;
+          celdas.forEach((celda) => {
+            numColumna += 1; 
+            const span = celda.colSpan || 1;
+if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4) {
+              const textarea = celda.querySelector("textarea");
+              if (textarea && !textarea.classList.contains("etiqueta-grande")) {
+                textarea.readOnly = true;
+                textarea.classList.add("celda-bloqueada");
+              }
+            }
+
+            numColumna += (span - 1); // si la celda ocupa varias columnas (colspan), saltamos esas
+          });
+        });
+
         // === GUARDAR/RESTAURAR INPUTS y TEXTAREAS ===
         const campos = document.querySelectorAll("textarea:not(.etiqueta-grande), input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
         const premiosDiv = document.querySelector(".cantidad3");
@@ -1723,6 +1742,17 @@
 
         campos.forEach((campo, index) => {
           const key = `input-${index}`;
+
+          // Las celdas bloqueadas (no editables) nunca deben mostrar ni
+          // guardar texto. Si quedó algo guardado de antes (ej. una "A"
+          // que se escapó antes de bloquearse), se borra aquí y ya no
+          // se vuelve a restaurar en las próximas cargas.
+          if (campo.classList.contains("celda-bloqueada")) {
+            campo.value = "";
+            localStorage.setItem(key, "");
+            return;
+          }
+
           const valorGuardado = localStorage.getItem(key);
           if (valorGuardado !== null) {
             campo.value = valorGuardado;
@@ -1789,10 +1819,9 @@
         location.reload();
       }
 
-      function confirmarBorrado() {
+     function confirmarBorrado() {
         const confirmacion = confirm("¿Estás seguro de que deseas borrar todos los datos?");
         if (confirmacion) {
-          cant / valor
           borrarTodo();
         }
       }
@@ -1909,8 +1938,12 @@
             });
           }
 
-          // Valor1: solo números, con formato de miles (10.000)
+    // Valor1: solo se llena automáticamente al elegir el juego, no editable a mano
           if (celdaValor) {
+            celdaValor.readOnly = true;
+            celdaValor.classList.add('valor-bloqueado');
+            celdaValor.addEventListener('mousedown', (e) => e.preventDefault());
+            celdaValor.addEventListener('touchstart', (e) => e.preventDefault());
             celdaValor.addEventListener('input', () => {
               const soloNumeros = celdaValor.value.replace(/\D/g, '');
               if (soloNumeros === '') {
@@ -3511,6 +3544,36 @@ function aplicarEspaciadoAnulados(nivel) {
     };
   </script>
 
+<script>
+    function solidificarImagenStitch() {
+      const img = document.getElementById('btnStitchImprimir');
+      if (!img) return;
+
+      const imgTemporal = new Image();
+      imgTemporal.crossOrigin = 'anonymous';
+      imgTemporal.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = imgTemporal.naturalWidth;
+        canvas.height = imgTemporal.naturalHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Pinta un fondo blanco sólido y ENCIMA la imagen original.
+        // Al combinarlas en el canvas, la transparencia queda "fundida"
+        // con el blanco de forma permanente en los píxeles resultantes.
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(imgTemporal, 0, 0);
+
+        img.src = canvas.toDataURL('image/png');
+      };
+      imgTemporal.src = img.src;
+    }
+
+    document.addEventListener('DOMContentLoaded', solidificarImagenStitch);
+  </script>
+</body>
+
+</html>
 
 </body>
 
