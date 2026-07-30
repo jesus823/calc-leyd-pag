@@ -1858,23 +1858,41 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
       });
 
 
-
-
-
-
-
-
       function borrarTodo() {
         localStorage.clear();
         location.reload();
       }
 
-     function confirmarBorrado() {
-        const confirmacion = confirm("¿Estás seguro de que deseas borrar todos los datos?");
-        if (confirmacion) {
-          borrarTodo();
-        }
+ function confirmarBorrado() {
+  Swal.fire({
+    title: '¿Estás seguro de que deseas borrar todos los datos?',
+    icon: 'warning',
+    showCancelButton: true,
+    reverseButtons: true,
+    confirmButtonText: 'Aceptar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    didOpen: () => {
+      const btnConfirm = Swal.getConfirmButton();
+      const btnCancel = Swal.getCancelButton();
+      if (btnConfirm) {
+        btnConfirm.style.fontSize = '20px';
+        btnConfirm.style.padding = '14px 34px';
+        btnConfirm.style.margin = '0 20px';
       }
+      if (btnCancel) {
+        btnCancel.style.fontSize = '20px';
+        btnCancel.style.padding = '14px 34px';
+        btnCancel.style.margin = '0 20px';
+      }
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      borrarTodo();
+    }
+  });
+}
 
       // Borra las 4 columnas de premios: nombre de lotería, cantidad,
       // valor y el resultado (rX) de las 30 filas de premios.
