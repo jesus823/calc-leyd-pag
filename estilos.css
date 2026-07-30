@@ -361,3 +361,33 @@ table td:nth-child(2) {
 .raspas-oculto {
   visibility: hidden !important;
 }
+
+:root {
+  --alto-fila-raspas: 22px;   /* ← SOLO CAMBIAS ESTE NÚMERO */
+}
+
+#fila-titulos-raspas,
+#fila-titulos-raspas td {
+  height: var(--alto-fila-raspas) !important;
+  padding: 0 2px !important;
+  line-height: var(--alto-fila-raspas) !important;
+}
+
+#fila-titulos-raspas textarea {
+  height: var(--alto-fila-raspas) !important;
+  min-height: 0 !important;
+  line-height: var(--alto-fila-raspas) !important;
+  overflow: hidden !important;
+  resize: none !important;
+}
+
+#fila-titulos-raspas .cantidad3,
+#fila-titulos-raspas .cantidad5 {
+  height: var(--alto-fila-raspas) !important;
+  line-height: var(--alto-fila-raspas) !important;
+}
+
+#fila-titulos-raspas input {
+  height: var(--alto-fila-raspas) !important;
+  line-height: var(--alto-fila-raspas) !important;
+}
