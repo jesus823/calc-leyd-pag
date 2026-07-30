@@ -3012,20 +3012,65 @@
       const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhndXR4YWR1ZWx5ZnBmcnJnd3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMzgwMzQsImV4cCI6MjEwMDgxNDAzNH0.8az-xwyMrVkXeo64CIM_q9dTF5uVP8WDzFbZO5odPHM";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      async function guardarRegistroImpresion(fechaTicket, contenidoHTML) {
+    async function guardarRegistroImpresion(fechaTicket, contenidoHTML, tipoRegistro) {
   try {
     const { error } = await supabaseClient
       .from('registro_impresiones')
       .insert({
         fecha_ticket: fechaTicket || null,
-        contenido_html: contenidoHTML
+        contenido_html: contenidoHTML,
+        tipo_registro: tipoRegistro || 'prueba'
       });
     if (error) console.error('Error guardando registro de impresión:', error);
   } catch (err) {
     console.error('Error guardando registro de impresión:', err);
   }
 }
+async function eliminarRegistroImpresion(id, fechaFiltroActual) {
+  const { data, error } = await supabaseClient
+    .from('registro_impresiones')
+    .delete()
+    .eq('id', id)
+    .select();
 
+  if (error) {
+    Swal.fire({ title: 'Error al eliminar', text: error.message, icon: 'error' });
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    Swal.fire({
+      title: 'No se pudo eliminar',
+      text: 'Probablemente falta el permiso de ELIMINAR (política RLS) en la tabla registro_impresiones.',
+      icon: 'error'
+    });
+    return;
+  }
+
+  abrirRegistrosImpresiones(fechaFiltroActual);
+}
+
+async function borrarRegistrosAntiguosImpresiones() {
+  const limite = new Date();
+  limite.setMonth(limite.getMonth() - 2);
+  await supabaseClient
+    .from('registro_impresiones')
+    .delete()
+    .lt('fecha_impresion', limite.toISOString());
+}
+
+async function borrarTodosLosRegistrosImpresiones() {
+  const { error } = await supabaseClient
+    .from('registro_impresiones')
+    .delete()
+    .not('id', 'is', null);
+
+  if (error) {
+    Swal.fire({ title: 'Error al borrar todo', text: error.message, icon: 'error' });
+    return false;
+  }
+  return true;
+}
       async function guardarValorJuegoSupabase(nombre, valor, orden) {
         await supabaseClient
           .from('juegos_config')
@@ -3418,11 +3463,11 @@
           contImpresion.style.setProperty('--drag-x', '0px');
           contImpresion.style.setProperty('--drag-y', '0px');
 
-          contImpresion.innerHTML = construirContenidoTicket(fechaImpresion);
+        contImpresion.innerHTML = construirContenidoTicket(fechaImpresion);
           await new Promise(resolve => requestAnimationFrame(resolve));
 
-          guardarRegistroImpresion(fechaImpresion, contImpresion.innerHTML);
-
+          const tipoRegistro = (window.hayImpresoraConectada && window.hayImpresoraConectada()) ? 'real' : 'prueba';
+          guardarRegistroImpresion(fechaImpresion, contImpresion.innerHTML, tipoRegistro);
           const alturaTicket = (contImpresion.offsetHeight || 800) * 2;
           const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000;
 
@@ -3582,7 +3627,9 @@
     import { CatPrinter } from "https://cdn.jsdelivr.net/npm/@opuu/cat-printer/+esm";
 
     let printerGato = null;
-
+window.hayImpresoraConectada = function () {
+      return !!(printerGato && printerGato.isConnected());
+    };
     window.conectarImpresoraGato = async function () {
       const btn = document.getElementById('btnConectarImpresora');
       const texto = document.getElementById('textoBtnImpresora');
@@ -3737,7 +3784,9 @@
 
     document.addEventListener('DOMContentLoaded', solidificarImagenStitch);
 
-    async function abrirRegistrosImpresiones(fechaFiltro = '') {
+async function abrirRegistrosImpresiones(fechaFiltro = '') {
+  await borrarRegistrosAntiguosImpresiones();
+
   let query = supabaseClient
     .from('registro_impresiones')
     .select('*')
@@ -3763,15 +3812,22 @@
           weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
           hour: '2-digit', minute: '2-digit', hour12: true
         });
+        const esReal = reg.tipo_registro === 'real';
+        const etiquetaTipo = esReal ? 'Registro Real' : 'Registro Prueba';
        return `
-          <div style="border:5px solid #FF5722; border-radius:10px; margin-bottom:16px; padding:10px; background:#fff;">
-            <p style="font-weight:bold; color:#333; margin:0 0 8px;">🕒 Impreso el Día:  ${fechaLocal}</p>
+          <div style="border:5px solid #FF5722; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
+            <button type="button" class="btn-eliminar-registro" data-id="${reg.id}"
+              style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; font-size:14px; cursor:pointer; line-height:1; z-index:10;">
+              ✕
+            </button>
+            <p style="font-weight:bold; color:#FF5722; margin:0 0 4px; font-size:12px;">${etiquetaTipo}</p>
+            <p style="font-weight:bold; color:#333; margin:0 0 8px; font-size:13px;">🕒 ${fechaLocal}</p>
             <div style="background:#fff; color:#000; font-family:Arial, Helvetica, sans-serif; padding:6px; border:1px solid #ccc; zoom: 0.7;">
               ${reg.contenido_html}
             </div>
           </div>`;
       }).join('')
-    : '<p style="text-align:center; color:#888;">No hay registros para mostrar.</p>';
+    : '<p style="text-align:center; color:#888; grid-column: 1 / -1;">No hay registros para mostrar.</p>';
 
   Swal.fire({
     title: '📋 Registros de Impresiones',
@@ -3780,10 +3836,11 @@
         <input type="date" id="inputFiltroFecha" value="${fechaFiltro}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #999;">
         <button type="button" id="btnBuscarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
         <button type="button" id="btnLimpiarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
+        <button type="button" id="btnBorrarTodoRegistros" style="padding:8px 16px; border:none; border-radius:6px; background:#b71c1c; color:#fff; font-weight:bold; cursor:pointer;">🗑️ Borrar Todo</button>
       </div>
-      <div style="max-height:450px; overflow-y:auto; text-align:left;">${listaHTML}</div>
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; max-height:450px; overflow-y:auto; text-align:left;">${listaHTML}</div>
     `,
-    width: '600px',
+    width: '95%',
     showConfirmButton: false,
     showCloseButton: true,
     didOpen: () => {
@@ -3793,6 +3850,47 @@
       });
       document.getElementById('btnLimpiarFecha').addEventListener('click', () => {
         abrirRegistrosImpresiones('');
+      });
+
+      document.getElementById('btnBorrarTodoRegistros').addEventListener('click', () => {
+        Swal.fire({
+          title: '¿Borrar TODOS los registros?',
+          text: 'Esta acción no se puede deshacer.',
+          icon: 'warning',
+          showCancelButton: true,
+          reverseButtons: true,
+          confirmButtonText: 'Borrar todo',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            borrarTodosLosRegistrosImpresiones().then((exito) => {
+              if (exito) abrirRegistrosImpresiones('');
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          Swal.fire({
+            title: '¿Eliminar este registro?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            reverseButtons: true,
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              eliminarRegistroImpresion(id, fechaFiltro);
+            }
+          });
+        });
       });
     }
   });
