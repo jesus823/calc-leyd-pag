@@ -363,7 +363,7 @@ table td:nth-child(2) {
 }
 
 :root {
-  --alto-fila-raspas: 22px;   /* ← SOLO CAMBIAS ESTE NÚMERO */
+  --alto-fila-raspas: 28px;   /* ← SOLO CAMBIAS ESTE NÚMERO */
 }
 
 #fila-titulos-raspas,
