@@ -2229,9 +2229,14 @@
             <button type="button" id="btnAgregarFilaAdmin" style="margin-top:10px; width:100%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #2E7D32, #81C784); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
                 ➕ Agregar Nuevo Raspa
             </button>
-            <div style="text-align:left;">
+           <div style="text-align:left;">
             <button type="button" id="btnToggleInfoRaspas" style="margin-top:10px; width:40%; padding:10px; border:none; border-radius:6px; background: ${colorBotonRaspas}; color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
                 ${textoBotonRaspas}
+            </button>
+            </div>
+            <div style="text-align:left;">
+            <button type="button" id="btnVerRegistros" style="margin-top:10px; width:55%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #7AEBC5, #1FBF87); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
+                📋 Ver Registros de Impresiones
             </button>
             </div>
         `,
@@ -2256,6 +2261,12 @@
                 nombresActuales[nombresActuales.length - 1].focus();
               });
             });
+
+            document.getElementById('btnVerRegistros').addEventListener('click', () => {
+              Swal.close();
+              abrirRegistrosImpresiones();
+            });
+          
 
             document.getElementById('btnToggleInfoRaspas').addEventListener('click', () => {
               const accion = infoRaspasActiva ? 'DESACTIVAR' : 'ACTIVAR';
@@ -3001,6 +3012,20 @@
       const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhndXR4YWR1ZWx5ZnBmcnJnd3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMzgwMzQsImV4cCI6MjEwMDgxNDAzNH0.8az-xwyMrVkXeo64CIM_q9dTF5uVP8WDzFbZO5odPHM";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+      async function guardarRegistroImpresion(fechaTicket, contenidoHTML) {
+  try {
+    const { error } = await supabaseClient
+      .from('registro_impresiones')
+      .insert({
+        fecha_ticket: fechaTicket || null,
+        contenido_html: contenidoHTML
+      });
+    if (error) console.error('Error guardando registro de impresión:', error);
+  } catch (err) {
+    console.error('Error guardando registro de impresión:', err);
+  }
+}
+
       async function guardarValorJuegoSupabase(nombre, valor, orden) {
         await supabaseClient
           .from('juegos_config')
@@ -3396,6 +3421,8 @@
           contImpresion.innerHTML = construirContenidoTicket(fechaImpresion);
           await new Promise(resolve => requestAnimationFrame(resolve));
 
+          guardarRegistroImpresion(fechaImpresion, contImpresion.innerHTML);
+
           const alturaTicket = (contImpresion.offsetHeight || 800) * 2;
           const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000;
 
@@ -3709,7 +3736,71 @@
     }
 
     document.addEventListener('DOMContentLoaded', solidificarImagenStitch);
+
+    async function abrirRegistrosImpresiones(fechaFiltro = '') {
+  let query = supabaseClient
+    .from('registro_impresiones')
+    .select('*')
+    .order('fecha_impresion', { ascending: false });
+
+  if (fechaFiltro) {
+    const inicio = new Date(`${fechaFiltro}T00:00:00-05:00`).toISOString();
+    const fin = new Date(`${fechaFiltro}T23:59:59-05:00`).toISOString();
+    query = query.gte('fecha_impresion', inicio).lte('fecha_impresion', fin);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    Swal.fire({ title: 'Error al cargar registros', text: error.message, icon: 'error' });
+    return;
+  }
+
+  const listaHTML = (data && data.length > 0)
+    ? data.map(reg => {
+        const fechaLocal = new Date(reg.fecha_impresion).toLocaleString('es-CO', {
+          timeZone: 'America/Bogota',
+          weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', hour12: true
+        });
+       return `
+          <div style="border:5px solid #FF5722; border-radius:10px; margin-bottom:16px; padding:10px; background:#fff;">
+            <p style="font-weight:bold; color:#333; margin:0 0 8px;">🕒 Impreso el Día:  ${fechaLocal}</p>
+            <div style="background:#fff; color:#000; font-family:Arial, Helvetica, sans-serif; padding:6px; border:1px solid #ccc; zoom: 0.7;">
+              ${reg.contenido_html}
+            </div>
+          </div>`;
+      }).join('')
+    : '<p style="text-align:center; color:#888;">No hay registros para mostrar.</p>';
+
+  Swal.fire({
+    title: '📋 Registros de Impresiones',
+    html: `
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <input type="date" id="inputFiltroFecha" value="${fechaFiltro}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #999;">
+        <button type="button" id="btnBuscarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
+        <button type="button" id="btnLimpiarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
+      </div>
+      <div style="max-height:450px; overflow-y:auto; text-align:left;">${listaHTML}</div>
+    `,
+    width: '600px',
+    showConfirmButton: false,
+    showCloseButton: true,
+    didOpen: () => {
+      document.getElementById('btnBuscarFecha').addEventListener('click', () => {
+        const valor = document.getElementById('inputFiltroFecha').value;
+        abrirRegistrosImpresiones(valor);
+      });
+      document.getElementById('btnLimpiarFecha').addEventListener('click', () => {
+        abrirRegistrosImpresiones('');
+      });
+    }
+  });
+}
+
   </script>
+
+  
 </body>
 
 </html>
