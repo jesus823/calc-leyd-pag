@@ -361,7 +361,3 @@ table td:nth-child(2) {
 .raspas-oculto {
   visibility: hidden !important;
 }
-input.cantidad4 {
-  width: 55px !important;
-  font-size: 12px !important;
-}
