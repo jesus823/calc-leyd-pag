@@ -186,13 +186,13 @@
     }
 
     .gris-fijo {
-  background-color: #1c1c1c !important;
-}
+      background-color: #1c1c1c !important;
+    }
 
-td:has(.gris-fijo) {
-  padding: 0 !important;
-  background-color: #1c1c1c !important;
-}
+    td:has(.gris-fijo) {
+      padding: 0 !important;
+      background-color: #1c1c1c !important;
+    }
   </style>
 </head>
 
@@ -209,23 +209,23 @@ td:has(.gris-fijo) {
       <thead>
         <tr>
           <!-- Encabezados de columna A a R (18 columnas) -->
-       <th style="width: 170px; background-color: yellow; border: 3px solid;color: black;">$ Total Venta
+          <th style="width: 170px; background-color: yellow; border: 3px solid;color: black;">$ Total Venta
           </th>
           <th style="background-color: white; width: 30px;"></th>
           <th style="border: 3px solid; color: black;">Sumar a la Venta / Gastos / Nequi</th>
           <th style="width: 50px;border: 3px solid;color: black;">Valor</th>
-          <th style="background-color: white; width: 30px;"></th>
+          <th style="background-color: rgb(8, 8, 8); width: 30px;"></th>
           <th style="width: 70px;  border: 3px solid;color: black;">Billetes </th>
           <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
           <th style=" width: 110px; border: 3px solid;color: black;">Total</th>
-          <th style="background-color: white; width: 30px;"></th>
+          <th style="background-color: rgb(0, 0, 0); width: 30px;"></th>
           <th style="width: 50px;border: 3px solid;color: black;">Monedas</th>
           <th style="width: 60px;border: 3px solid;color: black;">Unidades</th>
           <th style="border: 3px solid;color: black; width: 105px;">Total</th>
-       <th style="background-color: white; width: 30px;"></th>
-<th style="border: 3px solid; color: black;"></th>
-<th style="border: 3px solid; color: black;"></th>
- <th style="border: 3px solid black;">
+          <th style="background-color: rgb(0, 0, 0); width: 30px;"></th>
+          <th style="border: 3px solid; color: black; width: 280px;">ggggg</th>
+          <th style="border: 3px solid; color: black; width: 55px;"></th>
+          <th style="border: 3px solid black;">
             <button type="button" onclick="toggleVistaPrevia()" id="btnVistaPrevia"
               style="font-size: 11px; font-weight: bold; padding: 4px 8px; border: none; border-radius: 6px;background: linear-gradient(to right, #6A1B9A, #BA68C8); color: white; cursor: pointer;">
               🧾 Vista de la Impresión
@@ -288,7 +288,7 @@ td:has(.gris-fijo) {
               oninput="formatearMiles(this)"></td>
 
           <td><textarea></textarea></td>
-        <td id="boton-conectar-impresora" style="text-align: center; border: 3px solid #8A2BE2;">
+          <td id="boton-conectar-impresora" style="text-align: center; border: 3px solid #8A2BE2;">
             <button id="btnConectarImpresora" onclick="conectarImpresoraGato()"
               style="height: 34px; padding: 0 8px; font-size: 12px; font-weight: bold; border: none; border-radius: 8px;background: linear-gradient(to right, #0D47A1, #64B5F6); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: background 0.3s; width: 100%;">
               <span id="textoBtnImpresora">🔵 Conectar</span>
@@ -325,8 +325,8 @@ td:has(.gris-fijo) {
               oninput="formatearMiles(this)"></td>
           <td><textarea></textarea></td>
 
-      <td style="position: relative; height: 40px; width: 60px; z-index: 999;">
-      <img src="stich.webp" alt="" id="btnStitchImprimir" onclick="mostrarConfirmacionImprimir()" style="
+          <td style="position: relative; height: 40px; width: 60px; z-index: 999;">
+            <img src="stich.webp" alt="" id="btnStitchImprimir" onclick="mostrarConfirmacionImprimir()" style="
          position: absolute;
          top: 15px;
          left: 50%;
@@ -537,8 +537,8 @@ td:has(.gris-fijo) {
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
-         <td><textarea class="etiqueta-grande" readonly>Cantidad</textarea></td>
-       <td><textarea class="etiqueta-grande" readonly>Valor</textarea></td>
+          <td><textarea class="etiqueta-grande" readonly>Cantidad</textarea></td>
+          <td><textarea class="etiqueta-grande" readonly>Valor</textarea></td>
           <td>
             <button type="button" onclick="confirmarBorradoPremios()"
               style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: linear-gradient(to right, #B71C1C, #FF7961); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
@@ -638,7 +638,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td>
-            <button type="button" onclick="confirmarBorradoNombres()"
+            <button type="button" id="btnBorrarInfoRaspas" class="raspas-oculto" onclick="confirmarBorradoNombres()"
               style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px;background: linear-gradient(to right, #E65100, #FFB74D); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
               🗑️ Borrar Info Raspas
             </button>
@@ -679,11 +679,11 @@ td:has(.gris-fijo) {
 
         </tr>
         <tr>
-       <td><textarea class="etiqueta-grande" readonly>Nombre</textarea></td>
+          <td><textarea class="etiqueta-grande raspas-oculto" id="tituloNombreRaspas" readonly>Nombre</textarea></td>
           <td>
           </td>
-      <td><textarea class="etiqueta-grande" readonly>Cant.</textarea></td>
-        <td><textarea class="etiqueta-grande" readonly>Valor</textarea></td>
+          <td><textarea class="etiqueta-grande raspas-oculto" id="tituloCantRaspas" readonly>Cant.</textarea></td>
+          <td><textarea class="etiqueta-grande raspas-oculto" id="tituloValorRaspas" readonly>Valor</textarea></td>
           <td><textarea></textarea></td>
           <td colspan="2"
             style="font-weight: bold; font-size: 17px; background-color: rgb(7, 134, 7);border: 3px solid;">
@@ -729,7 +729,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego1"
+            <input type="text" id="juego1" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego1" class="sugerencias" style="display: none; color: black;"></ul>
@@ -769,7 +769,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego2"
+            <input type="text" id="juego2" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego2" class="sugerencias" style="display: none; color: black;"></ul>
@@ -809,7 +809,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego3"
+            <input type="text" id="juego3" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego3" class="sugerencias" style="display: none; color: black;"></ul>
@@ -850,7 +850,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego4"
+            <input type="text" id="juego4" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego4" class="sugerencias" style="display: none; color: black;"></ul>
@@ -889,7 +889,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego5"
+            <input type="text" id="juego5" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego5" class="sugerencias" style="display: none; color: black;"></ul>
@@ -900,7 +900,7 @@ td:has(.gris-fijo) {
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
           <td style="text-align:center;">
-            <button type="button" onclick="pedirEspaciadoAnulados()" id="btnAnulados"
+            <button type="button" onclick="pedirEspaciadoAnulados()" id="btnAnulados" class="raspas-oculto"
               style="font-size: 15px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: linear-gradient(to right, #37474F, #90A4AE); color: white; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
               Anulados:
             </button>
@@ -934,7 +934,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego6"
+            <input type="text" id="juego6" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego6" class="sugerencias" style="display: none; color: black;"></ul>
@@ -974,7 +974,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego7"
+            <input type="text" id="juego7" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego7" class="sugerencias" style="display: none; color: black;"></ul>
@@ -1013,7 +1013,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego8"
+            <input type="text" id="juego8" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego8" class="sugerencias" style="display: none; color: black;"></ul>
@@ -1052,7 +1052,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego9"
+            <input type="text" id="juego9" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego9" class="sugerencias" style="display: none; color: black;"></ul>
@@ -1091,7 +1091,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego10"
+            <input type="text" id="juego10" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego10" class="sugerencias" style="display: none; color: black;"></ul>
@@ -1130,7 +1130,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego11"
+            <input type="text" id="juego11" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego11" class="sugerencias" style="display: none; color: black;"></ul>
@@ -1169,7 +1169,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego12"
+            <input type="text" id="juego12" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego12" class="sugerencias" style="display: none; color: black;"></ul>
@@ -1208,7 +1208,7 @@ td:has(.gris-fijo) {
 
         <tr>
           <td style="position: relative;">
-            <input type="text" id="juego13"
+            <input type="text" id="juego13" class="raspas-oculto"
               style="height: 27px; font-size: 17px; font-weight: bolder; width: 100%; text-align: center;"
               placeholder="   ---------">
             <ul id="sugerenciasJuego13" class="sugerencias" style="display: none; color: black;"></ul>
@@ -1706,50 +1706,51 @@ td:has(.gris-fijo) {
 
 
 
-function marcarColumnaGrisFija() {
-  // Empieza justo en la fila donde está "xxxxx" (la fila que tiene la celda r1)
-  const filaInicio = document.querySelector("#miTabla td.r1")?.closest("tr");
-  if (!filaInicio) return;
+      function marcarColumnaGrisFija() {
+        // Empieza justo en la fila donde está "xxxxx" (la fila que tiene la celda r1)
+        const filaInicio = document.querySelector("#miTabla td.r1")?.closest("tr");
+        if (!filaInicio) return;
 
-  const todasLasFilas = Array.from(document.querySelectorAll("#miTabla tbody tr"));
-  const indiceInicio = todasLasFilas.indexOf(filaInicio);
-  if (indiceInicio === -1) return;
+        const todasLasFilas = Array.from(document.querySelectorAll("#miTabla tbody tr"));
+        const indiceInicio = todasLasFilas.indexOf(filaInicio);
+        if (indiceInicio === -1) return;
 
-  const filas = todasLasFilas.slice(indiceInicio);
-  let contador = 0;
+        const filas = todasLasFilas.slice(indiceInicio);
+        let contador = 0;
 
-  filas.forEach(fila => {
-    if (contador >= 17) return;
+        filas.forEach(fila => {
+          if (contador >= 17) return;
 
-    const celdas = fila.querySelectorAll("td");
-    let numColumna = 0;
+          const celdas = fila.querySelectorAll("td");
+          let numColumna = 0;
 
-    celdas.forEach((celda) => {
-      if (contador >= 17) return;
+          celdas.forEach((celda) => {
+            if (contador >= 17) return;
 
-      numColumna += 1;
-      const span = celda.colSpan || 1;
+            numColumna += 1;
+            const span = celda.colSpan || 1;
 
-      if (numColumna === 14) {
-        const textarea = celda.querySelector("textarea");
-        if (textarea && !textarea.classList.contains("etiqueta-grande")) {
-          textarea.classList.add('gris-fijo');
-          textarea.dataset.grisFijo = "true";
-          contador++;
-        }
+            if (numColumna === 14) {
+              const textarea = celda.querySelector("textarea");
+              if (textarea && !textarea.classList.contains("etiqueta-grande")) {
+                textarea.classList.add('gris-fijo');
+                textarea.dataset.grisFijo = "true";
+                contador++;
+              }
+            }
+
+            numColumna += (span - 1);
+          });
+        });
       }
 
-      numColumna += (span - 1);
-    });
-  });
-}
 
-
-    document.addEventListener("DOMContentLoaded", async () => {
+      document.addEventListener("DOMContentLoaded", async () => {
         await cargarJuegosDesdeSupabase();
         configurarCamposNombresJuegos();
         aplicarEspaciadoAnulados('0');
         marcarColumnaGrisFija();
+        aplicarVisibilidadInfoRaspas();
         // Bloquear edición de la columna 2 en todas las filas
         document.querySelectorAll("#miTabla tbody tr").forEach(fila => {
           const celdas = fila.querySelectorAll("td");
@@ -1759,15 +1760,15 @@ function marcarColumnaGrisFija() {
             if (textarea) textarea.readOnly = true;
           }
         });
-      
- // Bloquear todas las casillas sin función; quedan libres la columna 3 (Sumar a la Venta/Gastos/Nequi) y la 14 (notas)
+
+        // Bloquear todas las casillas sin función; quedan libres la columna 3 (Sumar a la Venta/Gastos/Nequi) y la 14 (notas)
         document.querySelectorAll("#miTabla tbody tr").forEach(fila => {
           const celdas = fila.querySelectorAll("td");
           let numColumna = 0;
           celdas.forEach((celda) => {
-            numColumna += 1; 
+            numColumna += 1;
             const span = celda.colSpan || 1;
-if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 15) {
+            if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 15) {
               const textarea = celda.querySelector("textarea");
               if (textarea && !textarea.classList.contains("etiqueta-grande")) {
                 textarea.readOnly = true;
@@ -1811,7 +1812,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
             }
           }
 
-      campo.addEventListener("input", () => {
+          campo.addEventListener("input", () => {
             localStorage.setItem(key, campo.value);
             sumarInputsImpares();
             if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
@@ -1821,7 +1822,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
             calcularTotales?.();
             verificarCamposVacios?.();
             guardarCeldasTd(); // También guarda los <td class="rX">
-          
+
           });
         });
 
@@ -1836,13 +1837,13 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
           }
         });
 
-       setTimeout(() => {
+        setTimeout(() => {
           if (typeof calcularResultado === 'function') {
             for (let i = 1; i <= 58; i++) {
               calcularResultado(i);
             }
           }
-         
+
         }, 0);
         // Guardar todos los <td> con clase rX
         function guardarCeldasTd() {
@@ -1863,36 +1864,36 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
         location.reload();
       }
 
- function confirmarBorrado() {
-  Swal.fire({
-    title: '¿Estás seguro de que deseas borrar todos los datos?',
-    icon: 'warning',
-    showCancelButton: true,
-    reverseButtons: true,
-    confirmButtonText: 'Aceptar',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    didOpen: () => {
-      const btnConfirm = Swal.getConfirmButton();
-      const btnCancel = Swal.getCancelButton();
-      if (btnConfirm) {
-        btnConfirm.style.fontSize = '20px';
-        btnConfirm.style.padding = '14px 34px';
-        btnConfirm.style.margin = '0 20px';
+      function confirmarBorrado() {
+        Swal.fire({
+          title: '¿Estás seguro de que deseas borrar todos los datos?',
+          icon: 'warning',
+          showCancelButton: true,
+          reverseButtons: true,
+          confirmButtonText: 'Aceptar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          didOpen: () => {
+            const btnConfirm = Swal.getConfirmButton();
+            const btnCancel = Swal.getCancelButton();
+            if (btnConfirm) {
+              btnConfirm.style.fontSize = '20px';
+              btnConfirm.style.padding = '14px 34px';
+              btnConfirm.style.margin = '0 20px';
+            }
+            if (btnCancel) {
+              btnCancel.style.fontSize = '20px';
+              btnCancel.style.padding = '14px 34px';
+              btnCancel.style.margin = '0 20px';
+            }
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            borrarTodo();
+          }
+        });
       }
-      if (btnCancel) {
-        btnCancel.style.fontSize = '20px';
-        btnCancel.style.padding = '14px 34px';
-        btnCancel.style.margin = '0 20px';
-      }
-    }
-  }).then((result) => {
-    if (result.isConfirmed) {
-      borrarTodo();
-    }
-  });
-}
 
       // Borra las 4 columnas de premios: nombre de lotería, cantidad,
       // valor y el resultado (rX) de las 30 filas de premios.
@@ -2006,7 +2007,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
             });
           }
 
-    // Valor1: solo se llena automáticamente al elegir el juego, no editable a mano
+          // Valor1: solo se llena automáticamente al elegir el juego, no editable a mano
           if (celdaValor) {
             celdaValor.readOnly = true;
             celdaValor.classList.add('valor-bloqueado');
@@ -2042,6 +2043,22 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
 
       // === MODO ADMIN: editar nombres y valores por defecto de los juegos ===
 
+      // === OCULTAR / MOSTRAR INFO DE RASPAS ===
+      let infoRaspasActiva = localStorage.getItem('infoRaspasActiva') === '1';
+
+      function aplicarVisibilidadInfoRaspas() {
+        const idsAOcultar = ['tituloNombreRaspas', 'tituloCantRaspas', 'tituloValorRaspas', 'btnBorrarInfoRaspas', 'btnAnulados'];
+        idsAOcultar.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.toggle('raspas-oculto', !infoRaspasActiva);
+        });
+
+        for (let i = 1; i <= 13; i++) {
+          const input = document.getElementById(`juego${i}`);
+          if (input) input.classList.toggle('raspas-oculto', !infoRaspasActiva);
+        }
+      }
+
       function pedirClaveAdmin() {
         Swal.fire({
           title: 'Acceso Admin',
@@ -2069,7 +2086,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
           }
         });
       }
-  function crearFilaAdminHTML(nombre = '', valor = 0) {
+      function crearFilaAdminHTML(nombre = '', valor = 0) {
         const valorFormateado = valor ? Number(valor).toLocaleString('es-CO') : '';
         return `
         <div class="fila-admin-juego" style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
@@ -2083,7 +2100,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
             </button>
         </div>`;
       }
-    function configurarListenersFilasAdmin() {
+      function configurarListenersFilasAdmin() {
         document.querySelectorAll('.admin-valor').forEach(inp => {
           if (inp.dataset.listenerAgregado) return;
           inp.dataset.listenerAgregado = 'true';
@@ -2093,7 +2110,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
           });
         });
       }
-     function confirmarBorrarFilaAdmin(boton) {
+      function confirmarBorrarFilaAdmin(boton) {
         const fila = boton.closest('.fila-admin-juego');
         if (!fila) return;
 
@@ -2107,7 +2124,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
         });
       }
 
-    function mostrarToastExito(mensaje) {
+      function mostrarToastExito(mensaje) {
         const overlay = document.createElement('div');
         overlay.style.cssText = `
           position: fixed;
@@ -2194,6 +2211,10 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
       }
       function abrirModoEdicionAdmin() {
         const filasHTML = juegos.map((nombre) => crearFilaAdminHTML(nombre, valoresJuegos[nombre] || 0)).join('');
+        const textoBotonRaspas = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : '👁️ Activar Info Raspas';
+        const colorBotonRaspas = infoRaspasActiva
+          ? 'linear-gradient(to right, #E65100, #FFB74D)'
+          : 'linear-gradient(to right, #6A1B9A, #BA68C8)';
 
         Swal.fire({
           title: '⚙️ Modo Edición - Raspas',
@@ -2202,8 +2223,13 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
             <button type="button" id="btnAgregarFilaAdmin" style="margin-top:10px; width:100%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #2E7D32, #81C784); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
                 ➕ Agregar Nuevo Raspa
             </button>
+            <div style="text-align:left;">
+            <button type="button" id="btnToggleInfoRaspas" style="margin-top:10px; width:40%; padding:10px; border:none; border-radius:6px; background: ${colorBotonRaspas}; color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
+                ${textoBotonRaspas}
+            </button>
+            </div>
         `,
-    width: '500px',
+          width: '500px',
           showDenyButton: true,
           reverseButtons: true,
           confirmButtonText: '💾 Guardar',
@@ -2224,6 +2250,25 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
                 nombresActuales[nombresActuales.length - 1].focus();
               });
             });
+
+            document.getElementById('btnToggleInfoRaspas').addEventListener('click', () => {
+              const accion = infoRaspasActiva ? 'DESACTIVAR' : 'ACTIVAR';
+              mostrarModalPassword('Confirmar acción', `Digita la Contraseña para ${accion} la Info de Raspas`, () => {
+                infoRaspasActiva = !infoRaspasActiva;
+                aplicarVisibilidadInfoRaspas();
+                localStorage.setItem('infoRaspasActiva', infoRaspasActiva ? '1' : '0');
+
+                const btnToggle = document.getElementById('btnToggleInfoRaspas');
+                if (btnToggle) {
+                  btnToggle.innerHTML = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : '👁️ Activar Info Raspas';
+                  btnToggle.style.background = infoRaspasActiva
+                    ? 'linear-gradient(to right, #E65100, #FFB74D)'
+                    : 'linear-gradient(to right, #6A1B9A, #BA68C8)';
+                }
+
+                mostrarToastExito(infoRaspasActiva ? 'Info Raspas activada' : 'Info Raspas desactivada');
+              });
+            });
           },
           preConfirm: () => {
             // Leemos los valores AQUÍ, mientras el modal todavía existe en el DOM
@@ -2233,7 +2278,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
             const nuevosJuegos = [];
             const nuevosValores = {};
 
-       nombresInputs.forEach((inp, i) => {
+            nombresInputs.forEach((inp, i) => {
               const nombre = inp.value.trim();
               const valor = parseInt(valoresInputs[i].value.replace(/\D/g, ''), 10) || 0;
               if (nombre) {
@@ -2247,7 +2292,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
         }).then((result) => {
           if (result.isConfirmed) {
             confirmarGuardarAdmin(result.value);
-       } else if (result.isDenied) {
+          } else if (result.isDenied) {
             Swal.fire({
               title: '¿Seguro que deseas salir del Modo Edición?',
               text: 'Los cambios no guardados se perderán.',
@@ -2267,7 +2312,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
         });
       }
 
-    function confirmarGuardarAdmin(datosCapturados) {
+      function confirmarGuardarAdmin(datosCapturados) {
         Swal.fire({
           title: '¿Seguro que deseas guardar los cambios?',
           icon: 'warning',
@@ -2286,7 +2331,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
         });
       }
 
-   async function guardarCambiosAdmin(datosCapturados) {
+      async function guardarCambiosAdmin(datosCapturados) {
         const { nuevosJuegos, nuevosValores } = datosCapturados;
 
         juegos.length = 0;
@@ -2449,12 +2494,12 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
       }
 
       function soloLetras(input) {
-  const cursor = input.selectionStart;
-  const antes = input.value.length;
-  input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-  const despues = input.value.length;
-  input.selectionEnd = cursor - (antes - despues);
-}
+        const cursor = input.selectionStart;
+        const antes = input.value.length;
+        input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+        const despues = input.value.length;
+        input.selectionEnd = cursor - (antes - despues);
+      }
       function formatearMiles(input) {
         const valor = input.value.replace(/\D/g, "");
         if (valor === "") {
@@ -2511,7 +2556,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
 
       let nivelEspaciadoActual = '0';
       function pedirEspaciadoAnulados() {
-     const nivelGuardado = nivelEspaciadoActual;
+        const nivelGuardado = nivelEspaciadoActual;
 
         Swal.fire({
           title: 'Espaciado Recambio Raspas',
@@ -2553,7 +2598,7 @@ if (numColumna !== 14 && numColumna !== 3 && numColumna !== 4 && numColumna !== 
         });
       }
 
-function aplicarEspaciadoAnulados(nivel) {
+      function aplicarEspaciadoAnulados(nivel) {
         nivelEspaciadoActual = nivel;
 
         const valores = { '1': '90px', '2': '180px', '3': '270px' };
@@ -2566,7 +2611,7 @@ function aplicarEspaciadoAnulados(nivel) {
           }
         }
 
-       const btn = document.getElementById('btnAnulados');
+        const btn = document.getElementById('btnAnulados');
         if (btn) {
           btn.textContent = `Anulados: ${nivel || '0'}`;
         }
@@ -2599,10 +2644,10 @@ function aplicarEspaciadoAnulados(nivel) {
               dep.toLowerCase().includes(valor)
             );
 
-           if (coincidencias.length > 0) {
+            if (coincidencias.length > 0) {
               sugerencias.style.display = 'block';
-             
-             coincidencias.forEach(dep => {
+
+              coincidencias.forEach(dep => {
                 const li = document.createElement('li');
                 li.textContent = dep;
                 li.style.cursor = 'pointer';
@@ -2690,8 +2735,8 @@ function aplicarEspaciadoAnulados(nivel) {
 
             if (coincidencias.length > 0) {
               sugerencias.style.display = 'block';
-            
-           coincidencias.forEach(dep => {
+
+              coincidencias.forEach(dep => {
                 const li = document.createElement('li');
                 li.textContent = dep;
                 li.style.cursor = 'pointer';
@@ -2719,7 +2764,7 @@ function aplicarEspaciadoAnulados(nivel) {
             }
           }
         });
-      input.addEventListener('blur', () => {
+        input.addEventListener('blur', () => {
           setTimeout(() => {
             const valorActual = input.value.trim();
             const coincideExacto = juegos.some(
@@ -2734,7 +2779,7 @@ function aplicarEspaciadoAnulados(nivel) {
               // Cantidad y Valor de esa misma fila
               const fila = input.closest('tr');
               const celdas = fila?.querySelectorAll('td');
-            const celdaCantidad = celdas?.[2]?.querySelector('textarea');
+              const celdaCantidad = celdas?.[2]?.querySelector('textarea');
               const celdaValor = celdas?.[3]?.querySelector('textarea');
               if (celdaCantidad) {
                 celdaCantidad.value = '';
@@ -2748,7 +2793,7 @@ function aplicarEspaciadoAnulados(nivel) {
             sugerencias.style.display = 'none';
           }, 200);
         });
-      
+
         document.addEventListener('click', e => {
           if (!sugerencias.contains(e.target) && e.target !== input) {
             sugerencias.style.display = 'none';
@@ -2857,7 +2902,7 @@ function aplicarEspaciadoAnulados(nivel) {
 
         if (!inputA || !inputB || !celdaResultado) return;
 
-      if (inputA.value.trim() === '' || inputB.value.trim() === '') {
+        if (inputA.value.trim() === '' || inputB.value.trim() === '') {
           if (celdaResultado.textContent.trim() !== 'A') {
             celdaResultado.textContent = '';
           }
@@ -2880,7 +2925,7 @@ function aplicarEspaciadoAnulados(nivel) {
       }
 
 
-     
+
 
       function sumarResultados() {
         let total = 0;
@@ -2911,8 +2956,8 @@ function aplicarEspaciadoAnulados(nivel) {
           totalEl.textContent = total.toLocaleString('es-CO');
         }
 
-      calcularTotales();
-      
+        calcularTotales();
+
       }
       function sumarInputsImpares() {
         let suma = 0;
@@ -2947,7 +2992,7 @@ function aplicarEspaciadoAnulados(nivel) {
           .upsert({ nombre, valor, orden });
       }
 
-     async function guardarTodosLosJuegosSupabase(listaJuegos, valores) {
+      async function guardarTodosLosJuegosSupabase(listaJuegos, valores) {
         // Borra TODAS las filas actuales para evitar nombres viejos duplicados
         const { error: errorBorrado } = await supabaseClient
           .from('juegos_config')
@@ -3300,7 +3345,7 @@ function aplicarEspaciadoAnulados(nivel) {
       <p class="seccion-titulo">RECAMBIO RASPAS</p>
       ${recambioHTML}` : '';
 
-       return `
+        return `
       <p class="cod">Cod. 088388</p>
       ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
       <div class="espacio-manual"></div>
@@ -3314,41 +3359,41 @@ function aplicarEspaciadoAnulados(nivel) {
       <div style="height: 60px;"></div>
     `;
       }
-    async function generarImpresion(fechaImpresion, copias = 1) {
-                if (window.imprimiendoAhora) return;
-                window.imprimiendoAhora = true;
+      async function generarImpresion(fechaImpresion, copias = 1) {
+        if (window.imprimiendoAhora) return;
+        window.imprimiendoAhora = true;
 
-                try {
-                    const contImpresion = document.getElementById('contenedor-impresion');
+        try {
+          const contImpresion = document.getElementById('contenedor-impresion');
 
-                    // Si la vista previa está abierta, la cerramos antes de capturar
-                    // la imagen para imprimir, porque el zoom/posición fija de la
-                    // vista previa hace que la impresión salga en blanco.
-                    if (contImpresion.classList.contains('vista-activa')) {
-                        contImpresion.classList.remove('vista-activa');
-                        vistaPreviaActiva = false;
-                        const btnPrev = document.getElementById('btnVistaPrevia');
-                        if (btnPrev) btnPrev.innerHTML = '🧾 Vista de la Impresión';
-                    }
-                    contImpresion.style.setProperty('--drag-x', '0px');
-                    contImpresion.style.setProperty('--drag-y', '0px');
+          // Si la vista previa está abierta, la cerramos antes de capturar
+          // la imagen para imprimir, porque el zoom/posición fija de la
+          // vista previa hace que la impresión salga en blanco.
+          if (contImpresion.classList.contains('vista-activa')) {
+            contImpresion.classList.remove('vista-activa');
+            vistaPreviaActiva = false;
+            const btnPrev = document.getElementById('btnVistaPrevia');
+            if (btnPrev) btnPrev.innerHTML = '🧾 Vista de la Impresión';
+          }
+          contImpresion.style.setProperty('--drag-x', '0px');
+          contImpresion.style.setProperty('--drag-y', '0px');
 
-                    contImpresion.innerHTML = construirContenidoTicket(fechaImpresion);
-                    await new Promise(resolve => requestAnimationFrame(resolve));
+          contImpresion.innerHTML = construirContenidoTicket(fechaImpresion);
+          await new Promise(resolve => requestAnimationFrame(resolve));
 
-                    const alturaTicket = (contImpresion.offsetHeight || 800) * 2;
-                    const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000;
+          const alturaTicket = (contImpresion.offsetHeight || 800) * 2;
+          const esperaEntreCopias = Math.max(20000, alturaTicket * 25) + 4000;
 
-                    for (let i = 0; i < copias; i++) {
-                        await imprimirEnGato();
-                        if (i < copias - 1) {
-                            await new Promise(resolve => setTimeout(resolve, esperaEntreCopias));
-                        }
-                    }
-                } finally {
-                    window.imprimiendoAhora = false;
-                }
+          for (let i = 0; i < copias; i++) {
+            await imprimirEnGato();
+            if (i < copias - 1) {
+              await new Promise(resolve => setTimeout(resolve, esperaEntreCopias));
             }
+          }
+        } finally {
+          window.imprimiendoAhora = false;
+        }
+      }
 
       let vistaPreviaActiva = false;
       let fechaVistaPreviaActual = '';
@@ -3617,7 +3662,7 @@ function aplicarEspaciadoAnulados(nivel) {
     };
   </script>
 
-<script>
+  <script>
     function solidificarImagenStitch() {
       const img = document.getElementById('btnStitchImprimir');
       if (!img) return;
