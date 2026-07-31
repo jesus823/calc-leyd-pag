@@ -3541,7 +3541,7 @@ customClass: {
       });
       document.getElementById('btnLimpiarFechaExcel').addEventListener('click', () => abrirCopiasExcel(''));
 
-    document.getElementById('btnBorrarTodoExcel').addEventListener('click', () => {
+   document.getElementById('btnBorrarTodoExcel').addEventListener('click', () => {
         Swal.fire({
           title: '¿Eliminar TODAS las copias Excel?', icon: 'warning', showCancelButton: true, reverseButtons: true,
           confirmButtonText: 'Borrar todo', cancelButtonText: 'Cancelar', confirmButtonColor: '#d33', cancelButtonColor: '#3085d6'
@@ -3549,15 +3549,19 @@ customClass: {
           if (r.isConfirmed) {
            mostrarModalPassword('Confirmar Borrado', 'Digita la Contraseña para ELIMINAR TODAS las copias Excel', async () => {
               const { error } = await supabaseClient.from('copias_excel').delete().not('id', 'is', null);
-              if (error) { Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); return; }
+              if (error) { await Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); abrirCopiasExcel(fechaFiltro); return; }
               mostrarToastExito('Se borraron todas las copias exitosamente');
               abrirCopiasExcel('');
+            }, () => {
+              abrirCopiasExcel(fechaFiltro);
             });
+          } else {
+            abrirCopiasExcel(fechaFiltro);
           }
         });
       });
 
-   document.querySelectorAll('.btn-eliminar-copia').forEach(btn => {
+  document.querySelectorAll('.btn-eliminar-copia').forEach(btn => {
         btn.addEventListener('click', () => {
           const id = btn.getAttribute('data-id');
           Swal.fire({
@@ -3567,10 +3571,14 @@ customClass: {
             if (r.isConfirmed) {
             mostrarModalPassword('Confirmar Borrado', 'Digita la Contraseña para ELIMINAR esta copia', async () => {
                 const { error } = await supabaseClient.from('copias_excel').delete().eq('id', id);
-                if (error) { Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); return; }
+                if (error) { await Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); abrirCopiasExcel(fechaFiltro); return; }
                 mostrarToastExito('Se eliminó la copia Excel exitosamente');
                 abrirCopiasExcel(fechaFiltro);
+              }, () => {
+                abrirCopiasExcel(fechaFiltro);
               });
+            } else {
+              abrirCopiasExcel(fechaFiltro);
             }
           });
         });
