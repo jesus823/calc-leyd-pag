@@ -197,18 +197,10 @@
 </head>
 
 <body>
-
-
-
-
-
   <div id="wrapper-zoom">
-
-
     <table id="miTabla">
       <thead>
         <tr>
-          <!-- Encabezados de columna A a R (18 columnas) -->
           <th style="width: 170px; background-color: yellow; border: 3px solid;color: black;">$ Total Venta
           </th>
           <th style="background-color: white; width: 30px;"></th>
@@ -297,7 +289,6 @@
           <td><textarea></textarea></td>
 
         </tr>
-        <!-- Fila 3 -->
         <tr>
           <td></td>
           <td><textarea></textarea></td>
@@ -340,7 +331,6 @@
           </td>
 
         </tr>
-        <!-- Fila 4  <td rowspan="3"><img src="stich.webp" alt="" style="width: 150px; border-radius: 80px;"></td>-->
         <tr>
           <td id="sobra" style="font-weight: bolder; border: 3px solid;color: black;"></td>
           <td><textarea></textarea></td>
@@ -367,7 +357,6 @@
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
         </tr>
-        <!-- Fila 5 -->
         <tr>
           <td id="resul" style="font-weight: bolder; border: 3px solid;color: black;"></td>
           <td><textarea></textarea></td>
@@ -394,7 +383,6 @@
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
         </tr>
-        <!-- Fila 6 -->
         <tr>
           <td></td>
           <td><textarea></textarea></td>
@@ -550,7 +538,7 @@
         </tr>
 
         <tr>
-          <td> <button type="button" onclick="confirmarEnvioExcel()" style=" box-shadow: 4px 4px 10px rgb(168, 58, 7);height: 50px; font-weight: bolder; border-color: rgb(255, 0, 85); font-size: 15px; color: rgb(221, 250, 3); border-radius: 25px;background: linear-gradient(
+       <td> <button type="button" onclick="abrirCopiasExcel()" style=" box-shadow: 4px 4px 10px rgb(168, 58, 7);height: 50px; font-weight: bolder; border-color: rgb(255, 0, 85); font-size: 15px; color: rgb(221, 250, 3); border-radius: 25px;background: linear-gradient(
   to bottom,
   rgb(125, 92, 155) 0%,
   rgb(93, 55, 197) 45%,
@@ -559,7 +547,7 @@
  );
 
  ">
-              Enviar a Excel
+              🔎 Revisar Excel
             </button></td>
           <td><textarea></textarea></td>
           <td style="border: 3px solid;"> <textarea></textarea></td>
@@ -677,7 +665,6 @@
           <td style="text-align: center; border-color: aliceblue; border: solid 3px;" class="r3"></td>
         </tr>
 
-        </tr>
         <tr id="fila-titulos-raspas">
           <td><textarea class="etiqueta-grande raspas-oculto" id="tituloNombreRaspas" readonly>Nombre</textarea></td>
           <td>
@@ -1707,7 +1694,6 @@
 
 
       function marcarColumnaGrisFija() {
-        // Empieza justo en la fila donde está "xxxxx" (la fila que tiene la celda r1)
         const filaInicio = document.querySelector("#miTabla td.r1")?.closest("tr");
         if (!filaInicio) return;
 
@@ -1751,7 +1737,6 @@
         aplicarEspaciadoAnulados('0');
         marcarColumnaGrisFija();
         aplicarVisibilidadInfoRaspas();
-        // Bloquear edición de la columna 2 en todas las filas
         document.querySelectorAll("#miTabla tbody tr").forEach(fila => {
           const celdas = fila.querySelectorAll("td");
           const celdaCol2 = celdas[1];
@@ -1761,7 +1746,6 @@
           }
         });
 
-        // Bloquear todas las casillas sin función; quedan libres la columna 3 (Sumar a la Venta/Gastos/Nequi) y la 14 (notas)
         document.querySelectorAll("#miTabla tbody tr").forEach(fila => {
           const celdas = fila.querySelectorAll("td");
           let numColumna = 0;
@@ -1776,11 +1760,10 @@
               }
             }
 
-            numColumna += (span - 1); // si la celda ocupa varias columnas (colspan), saltamos esas
+            numColumna += (span - 1);
           });
         });
 
-        // === GUARDAR/RESTAURAR INPUTS y TEXTAREAS ===
         const campos = document.querySelectorAll("textarea:not(.etiqueta-grande), input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
         const premiosDiv = document.querySelector(".cantidad3");
         const premiosGuardado = localStorage.getItem("premios-total");
@@ -1792,10 +1775,6 @@
         campos.forEach((campo, index) => {
           const key = `input-${index}`;
 
-          // Las celdas bloqueadas (no editables) nunca deben mostrar ni
-          // guardar texto. Si quedó algo guardado de antes (ej. una "A"
-          // que se escapó antes de bloquearse), se borra aquí y ya no
-          // se vuelve a restaurar en las próximas cargas.
           if (campo.classList.contains("celda-bloqueada")) {
             campo.value = "";
             localStorage.setItem(key, "");
@@ -1806,7 +1785,6 @@
           if (valorGuardado !== null) {
             campo.value = valorGuardado;
 
-            // Para inputs que usan dataset.valor
             if (campo.classList.contains("cantidad2") || campo.classList.contains("cantidad3") || campo.classList.contains("cantidad4") || campo.classList.contains("venta")) {
               campo.dataset.valor = valorGuardado.replace(/\D/g, "") || "0";
             }
@@ -1821,15 +1799,13 @@
 
             calcularTotales?.();
             verificarCamposVacios?.();
-            guardarCeldasTd(); // También guarda los <td class="rX">
+            guardarCeldasTd();
 
           });
         });
 
-        // === GUARDAR Y RESTAURAR CELDAS <td class="rX"> ===
         const celdas = document.querySelectorAll("td[class^='r']");
 
-        // Restaurar al cargar
         celdas.forEach((celda, index) => {
           const valor = localStorage.getItem(`td-${index}`);
           if (valor !== null) {
@@ -1845,20 +1821,17 @@
           }
 
         }, 0);
-        // Guardar todos los <td> con clase rX
         function guardarCeldasTd() {
           celdas.forEach((celda, index) => {
             localStorage.setItem(`td-${index}`, celda.textContent.trim());
           });
         }
 
-     // Guardar también al cargar
         guardarCeldasTd();
         sumarInputsImpares?.();
         calcularTotales?.();
         verificarCamposVacios?.();
 
-        // Bloquear símbolos en los inputs de conteo de billetes y monedas
         document.querySelectorAll("input.cantidad").forEach(input => {
           input.addEventListener("input", () => soloNumeros(input));
         });
@@ -1901,8 +1874,6 @@
         });
       }
 
-      // Borra las 4 columnas de premios: nombre de lotería, cantidad,
-      // valor y el resultado (rX) de las 30 filas de premios.
       function borrarInfoPremios() {
         for (let i = 1; i <= 30; i++) {
           const idLoteria = (i === 1) ? 'loteria' : `loteria${i}`;
@@ -1920,9 +1891,6 @@
           localStorage.setItem(idLoteria, '');
         }
 
-        // Sincronizamos localStorage con las mismas claves por índice que usa
-        // el guardado automático, para que al recargar no vuelva a aparecer
-        // lo que acabamos de borrar.
         const campos = document.querySelectorAll("textarea:not(.etiqueta-grande), input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
         campos.forEach((campo, index) => {
           localStorage.setItem(`input-${index}`, campo.value);
@@ -1933,7 +1901,6 @@
           localStorage.setItem(`td-${index}`, celda.textContent.trim());
         });
 
-        // Recalculamos todo, incluida la vista previa si está abierta.
         sumarInputsImpares();
         sumarResultados();
         calcularTotales();
@@ -1960,7 +1927,6 @@
         for (let i = 1; i <= 13; i++) {
           const idJuego = `juego${i}`;
           const inputNombre = document.querySelectorAll(`input#juego1, input[id="${idJuego}"]`);
-          // Buscamos el input por id exacto dentro de toda la tabla
           const nombreEl = document.getElementById(idJuego)
             || [...document.querySelectorAll('input[id^="juego"]')][i - 1];
 
@@ -1970,8 +1936,6 @@
           if (!fila) continue;
 
           const celdas = fila.querySelectorAll('td');
-          // La celda del nombre es la 1ra <td> de la fila, cantidad la 3ra, valor la 4ta
-          // (la 2da es un textarea vacío separador)
           nombreEl.value = '';
 
           const celdaCantidad = celdas[2]?.querySelector('textarea');
@@ -2001,7 +1965,6 @@
           const celdaCantidad = celdas[2]?.querySelector('textarea');
           const celdaValor = celdas[3]?.querySelector('textarea');
 
-          // Cantidad1: solo números, sin formato de miles
           if (celdaCantidad) {
             celdaCantidad.setAttribute('inputmode', 'numeric');
             celdaCantidad.addEventListener('input', () => {
@@ -2013,7 +1976,6 @@
             });
           }
 
-          // Valor1: solo se llena automáticamente al elegir el juego, no editable a mano
           if (celdaValor) {
             celdaValor.readOnly = true;
             celdaValor.classList.add('valor-bloqueado');
@@ -2047,9 +2009,6 @@
         });
       }
 
-      // === MODO ADMIN: editar nombres y valores por defecto de los juegos ===
-
-      // === OCULTAR / MOSTRAR INFO DE RASPAS ===
       let infoRaspasActiva = localStorage.getItem('infoRaspasActiva') === '1';
 
       function aplicarVisibilidadInfoRaspas() {
@@ -2159,7 +2118,6 @@
       }
 
       function mostrarModalPassword(titulo, mensaje, onConfirmar) {
-        // Evita duplicar el modal si ya está abierto
         if (document.getElementById('overlay-password-generico')) return;
 
         const overlay = document.createElement('div');
@@ -2266,7 +2224,7 @@
               Swal.close();
               abrirRegistrosImpresiones();
             });
-          
+
 
             document.getElementById('btnToggleInfoRaspas').addEventListener('click', () => {
               const accion = infoRaspasActiva ? 'DESACTIVAR' : 'ACTIVAR';
@@ -2288,7 +2246,6 @@
             });
           },
           preConfirm: () => {
-            // Leemos los valores AQUÍ, mientras el modal todavía existe en el DOM
             const nombresInputs = document.querySelectorAll('.admin-nombre');
             const valoresInputs = document.querySelectorAll('.admin-valor');
 
@@ -2355,7 +2312,6 @@
         juegos.push(...nuevosJuegos);
         valoresJuegos = nuevosValores;
 
-        // Sincroniza Supabase por completo: borra todo y reinserta la lista actual
         const exito = await guardarTodosLosJuegosSupabase(juegos, valoresJuegos);
 
         if (exito) {
@@ -2376,10 +2332,6 @@
         }
       }
 
-      // Revisa los campos "juego1"..."juego13" de la tabla principal. Si el
-      // nombre que tienen escrito ya no existe en la lista actualizada de
-      // raspas (porque se eliminó desde el Modo Edición), borra ese nombre
-      // y también la cantidad/valor de esa misma fila.
       function limpiarJuegosEliminados() {
         const inputsJuego = document.querySelectorAll('input[id^="juego"]');
 
@@ -2519,12 +2471,12 @@
       }
 
       function soloNumeros(input) {
-  const cursor = input.selectionStart;
-  const antes = input.value.length;
-  input.value = input.value.replace(/[^0-9]/g, '');
-  const despues = input.value.length;
-  input.selectionEnd = cursor - (antes - despues);
-}
+        const cursor = input.selectionStart;
+        const antes = input.value.length;
+        input.value = input.value.replace(/[^0-9]/g, '');
+        const despues = input.value.length;
+        input.selectionEnd = cursor - (antes - despues);
+      }
 
       function formatearMiles(input) {
         const valor = input.value.replace(/\D/g, "");
@@ -2537,9 +2489,9 @@
           input.value = numero.toLocaleString("es-CO");
         }
 
-        detectarFila(input);     // Para actualizar la fila correspondiente
-        calcularTotales();       // Si usas totales globales
-        verificarCamposVacios(); // Si deseas actualizar colores
+        detectarFila(input);
+        calcularTotales();
+        verificarCamposVacios();
       }
 
 
@@ -2568,12 +2520,11 @@
           }
         });
 
-        // Pintar morado claro los inputs cantidad4 si tienen valor
         const inputsCantidad4 = document.querySelectorAll("input.cantidad4");
         inputsCantidad4.forEach(input => {
           const valorNumerico = input.value.replace(/\D/g, "");
           if (valorNumerico !== "") {
-            input.style.backgroundColor = "#d6b3f8"; // morado clarito
+            input.style.backgroundColor = "#d6b3f8";
           } else {
             input.style.backgroundColor = "";
           }
@@ -2680,7 +2631,7 @@
                 li.addEventListener('mousedown', (e) => e.preventDefault());
                 li.onclick = () => {
                   input.value = dep;
-                  localStorage.setItem(input.id || input.name, dep); // ✅ guardar valor
+                  localStorage.setItem(input.id || input.name, dep);
                   sugerencias.style.display = 'none';
 
                   input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -2704,7 +2655,6 @@
             sugerencias.style.display = 'none';
           }, 200);
         });
-        // Ocultar lista si se hace clic fuera
         document.addEventListener('click', e => {
           if (!sugerencias.contains(e.target) && e.target !== input) {
             sugerencias.style.display = 'none';
@@ -2712,16 +2662,12 @@
         });
       }
 
-      // Autocompletado para Nombre1 (lista de juegos)
-      // Este arreglo es solo un valor "de emergencia" por si Supabase tarda;
-      // cargarJuegosDesdeSupabase() lo va a sobreescribir con los datos reales.
       const juegos = [
         "Caramelo", "Cat vs Dog", "Chuza", "Hipica", "Zoo", "Calamar", "Ula Ula",
         "Costelando", "Trono", "Partidazo", "Conejo Suerte", "Elemento", "Uno",
         "Suerte Oro", "Minas", "Chiva", "Rubí", "La Copa"
       ];
 
-      // Objeto que guarda el valor por defecto de cada juego (ej: {"Chuza": 2000})
       let valoresJuegos = {};
 
       async function cargarJuegosDesdeSupabase() {
@@ -2773,7 +2719,6 @@
                   sugerencias.style.display = 'none';
                   input.dispatchEvent(new Event('input', { bubbles: true }));
 
-                  // Autocompletar el Valor1 con lo guardado en el admin
                   const valorGuardado = valoresJuegos[dep];
                   if (valorGuardado !== undefined && valorGuardado > 0) {
                     const fila = input.closest('tr');
@@ -2801,8 +2746,6 @@
               localStorage.setItem(input.id, '');
               input.dispatchEvent(new Event('input', { bubbles: true }));
 
-              // 👉 Si el nombre se borró/quedó inválido, también borramos
-              // Cantidad y Valor de esa misma fila
               const fila = input.closest('tr');
               const celdas = fila?.querySelectorAll('td');
               const celdaCantidad = celdas?.[2]?.querySelector('textarea');
@@ -2840,7 +2783,6 @@
       setupAutoCompleteJuegos('juego12', 'sugerenciasJuego12');
       setupAutoCompleteJuegos('juego13', 'sugerenciasJuego13');
 
-      // ✅ Aplicar a ambos inputs
       setupAutoComplete('loteria', 'sugerencias');
       setupAutoComplete('loteria2', 'sugerencias2');
       setupAutoComplete('loteria3', 'sugerencias3');
@@ -2968,15 +2910,13 @@
           }
         }
 
-        // Mostrar el total en el DIV .cantidad3
         const divCantidad3 = document.querySelector('.cantidad3');
         if (divCantidad3) {
           divCantidad3.textContent = total.toLocaleString('es-CO');
-          divCantidad3.dataset.valor = total.toString(); // Para cálculos futuros
+          divCantidad3.dataset.valor = total.toString();
           localStorage.setItem("premios-total", total.toString());
         }
 
-        // Mostrar también en una celda si deseas (opcional)
         const totalEl = document.getElementById('totalResultado');
         if (totalEl) {
           totalEl.textContent = total.toLocaleString('es-CO');
@@ -2998,9 +2938,9 @@
 
         const campoCantidad5 = document.querySelector(".cantidad5");
         if (campoCantidad5) {
-          campoCantidad5.value = suma.toLocaleString("es-CO"); // si es input
-          campoCantidad5.textContent = suma.toLocaleString("es-CO"); // si es div o span
-          campoCantidad5.dataset.valor = suma.toString(); // si lo usas como dataset
+          campoCantidad5.value = suma.toLocaleString("es-CO");
+          campoCantidad5.textContent = suma.toLocaleString("es-CO");
+          campoCantidad5.dataset.valor = suma.toString();
         }
       }
 
@@ -3012,65 +2952,65 @@
       const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhndXR4YWR1ZWx5ZnBmcnJnd3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMzgwMzQsImV4cCI6MjEwMDgxNDAzNH0.8az-xwyMrVkXeo64CIM_q9dTF5uVP8WDzFbZO5odPHM";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function guardarRegistroImpresion(fechaTicket, contenidoHTML, tipoRegistro) {
-  try {
-    const { error } = await supabaseClient
-      .from('registro_impresiones')
-      .insert({
-        fecha_ticket: fechaTicket || null,
-        contenido_html: contenidoHTML,
-        tipo_registro: tipoRegistro || 'prueba'
-      });
-    if (error) console.error('Error guardando registro de impresión:', error);
-  } catch (err) {
-    console.error('Error guardando registro de impresión:', err);
-  }
-}
-async function eliminarRegistroImpresion(id, fechaFiltroActual) {
-  const { data, error } = await supabaseClient
-    .from('registro_impresiones')
-    .delete()
-    .eq('id', id)
-    .select();
+      async function guardarRegistroImpresion(fechaTicket, contenidoHTML, tipoRegistro) {
+        try {
+          const { error } = await supabaseClient
+            .from('registro_impresiones')
+            .insert({
+              fecha_ticket: fechaTicket || null,
+              contenido_html: contenidoHTML,
+              tipo_registro: tipoRegistro || 'prueba'
+            });
+          if (error) console.error('Error guardando registro de impresión:', error);
+        } catch (err) {
+          console.error('Error guardando registro de impresión:', err);
+        }
+      }
+      async function eliminarRegistroImpresion(id, fechaFiltroActual) {
+        const { data, error } = await supabaseClient
+          .from('registro_impresiones')
+          .delete()
+          .eq('id', id)
+          .select();
 
-  if (error) {
-    Swal.fire({ title: 'Error al eliminar', text: error.message, icon: 'error' });
-    return;
-  }
+        if (error) {
+          Swal.fire({ title: 'Error al eliminar', text: error.message, icon: 'error' });
+          return;
+        }
 
-  if (!data || data.length === 0) {
-    Swal.fire({
-      title: 'No se pudo eliminar',
-      text: 'Probablemente falta el permiso de ELIMINAR (política RLS) en la tabla registro_impresiones.',
-      icon: 'error'
-    });
-    return;
-  }
+        if (!data || data.length === 0) {
+          Swal.fire({
+            title: 'No se pudo eliminar',
+            text: 'Probablemente falta el permiso de ELIMINAR (política RLS) en la tabla registro_impresiones.',
+            icon: 'error'
+          });
+          return;
+        }
 
-  abrirRegistrosImpresiones(fechaFiltroActual);
-}
+        abrirRegistrosImpresiones(fechaFiltroActual);
+      }
 
-async function borrarRegistrosAntiguosImpresiones() {
-  const limite = new Date();
-  limite.setMonth(limite.getMonth() - 2);
-  await supabaseClient
-    .from('registro_impresiones')
-    .delete()
-    .lt('fecha_impresion', limite.toISOString());
-}
+      async function borrarRegistrosAntiguosImpresiones() {
+        const limite = new Date();
+        limite.setMonth(limite.getMonth() - 2);
+        await supabaseClient
+          .from('registro_impresiones')
+          .delete()
+          .lt('fecha_impresion', limite.toISOString());
+      }
 
-async function borrarTodosLosRegistrosImpresiones() {
-  const { error } = await supabaseClient
-    .from('registro_impresiones')
-    .delete()
-    .not('id', 'is', null);
+      async function borrarTodosLosRegistrosImpresiones() {
+        const { error } = await supabaseClient
+          .from('registro_impresiones')
+          .delete()
+          .not('id', 'is', null);
 
-  if (error) {
-    Swal.fire({ title: 'Error al borrar todo', text: error.message, icon: 'error' });
-    return false;
-  }
-  return true;
-}
+        if (error) {
+          Swal.fire({ title: 'Error al borrar todo', text: error.message, icon: 'error' });
+          return false;
+        }
+        return true;
+      }
       async function guardarValorJuegoSupabase(nombre, valor, orden) {
         await supabaseClient
           .from('juegos_config')
@@ -3078,7 +3018,6 @@ async function borrarTodosLosRegistrosImpresiones() {
       }
 
       async function guardarTodosLosJuegosSupabase(listaJuegos, valores) {
-        // Borra TODAS las filas actuales para evitar nombres viejos duplicados
         const { error: errorBorrado } = await supabaseClient
           .from('juegos_config')
           .delete()
@@ -3089,7 +3028,6 @@ async function borrarTodosLosRegistrosImpresiones() {
           return false;
         }
 
-        // Inserta la lista completa y ya limpia
         const filas = listaJuegos.map((nombre, index) => ({
           nombre,
           valor: valores[nombre] || 0,
@@ -3116,85 +3054,188 @@ async function borrarTodosLosRegistrosImpresiones() {
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
-
-
     <script>
-      function confirmarEnvioExcel() {
+
+let temporizadorSync = null;
+function sincronizarEstadoActual() {
+  clearTimeout(temporizadorSync);
+  temporizadorSync = setTimeout(async () => {
+    const html = generarCopiaTablaHTML();
+    const fecha = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
+
+    await supabaseClient
+      .from('estado_actual')
+      .upsert({ id: 1, datos: { html, fecha }, actualizado_en: new Date().toISOString() });
+  }, 2000);
+}
+
+ function generarCopiaTablaHTML() {
+  const original = document.getElementById('miTabla');
+  const clon = original.cloneNode(true);
+
+  clon.querySelectorAll('button, img, .sugerencias').forEach(el => el.remove());
+
+  clon.querySelectorAll('thead th div, thead th span').forEach(el => {
+    if (!el.textContent.trim()) el.remove();
+  });
+
+  clon.querySelectorAll('input, textarea').forEach(campo => {
+    const valor = (campo.value ?? campo.textContent ?? '').trim();
+    const span = document.createElement('span');
+    span.textContent = valor;
+    if (campo.parentElement) campo.replaceWith(span);
+  });
+
+  clon.querySelectorAll('th').forEach(th => {
+    if (!th.textContent.trim() && !th.querySelector('*')) th.remove();
+  });
+
+  clon.querySelectorAll('tbody tr').forEach(fila => {
+    const tieneTexto = fila.textContent.trim().length > 0;
+    if (!tieneTexto) fila.remove();
+  });
+
+  // NUEVO: blindaje real de altura — se aplica DESPUÉS de limpiar todo,
+  // directamente sobre el style de cada celda (esto sí gana siempre,
+  // a diferencia del CSS con !important)
+  clon.style.tableLayout = 'fixed';
+  clon.style.width = '100%';
+
+ clon.querySelectorAll('th, td').forEach(celda => {
+  // La celda ya NO controla el alto, solo el fondo/padding
+  celda.style.setProperty('padding', '0', 'important');
+  celda.style.setProperty('vertical-align', 'middle', 'important');
+  if (celda.tagName === 'TH' && !celda.style.backgroundColor) {
+    celda.style.setProperty('background-color', '#cccccc', 'important');
+  }
+
+  // Envolvemos el contenido real en un div que SÍ recorta
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = `
+    height:20px; max-height:20px; line-height:18px;
+    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    padding:2px 4px; box-sizing:border-box;
+    display:flex; align-items:center; justify-content:center;
+  `;
+  while (celda.firstChild) wrapper.appendChild(celda.firstChild);
+  celda.appendChild(wrapper);
+});
+
+  return clon.outerHTML;
+}
+// === VENTANA "COPIAS EXCEL" (muestra el HTML generado en el servidor) ===
+ async function abrirCopiasExcel(fechaFiltro = '') {
+  await borrarCopiasExcelAntiguas();
+
+  let query = supabaseClient.from('copias_excel').select('*').order('fecha_envio', { ascending: false });
+
+  if (fechaFiltro) {
+    const inicio = new Date(`${fechaFiltro}T00:00:00-05:00`).toISOString();
+    const fin = new Date(`${fechaFiltro}T23:59:59-05:00`).toISOString();
+    query = query.gte('fecha_envio', inicio).lte('fecha_envio', fin);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    Swal.fire({ title: 'Error al cargar copias', text: error.message, icon: 'error' });
+    return;
+  }
+
+ const listaHTML = (data && data.length > 0) ? data.map(reg => {
+    const fechaEnvioLocal = new Date(reg.fecha_envio).toLocaleString('es-CO', {
+      timeZone: 'America/Bogota', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+    });
+    return `
+      <div style="border:5px solid #4CAF50; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
+        <button type="button" class="btn-eliminar-copia" data-id="${reg.id}"
+          style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; cursor:pointer;">✕</button>
+        <p style="font-weight:bold; color:#333; margin:0 0 4px; font-size:13px;">📅 Datos del día: ${reg.fecha_datos}</p>
+ <div class="copia-outer" style="border:1px solid #ccc; background:#000; color:#fff; padding:8px; overflow:hidden; min-width:0; width:100%; box-sizing:border-box;">
+        <div class="copia-inner" style="display:inline-block; width:max-content; transform-origin: top left;">${reg.contenido_html || ''}</div>
+      </div>
+      </div>`;
+  }).join('') : '<p style="text-align:center; color:#888; grid-column: 1/-1;">No hay copias para mostrar.</p>';
+
+ 
+   Swal.fire({
+    title: '📊 Copias Excel',
+    html: `
+<style>
+  .copia-inner table th > div,
+.copia-inner table td > div {
+  height: 20px !important;
+  max-height: 20px !important;
+  font-size: 11px !important;
+  line-height: 18px !important;
+}
+.copia-inner table {
+  width: auto !important;
+}
+</style>
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <input type="date" id="inputFiltroFechaExcel" value="${fechaFiltro}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #999;">
+        <button type="button" id="btnBuscarFechaExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
+        <button type="button" id="btnLimpiarFechaExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
+        <button type="button" id="btnBorrarTodoExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#b71c1c; color:#fff; font-weight:bold; cursor:pointer;">🗑️ Eliminar Copias Excel</button>
+      </div>
+  <div style="display:grid; grid-template-columns: minmax(0, 1fr); gap:12px; max-height:75vh; overflow-y:auto; text-align:left;">${listaHTML}</div>
+    `,
+width: '70%',
+heightAuto: false,
+    showConfirmButton: false,
+    showCloseButton: true,
+ didOpen: () => {
+  function recalcularEscalas() {
+    document.querySelectorAll('.copia-outer').forEach(outer => {
+      const inner = outer.querySelector('.copia-inner');
+      if (!inner) return;
+      const anchoDisponible = outer.clientWidth;
+      const anchoReal = inner.scrollWidth;
+      if (!anchoDisponible || !anchoReal) return;
+      const escala = anchoDisponible / anchoReal;
+      inner.style.transform = `scale(${escala})`;
+      outer.style.height = (inner.scrollHeight * escala) + 'px';
+    });
+  }
+
+  setTimeout(recalcularEscalas, 350);
+
+      document.getElementById('btnBuscarFechaExcel').addEventListener('click', () => {
+        abrirCopiasExcel(document.getElementById('inputFiltroFechaExcel').value);
+      });
+      document.getElementById('btnLimpiarFechaExcel').addEventListener('click', () => abrirCopiasExcel(''));
+
+      document.getElementById('btnBorrarTodoExcel').addEventListener('click', () => {
         Swal.fire({
-          title: '¿Estás seguro?',
-          text: "Se enviarán los datos a Excel.",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Sí, enviar',
-          cancelButtonText: 'Cancelar'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            exportarAExcelReal();
-            Swal.fire({
-              title: '¡Exportado!',
-              text: 'El archivo fue generado correctamente.',
-              icon: 'success',
-              timer: 2000,
-              showConfirmButton: false
-            });
+          title: '¿Eliminar TODAS las copias Excel?', icon: 'warning', showCancelButton: true, reverseButtons: true,
+          confirmButtonText: 'Borrar todo', cancelButtonText: 'Cancelar', confirmButtonColor: '#d33', cancelButtonColor: '#3085d6'
+        }).then(async (r) => {
+          if (r.isConfirmed) {
+            const { error } = await supabaseClient.from('copias_excel').delete().not('id', 'is', null);
+            if (error) { Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); return; }
+            abrirCopiasExcel('');
           }
         });
-      }
+      });
 
-
-      function exportarAExcelReal() {
-        const tabla = document.getElementById("miTabla");
-
-        if (!tabla) {
-          alert("No se encontró la tabla.");
-          return;
-        }
-
-        // Clonar la tabla para no afectar la original
-        const tablaClon = tabla.cloneNode(true);
-
-        // Reemplazar inputs y textareas por su valor
-        const campos = tablaClon.querySelectorAll("input, textarea");
-        campos.forEach(el => {
-          const td = el.closest("td");
-          if (td) {
-            const valor = el.value.trim().replace(/,/g, ""); // quitar comas si el input tiene
-            const span = document.createElement("span");
-            span.textContent = valor;
-            td.replaceChild(span, el);
-          }
+      document.querySelectorAll('.btn-eliminar-copia').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          Swal.fire({
+            title: '¿Eliminar esta copia?', icon: 'warning', showCancelButton: true, reverseButtons: true,
+            confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar', confirmButtonColor: '#d33', cancelButtonColor: '#3085d6'
+          }).then(async (r) => {
+            if (r.isConfirmed) {
+              const { error } = await supabaseClient.from('copias_excel').delete().eq('id', id);
+              if (error) { Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); return; }
+              abrirCopiasExcel(fechaFiltro);
+            }
+          });
         });
-
-        // Quitar comas en celdas de clase .resultado
-        const resultados = tablaClon.querySelectorAll(".resultado");
-        resultados.forEach(td => {
-          if (td.textContent.includes(",")) {
-            td.textContent = td.textContent.replace(/,/g, "").trim();
-          }
-        });
-
-        // Convertir tabla a hoja de cálculo
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.table_to_sheet(tablaClon, { raw: true });
-
-
-        // Forzar que celdas tipo número sean leídas como números
-        Object.keys(ws).forEach(key => {
-          if (key[0] === '!') return; // omitir claves especiales
-          const celda = ws[key];
-          if (typeof celda.v === "string" && /^\d+$/.test(celda.v)) {
-            celda.t = "n"; // tipo número
-            celda.v = parseInt(celda.v, 10);
-          }
-        });
-
-        XLSX.utils.book_append_sheet(wb, ws, "Datos");
-        XLSX.writeFile(wb, "tabla_loterias.xlsx");
-      }
-
+      });
+    }
+  });
+}
 
     </script>
 
@@ -3206,9 +3247,9 @@ async function borrarTodosLosRegistrosImpresiones() {
         const ahora = new Date();
 
         const opciones = {
-          weekday: "short",    // ej: "vie"
+          weekday: "short",
           day: "2-digit",
-          month: "short",      // ej: "jul"
+          month: "short",
           year: "numeric",
           hour: "2-digit",
           minute: "2-digit",
@@ -3222,8 +3263,8 @@ async function borrarTodosLosRegistrosImpresiones() {
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        ponerFechaHora(); // Primera vez
-        setInterval(ponerFechaHora, 1000); // Cada segundo, aunque ya no se muestren
+        ponerFechaHora();
+        setInterval(ponerFechaHora, 1000);
       });
     </script>
 
@@ -3231,7 +3272,6 @@ async function borrarTodosLosRegistrosImpresiones() {
       function sumarConteoBilletes() {
         let total = 0;
 
-        // IDs reales de los INPUTS
         const ids = ["b1", "b2", "b3", "b4", "b5", "b6"];
 
         ids.forEach(id => {
@@ -3248,7 +3288,6 @@ async function borrarTodosLosRegistrosImpresiones() {
         }
       }
 
-      // Escuchar escritura en TODOS los inputs de billetes
       document.querySelectorAll("#b1, #b2, #b3, #b4, #b5, #b6")
         .forEach(input => {
           input.addEventListener("input", sumarConteoBilletes);
@@ -3451,9 +3490,6 @@ async function borrarTodosLosRegistrosImpresiones() {
         try {
           const contImpresion = document.getElementById('contenedor-impresion');
 
-          // Si la vista previa está abierta, la cerramos antes de capturar
-          // la imagen para imprimir, porque el zoom/posición fija de la
-          // vista previa hace que la impresión salga en blanco.
           if (contImpresion.classList.contains('vista-activa')) {
             contImpresion.classList.remove('vista-activa');
             vistaPreviaActiva = false;
@@ -3463,7 +3499,7 @@ async function borrarTodosLosRegistrosImpresiones() {
           contImpresion.style.setProperty('--drag-x', '0px');
           contImpresion.style.setProperty('--drag-y', '0px');
 
-        contImpresion.innerHTML = construirContenidoTicket(fechaImpresion);
+          contImpresion.innerHTML = construirContenidoTicket(fechaImpresion);
           await new Promise(resolve => requestAnimationFrame(resolve));
 
           const tipoRegistro = (window.hayImpresoraConectada && window.hayImpresoraConectada()) ? 'real' : 'prueba';
@@ -3553,19 +3589,20 @@ async function borrarTodosLosRegistrosImpresiones() {
         }
       }
 
-      document.addEventListener('input', (e) => {
-        const campo = e.target;
+document.addEventListener('input', (e) => {
+  const campo = e.target;
 
-        if (campo.id && campo.id.startsWith('loteria')) {
-          const valorLimpio = campo.value.trim();
-          const coincideExacto = loterias.some(
-            dep => dep.toLowerCase() === valorLimpio.toLowerCase()
-          );
-          if (!coincideExacto && valorLimpio !== '') return;
-        }
+  if (campo.id && campo.id.startsWith('loteria')) {
+    const valorLimpio = campo.value.trim();
+    const coincideExacto = loterias.some(
+      dep => dep.toLowerCase() === valorLimpio.toLowerCase()
+    );
+    if (!coincideExacto && valorLimpio !== '') return;
+  }
 
-        actualizarVistaPreviaSiActiva();
-      });
+  actualizarVistaPreviaSiActiva();
+  sincronizarEstadoActual();
+});
 
       function setupArrastreVistaPrevia() {
         const cont = document.getElementById('contenedor-impresion');
@@ -3627,7 +3664,7 @@ async function borrarTodosLosRegistrosImpresiones() {
     import { CatPrinter } from "https://cdn.jsdelivr.net/npm/@opuu/cat-printer/+esm";
 
     let printerGato = null;
-window.hayImpresoraConectada = function () {
+    window.hayImpresoraConectada = function () {
       return !!(printerGato && printerGato.isConnected());
     };
     window.conectarImpresoraGato = async function () {
@@ -3770,8 +3807,6 @@ window.hayImpresoraConectada = function () {
 
           img.src = canvas.toDataURL('image/png');
         } catch (err) {
-          // Si el navegador bloquea el canvas (CORS), dejamos la imagen
-          // original pero con un fondo blanco puesto por CSS como respaldo.
           console.warn('No se pudo solidificar la imagen de Stitch:', err);
           img.classList.add('stitch-fondo-blanco');
         }
@@ -3784,37 +3819,37 @@ window.hayImpresoraConectada = function () {
 
     document.addEventListener('DOMContentLoaded', solidificarImagenStitch);
 
-async function abrirRegistrosImpresiones(fechaFiltro = '') {
-  await borrarRegistrosAntiguosImpresiones();
+    async function abrirRegistrosImpresiones(fechaFiltro = '') {
+      await borrarRegistrosAntiguosImpresiones();
 
-  let query = supabaseClient
-    .from('registro_impresiones')
-    .select('*')
-    .order('fecha_impresion', { ascending: false });
+      let query = supabaseClient
+        .from('registro_impresiones')
+        .select('*')
+        .order('fecha_impresion', { ascending: false });
 
-  if (fechaFiltro) {
-    const inicio = new Date(`${fechaFiltro}T00:00:00-05:00`).toISOString();
-    const fin = new Date(`${fechaFiltro}T23:59:59-05:00`).toISOString();
-    query = query.gte('fecha_impresion', inicio).lte('fecha_impresion', fin);
-  }
+      if (fechaFiltro) {
+        const inicio = new Date(`${fechaFiltro}T00:00:00-05:00`).toISOString();
+        const fin = new Date(`${fechaFiltro}T23:59:59-05:00`).toISOString();
+        query = query.gte('fecha_impresion', inicio).lte('fecha_impresion', fin);
+      }
 
-  const { data, error } = await query;
+      const { data, error } = await query;
 
-  if (error) {
-    Swal.fire({ title: 'Error al cargar registros', text: error.message, icon: 'error' });
-    return;
-  }
+      if (error) {
+        Swal.fire({ title: 'Error al cargar registros', text: error.message, icon: 'error' });
+        return;
+      }
 
-  const listaHTML = (data && data.length > 0)
-    ? data.map(reg => {
-        const fechaLocal = new Date(reg.fecha_impresion).toLocaleString('es-CO', {
-          timeZone: 'America/Bogota',
-          weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
-          hour: '2-digit', minute: '2-digit', hour12: true
-        });
-        const esReal = reg.tipo_registro === 'real';
-        const etiquetaTipo = esReal ? 'Registro Real' : 'Registro Prueba';
-       return `
+      const listaHTML = (data && data.length > 0)
+        ? data.map(reg => {
+          const fechaLocal = new Date(reg.fecha_impresion).toLocaleString('es-CO', {
+            timeZone: 'America/Bogota',
+            weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: true
+          });
+          const esReal = reg.tipo_registro === 'real';
+          const etiquetaTipo = esReal ? 'Registro Real' : 'Registro Prueba';
+          return `
           <div style="border:5px solid #FF5722; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
             <button type="button" class="btn-eliminar-registro" data-id="${reg.id}"
               style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; font-size:14px; cursor:pointer; line-height:1; z-index:10;">
@@ -3826,12 +3861,12 @@ async function abrirRegistrosImpresiones(fechaFiltro = '') {
               ${reg.contenido_html}
             </div>
           </div>`;
-      }).join('')
-    : '<p style="text-align:center; color:#888; grid-column: 1 / -1;">No hay registros para mostrar.</p>';
+        }).join('')
+        : '<p style="text-align:center; color:#888; grid-column: 1 / -1;">No hay registros para mostrar.</p>';
 
-  Swal.fire({
-    title: '📋 Registros de Impresiones',
-    html: `
+      Swal.fire({
+        title: '📋 Registros de Impresiones',
+        html: `
       <div style="display:flex; gap:8px; margin-bottom:14px;">
         <input type="date" id="inputFiltroFecha" value="${fechaFiltro}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #999;">
         <button type="button" id="btnBuscarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
@@ -3840,68 +3875,87 @@ async function abrirRegistrosImpresiones(fechaFiltro = '') {
       </div>
       <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; max-height:450px; overflow-y:auto; text-align:left;">${listaHTML}</div>
     `,
-    width: '95%',
-    showConfirmButton: false,
-    showCloseButton: true,
-    didOpen: () => {
-      document.getElementById('btnBuscarFecha').addEventListener('click', () => {
-        const valor = document.getElementById('inputFiltroFecha').value;
-        abrirRegistrosImpresiones(valor);
-      });
-      document.getElementById('btnLimpiarFecha').addEventListener('click', () => {
-        abrirRegistrosImpresiones('');
-      });
-
-      document.getElementById('btnBorrarTodoRegistros').addEventListener('click', () => {
-        Swal.fire({
-          title: '¿Borrar TODOS los registros?',
-          text: 'Esta acción no se puede deshacer.',
-          icon: 'warning',
-          showCancelButton: true,
-          reverseButtons: true,
-          confirmButtonText: 'Borrar todo',
-          cancelButtonText: 'Cancelar',
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#3085d6'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            borrarTodosLosRegistrosImpresiones().then((exito) => {
-              if (exito) abrirRegistrosImpresiones('');
-            });
-          }
-        });
-      });
-
-      document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-id');
-          Swal.fire({
-            title: '¿Eliminar este registro?',
-            text: 'Esta acción no se puede deshacer.',
-            icon: 'warning',
-            showCancelButton: true,
-            reverseButtons: true,
-            confirmButtonText: 'Eliminar',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              eliminarRegistroImpresion(id, fechaFiltro);
-            }
+        width: '95%',
+        showConfirmButton: false,
+        showCloseButton: true,
+        didOpen: () => {
+          document.getElementById('btnBuscarFecha').addEventListener('click', () => {
+            const valor = document.getElementById('inputFiltroFecha').value;
+            abrirRegistrosImpresiones(valor);
           });
-        });
+          document.getElementById('btnLimpiarFecha').addEventListener('click', () => {
+            abrirRegistrosImpresiones('');
+          });
+
+          document.getElementById('btnBorrarTodoRegistros').addEventListener('click', () => {
+            Swal.fire({
+              title: '¿Borrar TODOS los registros?',
+              text: 'Esta acción no se puede deshacer.',
+              icon: 'warning',
+              showCancelButton: true,
+              reverseButtons: true,
+              confirmButtonText: 'Borrar todo',
+              cancelButtonText: 'Cancelar',
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#3085d6'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                borrarTodosLosRegistrosImpresiones().then((exito) => {
+                  if (exito) abrirRegistrosImpresiones('');
+                });
+              }
+            });
+          });
+
+          document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const id = btn.getAttribute('data-id');
+              Swal.fire({
+                title: '¿Eliminar este registro?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                reverseButtons: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  eliminarRegistroImpresion(id, fechaFiltro);
+                }
+              });
+            });
+          });
+        }
       });
     }
-  });
-}
 
+    async function borrarCopiasExcelAntiguas() {
+  // Buscamos la fecha más reciente que existe en la tabla
+  const { data: masReciente, error: errorReciente } = await supabaseClient
+    .from('copias_excel')
+    .select('fecha_datos')
+    .order('fecha_datos', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (errorReciente || !masReciente) return; // tabla vacía, nada que borrar
+
+  const limite = new Date();
+  limite.setMonth(limite.getMonth() - 1);
+  const limiteStr = limite.toISOString().split('T')[0]; // YYYY-MM-DD
+
+  // Borra todo lo de más de 1 mes, PERO nunca la fecha más reciente
+  // (así siempre queda al menos un día, nunca se vacía la tabla)
+  await supabaseClient
+    .from('copias_excel')
+    .delete()
+    .lt('fecha_datos', limiteStr)
+    .neq('fecha_datos', masReciente.fecha_datos);
+}
   </script>
 
-  
-</body>
-
-</html>
 
 </body>
 

@@ -321,19 +321,19 @@ td[class^="r"]:not([class*="resultado"]) {
   color: #555555 !important;
 }
 
-table th:nth-child(18),
-table td:nth-child(18) {
+#miTabla th:nth-child(18),
+#miTabla td:nth-child(18) {
   width: 100px !important;
   min-width: 100px !important;
 }
-table td:nth-child(2) textarea {
+#miTabla td:nth-child(2) textarea {
   pointer-events: none;
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-table th:nth-child(2),
-table td:nth-child(2) {
+#miTabla th:nth-child(2),
+#miTabla td:nth-child(2) {
   width: 0 !important;
   min-width: 0 !important;
   max-width: 0 !important;
@@ -391,3 +391,4 @@ table td:nth-child(2) {
   height: var(--alto-fila-raspas) !important;
   line-height: var(--alto-fila-raspas) !important;
 }
+
