@@ -3894,18 +3894,33 @@ document.addEventListener('input', (e) => {
         }).join('')
         : '<p style="text-align:center; color:#888; grid-column: 1 / -1;">No hay registros para mostrar.</p>';
 
+     
       Swal.fire({
         title: '📋 Registros de Impresiones',
         html: `
+<style>
+.popup-registros-impresiones {
+  max-height: 95vh;
+  height: 70vh;
+  resize: both !important;
+  overflow: auto !important;
+  min-width: 400px;
+  min-height: 200px;
+}
+</style>
       <div style="display:flex; gap:8px; margin-bottom:14px;">
         <input type="date" id="inputFiltroFecha" value="${fechaFiltro}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #999;">
         <button type="button" id="btnBuscarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
         <button type="button" id="btnLimpiarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
         <button type="button" id="btnBorrarTodoRegistros" style="padding:8px 16px; border:none; border-radius:6px; background:#b71c1c; color:#fff; font-weight:bold; cursor:pointer;">🗑️ Borrar Todo</button>
       </div>
-      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; max-height:450px; overflow-y:auto; text-align:left;">${listaHTML}</div>
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; max-height:75vh; overflow-y:auto; text-align:left;">${listaHTML}</div>
     `,
         width: '95%',
+        heightAuto: false,
+        customClass: {
+          popup: 'popup-registros-impresiones'
+        },
         showConfirmButton: false,
         showCloseButton: true,
         didOpen: () => {
