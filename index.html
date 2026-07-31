@@ -267,7 +267,7 @@
     <table id="miTabla">
       <thead>
         <tr>
-          <th style="width: 170px; background-color: yellow; border: 3px solid;color: black;">$ Total Venta
+          <th style="width: 170px; background-color: yellow; border: 3px solid;color: black;">$$ Total Venta
           </th>
           <th style="background-color: white; width: 30px;"></th>
           <th style="border: 3px solid; color: black;">Sumar a la Venta / Gastos / Nequi</th>
@@ -4440,12 +4440,80 @@ document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
 
   // Borra todo lo de más de 1 mes, PERO nunca la fecha más reciente
   // (así siempre queda al menos un día, nunca se vacía la tabla)
-  await supabaseClient
+ await supabaseClient
     .from('copias_excel')
     .delete()
     .lt('fecha_datos', limiteStr)
     .neq('fecha_datos', masReciente.fecha_datos);
 }
+  </script>
+
+  <script>
+    // === Detección automática de nuevas actualizaciones desplegadas en Vercel ===
+    let etagVersionActual = null;
+    const INTERVALO_CHEQUEO_VERSION = 3 * 60 * 1000; // cada 3 minutos
+
+    async function obtenerEtagActual() {
+      try {
+        const resp = await fetch(window.location.href, { method: 'GET', cache: 'no-store' });
+        return resp.headers.get('etag') || resp.headers.get('last-modified');
+      } catch (err) {
+        return null;
+      }
+    }
+
+    async function inicializarDeteccionActualizaciones() {
+      etagVersionActual = await obtenerEtagActual();
+      setInterval(chequearNuevaVersion, INTERVALO_CHEQUEO_VERSION);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') chequearNuevaVersion();
+      });
+      window.addEventListener('online', chequearNuevaVersion);
+    }
+
+    async function chequearNuevaVersion() {
+      const etagNuevo = await obtenerEtagActual();
+      if (etagNuevo && etagVersionActual && etagNuevo !== etagVersionActual) {
+        mostrarAvisoNuevaVersion();
+      }
+    }
+
+    function mostrarAvisoNuevaVersion() {
+      if (document.getElementById('aviso-nueva-version')) return;
+
+      const aviso = document.createElement('div');
+      aviso.id = 'aviso-nueva-version';
+      aviso.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(to right, #0D47A1, #1976D2);
+        color: #fff;
+        padding: 14px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        z-index: 5000000;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 15px;
+        font-weight: bold;
+      `;
+      aviso.innerHTML = `
+        <span>🔄 Hay una actualización disponible</span>
+        <button id="btnActualizarAhora" style="padding:8px 16px; border:none; border-radius:8px; background:#fff; color:#0D47A1; font-weight:bold; cursor:pointer;">Actualizar</button>
+      `;
+      document.body.appendChild(aviso);
+
+      document.getElementById('btnActualizarAhora').addEventListener('click', () => {
+        location.reload();
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', inicializarDeteccionActualizaciones);
   </script>
 
 
