@@ -2138,7 +2138,7 @@ function pedirClaveAdmin() {
         }, 1600);
       }
 
-      function mostrarModalPassword(titulo, mensaje, onConfirmar) {
+      function mostrarModalPassword(titulo, mensaje, onConfirmar, onCancelar) {
         if (document.getElementById('overlay-password-generico')) return;
 
         const overlay = document.createElement('div');
@@ -2173,8 +2173,13 @@ function pedirClaveAdmin() {
         const errorTxt = overlay.querySelector('#error-password-generico');
         input.focus();
 
-        function cerrar() {
+    function cerrar() {
           overlay.remove();
+        }
+
+        function cancelar() {
+          cerrar();
+          if (onCancelar) onCancelar();
         }
 
         function intentarConfirmar() {
@@ -2188,7 +2193,7 @@ function pedirClaveAdmin() {
           }
         }
 
-        overlay.querySelector('#btn-cancelar-generico').addEventListener('click', cerrar);
+        overlay.querySelector('#btn-cancelar-generico').addEventListener('click', cancelar);
         overlay.querySelector('#btn-aceptar-generico').addEventListener('click', intentarConfirmar);
         input.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') intentarConfirmar();
@@ -3027,7 +3032,7 @@ function pedirClaveAdmin() {
           console.error('Error guardando registro de impresión:', err);
         }
       }
-      async function eliminarRegistroImpresion(id, fechaFiltroActual) {
+   async function eliminarRegistroImpresion(id, fechaFiltroActual) {
         const { data, error } = await supabaseClient
           .from('registro_impresiones')
           .delete()
@@ -3035,16 +3040,18 @@ function pedirClaveAdmin() {
           .select();
 
         if (error) {
-          Swal.fire({ title: 'Error al eliminar', text: error.message, icon: 'error' });
+          await Swal.fire({ title: 'Error al eliminar', text: error.message, icon: 'error' });
+          abrirRegistrosImpresiones(fechaFiltroActual);
           return;
         }
 
      if (!data || data.length === 0) {
-          Swal.fire({
+          await Swal.fire({
             title: 'No se pudo eliminar',
             text: 'Probablemente falta el permiso de ELIMINAR (política RLS) en la tabla registro_impresiones.',
             icon: 'error'
           });
+          abrirRegistrosImpresiones(fechaFiltroActual);
           return;
         }
 
@@ -3332,7 +3339,7 @@ const etiquetaOrigen = esAutomatico ? '🟢 Automático (1am)' : (esForzado ? '�
         <span style="position:absolute; top:6px; left:10px; font-size:14px; font-weight:bold; color:${colorBorde};">${etiquetaOrigen}</span>
         <button type="button" class="btn-eliminar-copia" data-id="${reg.id}"
           style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; cursor:pointer;">✕</button>
-      <p style="font-weight:bold; color:#333; margin:0 0 4px; font-size:15px; background:#C374E3; padding:5px 8px; border-radius:5px; width:16%; margin-bottom:10px;">📅 Datos del día Trabajado: ${reg.fecha_datos}</p>
+      <p style="font-weight:bold; color:#333; margin:0 0 4px; font-size:15px; background:#C374E3; padding:5px 8px; border-radius:5px; width:18%; margin-bottom:10px;">📅 Datos del día Trabajado: ${reg.fecha_datos}</p>
        
 <div class="copia-outer" style="position:relative; border:1px solid #ccc; background:#000; color:#fff; padding:8px; overflow:hidden; min-width:0; width:100%; box-sizing:border-box;">
         <span style="position:absolute; top:6px; right:150px; z-index:5; font-size:8px; font-weight:bold; color:#fff;background: rgba(0, 180, 200, 0.75); padding:4px 12px; border-radius:6px; white-space:nowrap;">🕒 ${fechaEnvioLocal}</span>
@@ -3364,6 +3371,10 @@ const etiquetaOrigen = esAutomatico ? '🟢 Automático (1am)' : (esForzado ? '�
   overflow: auto !important;
   min-width: 400px;
   min-height: 300px;
+}
+
+.popup-copias-excel .swal2-close {
+  color: #ff0000 !important;
 }
 </style>
      <div style="text-align:right; font-weight:bold; font-size:15px; color:#333; margin-bottom:8px;">
@@ -4159,6 +4170,10 @@ document.addEventListener('input', (e) => {
   );
   clip-path: polygon(100% 0, 100% 100%, 0 100%);
 }
+
+.popup-registros-impresiones .swal2-close {
+  color: #ff0000 !important;
+}
 </style>
       <div style="text-align:right; font-weight:bold; font-size:15px; color:#333; margin-bottom:8px;">
         📋 Total registros mostrados: ${data ? data.length : 0}
@@ -4191,7 +4206,7 @@ document.addEventListener('input', (e) => {
             abrirRegistrosImpresiones('');
           });
 
-        document.getElementById('btnBorrarTodoRegistros').addEventListener('click', () => {
+       document.getElementById('btnBorrarTodoRegistros').addEventListener('click', () => {
             Swal.fire({
               title: '¿Borrar TODOS los registros?',
               text: 'Esta acción no se puede deshacer.',
@@ -4209,14 +4224,20 @@ document.addEventListener('input', (e) => {
                     if (exito) {
                       mostrarToastExito('Se borraron todos los registros exitosamente');
                       abrirRegistrosImpresiones('');
+                    } else {
+                      abrirRegistrosImpresiones(fechaFiltro);
                     }
                   });
+                }, () => {
+                  abrirRegistrosImpresiones(fechaFiltro);
                 });
+              } else {
+                abrirRegistrosImpresiones(fechaFiltro);
               }
             });
           });
 
-  document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
+document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
             btn.addEventListener('click', () => {
               const id = btn.getAttribute('data-id');
               Swal.fire({
@@ -4233,7 +4254,11 @@ document.addEventListener('input', (e) => {
                 if (result.isConfirmed) {
                   mostrarModalPassword('Confirmar Borrado', 'Digita la Contraseña para ELIMINAR este registro', () => {
                     eliminarRegistroImpresion(id, fechaFiltro);
+                  }, () => {
+                    abrirRegistrosImpresiones(fechaFiltro);
                   });
+                } else {
+                  abrirRegistrosImpresiones(fechaFiltro);
                 }
               });
             });
