@@ -2978,7 +2978,7 @@
           return;
         }
 
-        if (!data || data.length === 0) {
+     if (!data || data.length === 0) {
           Swal.fire({
             title: 'No se pudo eliminar',
             text: 'Probablemente falta el permiso de ELIMINAR (política RLS) en la tabla registro_impresiones.',
@@ -2987,6 +2987,7 @@
           return;
         }
 
+        mostrarToastExito('Se eliminó el registro exitosamente');
         abrirRegistrosImpresiones(fechaFiltroActual);
       }
 
@@ -3146,7 +3147,7 @@ function sincronizarEstadoActual() {
       timeZone: 'America/Bogota', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
     });
     return `
-      <div style="border:5px solid #4CAF50; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
+      <div style="border:5px solid #f44336; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
         <button type="button" class="btn-eliminar-copia" data-id="${reg.id}"
           style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; cursor:pointer;">✕</button>
         <p style="font-weight:bold; color:#333; margin:0 0 4px; font-size:13px;">📅 Datos del día: ${reg.fecha_datos}</p>
@@ -3171,6 +3172,15 @@ function sincronizarEstadoActual() {
 .copia-inner table {
   width: auto !important;
 }
+
+.popup-copias-excel {
+  max-height: 95vh;
+  height: 90vh;
+  resize: both !important;
+  overflow: auto !important;
+  min-width: 400px;
+  min-height: 300px;
+}
 </style>
       <div style="display:flex; gap:8px; margin-bottom:14px;">
         <input type="date" id="inputFiltroFechaExcel" value="${fechaFiltro}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #999;">
@@ -3178,10 +3188,13 @@ function sincronizarEstadoActual() {
         <button type="button" id="btnLimpiarFechaExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
         <button type="button" id="btnBorrarTodoExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#b71c1c; color:#fff; font-weight:bold; cursor:pointer;">🗑️ Eliminar Copias Excel</button>
       </div>
-  <div style="display:grid; grid-template-columns: minmax(0, 1fr); gap:12px; max-height:75vh; overflow-y:auto; text-align:left;">${listaHTML}</div>
+  <div style="display:grid; grid-template-columns: minmax(0, 1fr); gap:12px; max-height:80vh; overflow-y:auto; text-align:left;">${listaHTML}</div>
     `,
-width: '70%',
+width: '95%',
 heightAuto: false,
+customClass: {
+  popup: 'popup-copias-excel'
+},
     showConfirmButton: false,
     showCloseButton: true,
  didOpen: () => {
@@ -3198,37 +3211,53 @@ heightAuto: false,
     });
   }
 
-  setTimeout(recalcularEscalas, 350);
+ setTimeout(recalcularEscalas, 350);
+
+      let temporizadorResizePopup = null;
+      const popupEl = document.querySelector('.popup-copias-excel');
+      if (popupEl && window.ResizeObserver) {
+        const observadorResizePopup = new ResizeObserver(() => {
+          clearTimeout(temporizadorResizePopup);
+          temporizadorResizePopup = setTimeout(recalcularEscalas, 80);
+        });
+        observadorResizePopup.observe(popupEl);
+      }
 
       document.getElementById('btnBuscarFechaExcel').addEventListener('click', () => {
         abrirCopiasExcel(document.getElementById('inputFiltroFechaExcel').value);
       });
       document.getElementById('btnLimpiarFechaExcel').addEventListener('click', () => abrirCopiasExcel(''));
 
-      document.getElementById('btnBorrarTodoExcel').addEventListener('click', () => {
+    document.getElementById('btnBorrarTodoExcel').addEventListener('click', () => {
         Swal.fire({
           title: '¿Eliminar TODAS las copias Excel?', icon: 'warning', showCancelButton: true, reverseButtons: true,
           confirmButtonText: 'Borrar todo', cancelButtonText: 'Cancelar', confirmButtonColor: '#d33', cancelButtonColor: '#3085d6'
-        }).then(async (r) => {
+        }).then((r) => {
           if (r.isConfirmed) {
-            const { error } = await supabaseClient.from('copias_excel').delete().not('id', 'is', null);
-            if (error) { Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); return; }
-            abrirCopiasExcel('');
+           mostrarModalPassword('Confirmar Borrado', 'Digita la Contraseña para ELIMINAR TODAS las copias Excel', async () => {
+              const { error } = await supabaseClient.from('copias_excel').delete().not('id', 'is', null);
+              if (error) { Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); return; }
+              mostrarToastExito('Se borraron todas las copias exitosamente');
+              abrirCopiasExcel('');
+            });
           }
         });
       });
 
-      document.querySelectorAll('.btn-eliminar-copia').forEach(btn => {
+   document.querySelectorAll('.btn-eliminar-copia').forEach(btn => {
         btn.addEventListener('click', () => {
           const id = btn.getAttribute('data-id');
           Swal.fire({
             title: '¿Eliminar esta copia?', icon: 'warning', showCancelButton: true, reverseButtons: true,
             confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar', confirmButtonColor: '#d33', cancelButtonColor: '#3085d6'
-          }).then(async (r) => {
+          }).then((r) => {
             if (r.isConfirmed) {
-              const { error } = await supabaseClient.from('copias_excel').delete().eq('id', id);
-              if (error) { Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); return; }
-              abrirCopiasExcel(fechaFiltro);
+            mostrarModalPassword('Confirmar Borrado', 'Digita la Contraseña para ELIMINAR esta copia', async () => {
+                const { error } = await supabaseClient.from('copias_excel').delete().eq('id', id);
+                if (error) { Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); return; }
+                mostrarToastExito('Se eliminó la copia Excel exitosamente');
+                abrirCopiasExcel(fechaFiltro);
+              });
             }
           });
         });
@@ -3887,7 +3916,7 @@ document.addEventListener('input', (e) => {
             abrirRegistrosImpresiones('');
           });
 
-          document.getElementById('btnBorrarTodoRegistros').addEventListener('click', () => {
+        document.getElementById('btnBorrarTodoRegistros').addEventListener('click', () => {
             Swal.fire({
               title: '¿Borrar TODOS los registros?',
               text: 'Esta acción no se puede deshacer.',
@@ -3900,14 +3929,19 @@ document.addEventListener('input', (e) => {
               cancelButtonColor: '#3085d6'
             }).then((result) => {
               if (result.isConfirmed) {
-                borrarTodosLosRegistrosImpresiones().then((exito) => {
-                  if (exito) abrirRegistrosImpresiones('');
+                mostrarModalPassword('Confirmar Borrado', 'Digita la Contraseña para BORRAR TODOS los registros', () => {
+                  borrarTodosLosRegistrosImpresiones().then((exito) => {
+                    if (exito) {
+                      mostrarToastExito('Se borraron todos los registros exitosamente');
+                      abrirRegistrosImpresiones('');
+                    }
+                  });
                 });
               }
             });
           });
 
-          document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
+    document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
             btn.addEventListener('click', () => {
               const id = btn.getAttribute('data-id');
               Swal.fire({
@@ -3922,7 +3956,9 @@ document.addEventListener('input', (e) => {
                 cancelButtonColor: '#3085d6'
               }).then((result) => {
                 if (result.isConfirmed) {
-                  eliminarRegistroImpresion(id, fechaFiltro);
+                  mostrarModalPassword('Confirmar Borrado', 'Digita la Contraseña para ELIMINAR este registro', () => {
+                    eliminarRegistroImpresion(id, fechaFiltro);
+                  });
                 }
               });
             });
