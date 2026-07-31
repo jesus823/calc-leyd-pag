@@ -185,13 +185,79 @@
       }
     }
 
-    .gris-fijo {
+   .gris-fijo {
       background-color: #1c1c1c !important;
     }
 
     td:has(.gris-fijo) {
       padding: 0 !important;
       background-color: #1c1c1c !important;
+    }
+
+    /* === Campo de fecha personalizado: mismo look en PC y celular === */
+    .campo-fecha-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-fecha-custom {
+      width: 100%;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      background: transparent;
+      position: relative;
+      z-index: 2;
+    }
+
+    .input-fecha-custom::-webkit-datetime-edit,
+    .input-fecha-custom::-webkit-datetime-edit-fields-wrapper,
+    .input-fecha-custom::-webkit-datetime-edit-text,
+    .input-fecha-custom::-webkit-datetime-edit-month-field,
+    .input-fecha-custom::-webkit-datetime-edit-day-field,
+    .input-fecha-custom::-webkit-datetime-edit-year-field {
+      color: transparent;
+    }
+
+    .input-fecha-custom::-webkit-calendar-picker-indicator {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .fecha-overlay-texto {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      font-weight: bold;
+      color: #999;
+      pointer-events: none;
+      z-index: 3;
+      white-space: nowrap;
+    }
+
+    .fecha-overlay-texto.tiene-valor {
+      color: #333;
+    }
+
+    .fecha-overlay-icono {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      z-index: 3;
+      cursor: pointer;
+      pointer-events: auto;
     }
   </style>
 </head>
@@ -2579,6 +2645,40 @@ function pedirClaveAdmin() {
         });
       }
 
+    // === Campo de fecha personalizado: icono + dd/mm/aaaa en PC y celular ===
+      function abrirSelectorFecha(id) {
+        const input = document.getElementById(id);
+        if (!input) return;
+        if (typeof input.showPicker === 'function') {
+          try { input.showPicker(); return; } catch (e) {}
+        }
+        input.focus();
+        input.click();
+      }
+
+      function actualizarOverlayFecha(id) {
+        const input = document.getElementById(id);
+        const overlay = document.querySelector(`.fecha-overlay-texto[data-for="${id}"]`);
+        if (!input || !overlay) return;
+
+        if (input.value) {
+          const [anio, mes, dia] = input.value.split('-');
+          overlay.textContent = `${dia}/${mes}/${anio}`;
+          overlay.classList.add('tiene-valor');
+        } else {
+          overlay.textContent = 'dd/mm/aaaa';
+          overlay.classList.remove('tiene-valor');
+        }
+      }
+
+      function inicializarCampoFecha(id) {
+        const input = document.getElementById(id);
+        if (!input) return;
+        actualizarOverlayFecha(id);
+        input.addEventListener('input', () => actualizarOverlayFecha(id));
+        input.addEventListener('change', () => actualizarOverlayFecha(id));
+      }
+
       let nivelEspaciadoActual = '0';
       function pedirEspaciadoAnulados() {
         const nivelGuardado = nivelEspaciadoActual;
@@ -3382,7 +3482,16 @@ const etiquetaOrigen = esAutomatico ? '🟢 Automático (1am)' : (esForzado ? '�
       </div>
 
       <div style="display:flex; gap:8px; margin-bottom:14px;">
-        <input type="date" id="inputFiltroFechaExcel" value="${fechaFiltro}" style="flex:1; padding:10px; border-radius:6px; border:1px solid #999; font-size:20px; color:#999;">
+        <div class="campo-fecha-wrapper">
+          <input type="date" id="inputFiltroFechaExcel" value="${fechaFiltro}" class="input-fecha-custom" style="padding:10px; border-radius:6px; border:1px solid #999; font-size:20px;">
+          <span class="fecha-overlay-texto" data-for="inputFiltroFechaExcel">dd/mm/aaaa</span>
+          <svg class="fecha-overlay-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onclick="abrirSelectorFecha('inputFiltroFechaExcel')">
+            <rect x="3" y="5" width="18" height="16" rx="2" stroke="#555" stroke-width="2"/>
+            <path d="M3 10H21" stroke="#555" stroke-width="2"/>
+            <path d="M8 3V7" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 3V7" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
         <button type="button" id="btnBuscarFechaExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
         <button type="button" id="btnLimpiarFechaExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
         <button type="button" id="btnBorrarTodoExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#b71c1c; color:#fff; font-weight:bold; cursor:pointer;">🗑️ Eliminar Copias Excel</button>
@@ -3401,6 +3510,7 @@ customClass: {
     },
  didOpen: () => {
   agregarManijaResizeTactil('#FF9800');
+  inicializarCampoFecha('inputFiltroFechaExcel');
   function recalcularEscalas() {
     document.querySelectorAll('.copia-outer').forEach(outer => {
       const inner = outer.querySelector('.copia-inner');
@@ -4178,8 +4288,17 @@ document.addEventListener('input', (e) => {
       <div style="text-align:right; font-weight:bold; font-size:15px; color:#333; margin-bottom:8px;">
         📋 Total registros mostrados: ${data ? data.length : 0}
       </div>
-    <div style="display:flex; gap:8px; margin-bottom:14px;">
-        <input type="date" id="inputFiltroFecha" value="${fechaFiltro}" style="flex:1; padding:10px; border-radius:6px; border:1px solid #999; font-size:20px; color:#999;">
+   <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <div class="campo-fecha-wrapper">
+          <input type="date" id="inputFiltroFecha" value="${fechaFiltro}" class="input-fecha-custom" style="padding:10px; border-radius:6px; border:1px solid #999; font-size:20px;">
+          <span class="fecha-overlay-texto" data-for="inputFiltroFecha">dd/mm/aaaa</span>
+          <svg class="fecha-overlay-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" onclick="abrirSelectorFecha('inputFiltroFecha')">
+            <rect x="3" y="5" width="18" height="16" rx="2" stroke="#555" stroke-width="2"/>
+            <path d="M3 10H21" stroke="#555" stroke-width="2"/>
+            <path d="M8 3V7" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 3V7" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
         <button type="button" id="btnBuscarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
         <button type="button" id="btnLimpiarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
         <button type="button" id="btnBorrarTodoRegistros" style="padding:8px 16px; border:none; border-radius:6px; background:#b71c1c; color:#fff; font-weight:bold; cursor:pointer;">🗑️ Borrar Todo</button>
@@ -4196,8 +4315,9 @@ document.addEventListener('input', (e) => {
         willClose: () => {
           limpiarManijaResizeTactil();
         },
-        didOpen: () => {
+       didOpen: () => {
           agregarManijaResizeTactil('#FF5722');
+          inicializarCampoFecha('inputFiltroFecha');
           document.getElementById('btnBuscarFecha').addEventListener('click', () => {
             const valor = document.getElementById('inputFiltroFecha').value;
             abrirRegistrosImpresiones(valor);
