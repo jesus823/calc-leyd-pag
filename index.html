@@ -3876,17 +3876,18 @@ document.addEventListener('input', (e) => {
             weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
             hour: '2-digit', minute: '2-digit', hour12: true
           });
-          const esReal = reg.tipo_registro === 'real';
+        const esReal = reg.tipo_registro === 'real';
           const etiquetaTipo = esReal ? 'Registro Real' : 'Registro Prueba';
+          const colorBorde = esReal ? '#4CAF50' : '#FF5722';
           return `
-          <div style="border:5px solid #FF5722; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
+          <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
             <button type="button" class="btn-eliminar-registro" data-id="${reg.id}"
               style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; font-size:14px; cursor:pointer; line-height:1; z-index:10;">
               ✕
             </button>
-            <p style="font-weight:bold; color:#FF5722; margin:0 0 4px; font-size:12px;">${etiquetaTipo}</p>
+            <p style="font-weight:bold; color:${colorBorde}; margin:0 0 4px; font-size:12px;">${etiquetaTipo}</p>
             <p style="font-weight:bold; color:#333; margin:0 0 8px; font-size:13px;">🕒 ${fechaLocal}</p>
-            <div style="background:#fff; color:#000; font-family:Arial, Helvetica, sans-serif; padding:6px; border:1px solid #ccc; zoom: 0.7;">
+            <div style="background:#fff; color:#000; font-family:Arial, Helvetica, sans-serif; padding:6px; border:1px solid #ccc; zoom: 0.7; --tam-base:34px; --tam-premios:20px;">
               ${reg.contenido_html}
             </div>
           </div>`;
