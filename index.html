@@ -538,7 +538,7 @@
         </tr>
 
         <tr>
-       <td> <button type="button" onclick="abrirCopiasExcel()" style=" box-shadow: 4px 4px 10px rgb(168, 58, 7);height: 50px; font-weight: bolder; border-color: rgb(255, 0, 85); font-size: 15px; color: rgb(221, 250, 3); border-radius: 25px;background: linear-gradient(
+      <td> <button type="button" onclick="abrirCopiasExcel()" style=" box-shadow: 4px 4px 10px rgb(168, 58, 7);height: 50px; font-weight: bolder; border-color: rgb(255, 0, 85); font-size: 17px; color: rgb(221, 250, 3); border-radius: 25px;background: linear-gradient(
   to bottom,
   rgb(125, 92, 155) 0%,
   rgb(93, 55, 197) 45%,
@@ -547,7 +547,7 @@
  );
 
  ">
-              🔎 Revisar Excel
+               Revisar Excel
             </button></td>
           <td><textarea></textarea></td>
           <td style="border: 3px solid;"> <textarea></textarea></td>
@@ -2024,18 +2024,34 @@
         }
       }
 
-      function pedirClaveAdmin() {
+function pedirClaveAdmin() {
         Swal.fire({
           title: 'Acceso Admin',
           input: 'password',
           inputLabel: 'Ingresa la clave',
           inputPlaceholder: 'Clave',
+          width: '550px',
+          padding: '2em',
           showCancelButton: true,
           reverseButtons: true,
           confirmButtonText: 'Entrar',
           cancelButtonText: 'Cancelar',
           confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33'
+          cancelButtonColor: '#d33',
+          didOpen: () => {
+            const btnConfirm = Swal.getConfirmButton();
+            const btnCancel = Swal.getCancelButton();
+            if (btnConfirm) {
+              btnConfirm.style.fontSize = '18px';
+              btnConfirm.style.padding = '12px 30px';
+              btnConfirm.style.margin = '0 15px';
+            }
+            if (btnCancel) {
+              btnCancel.style.fontSize = '18px';
+              btnCancel.style.padding = '12px 30px';
+              btnCancel.style.margin = '0 15px';
+            }
+          }
         }).then((result) => {
           if (result.isConfirmed) {
             if (result.value === '11') {
@@ -2054,7 +2070,7 @@
       function crearFilaAdminHTML(nombre = '', valor = 0) {
         const valorFormateado = valor ? Number(valor).toLocaleString('es-CO') : '';
         return `
-        <div class="fila-admin-juego" style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
+    <div class="fila-admin-juego" style="display:flex; gap:14px; margin-bottom:12px; align-items:center;">
             <input type="text" class="admin-nombre" value="${nombre}"
                 style="flex:1; padding:6px; border-radius:6px; border:1px solid #999;">
             <input type="tel" class="admin-valor" value="${valorFormateado}"
@@ -2175,7 +2191,7 @@
       }
       function abrirModoEdicionAdmin() {
         const filasHTML = juegos.map((nombre) => crearFilaAdminHTML(nombre, valoresJuegos[nombre] || 0)).join('');
-        const textoBotonRaspas = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : '👁️ Activar Info Raspas';
+        const textoBotonRaspas = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : ' Activar Info Raspas';
         const colorBotonRaspas = infoRaspasActiva
           ? 'linear-gradient(to right, #E65100, #FFB74D)'
           : 'linear-gradient(to right, #6A1B9A, #BA68C8)';
@@ -2183,22 +2199,27 @@
         Swal.fire({
           title: '⚙️ Modo Edición - Raspas',
           html: `
-            <div id="listaFilasAdmin" style="max-height:400px; overflow-y:auto; text-align:left;">${filasHTML}</div>
-            <button type="button" id="btnAgregarFilaAdmin" style="margin-top:10px; width:100%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #2E7D32, #81C784); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
-                ➕ Agregar Nuevo Raspa
-            </button>
-           <div style="text-align:left;">
-            <button type="button" id="btnToggleInfoRaspas" style="margin-top:10px; width:40%; padding:10px; border:none; border-radius:6px; background: ${colorBotonRaspas}; color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
-                ${textoBotonRaspas}
-            </button>
+            <div id="listaFilasAdmin" style="max-height:550px; overflow-y:auto; text-align:left; padding-right:6px;">${filasHTML}</div>
+            <button type="button" id="btnAgregarFilaAdmin" style="margin-top:20px; margin-bottom:6px; width:100%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #2E7D32, #81C784); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
+    ➕ Agregar Nuevo Raspa
+</button>
+        <div style="text-align:left;">
+         <button type="button" id="btnToggleInfoRaspas" style="margin-top:14px; width:55%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: ${colorBotonRaspas}; color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
+    ${textoBotonRaspas}
+</button>
+            </div>
+          <div style="text-align:left;">
+         <button type="button" id="btnVerRegistros" style="margin-top:14px; width:55%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: linear-gradient(to right, #7AEBC5, #1FBF87); color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
+    📋 Ver Registros de Impresiones
+</button>
             </div>
             <div style="text-align:left;">
-            <button type="button" id="btnVerRegistros" style="margin-top:10px; width:55%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #7AEBC5, #1FBF87); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
-                📋 Ver Registros de Impresiones
-            </button>
+           <button type="button" id="btnRespaldoExcelManual" style="margin-top:14px; margin-bottom:10px; width:55%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: linear-gradient(to right, #616161, #9E9E9E); color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
+    🆘 Respaldo Excel Manual
+</button>
             </div>
         `,
-          width: '500px',
+          width: '650px',
           showDenyButton: true,
           reverseButtons: true,
           confirmButtonText: '💾 Guardar',
@@ -2225,6 +2246,23 @@
               abrirRegistrosImpresiones();
             });
 
+            document.getElementById('btnRespaldoExcelManual').addEventListener('click', () => {
+             Swal.fire({
+  title: '¿Crear respaldo manual ahora?',
+  text: 'Se guardará una copia con el estado actual de la tabla.',
+  icon: 'question',
+  showCancelButton: true,
+  reverseButtons: true,
+  confirmButtonText: 'Sí, crear respaldo',
+  cancelButtonText: 'Cancelar',
+  confirmButtonColor: '#3085d6',
+  cancelButtonColor: '#B71C1C'
+}).then((r) => {
+                if (r.isConfirmed) {
+                  crearRespaldoExcelManual();
+                }
+              });
+            });
 
             document.getElementById('btnToggleInfoRaspas').addEventListener('click', () => {
               const accion = infoRaspasActiva ? 'DESACTIVAR' : 'ACTIVAR';
@@ -2235,7 +2273,7 @@
 
                 const btnToggle = document.getElementById('btnToggleInfoRaspas');
                 if (btnToggle) {
-                  btnToggle.innerHTML = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : '👁️ Activar Info Raspas';
+                  btnToggle.innerHTML = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : ' Activar Info Raspas';
                   btnToggle.style.background = infoRaspasActiva
                     ? 'linear-gradient(to right, #E65100, #FFB74D)'
                     : 'linear-gradient(to right, #6A1B9A, #BA68C8)';
@@ -2952,8 +2990,26 @@
       const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhndXR4YWR1ZWx5ZnBmcnJnd3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMzgwMzQsImV4cCI6MjEwMDgxNDAzNH0.8az-xwyMrVkXeo64CIM_q9dTF5uVP8WDzFbZO5odPHM";
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      async function guardarRegistroImpresion(fechaTicket, contenidoHTML, tipoRegistro) {
+   async function guardarRegistroImpresion(fechaTicket, contenidoHTML, tipoRegistro) {
         try {
+          // Buscamos el último registro guardado
+          const { data: ultimo, error: errorUltimo } = await supabaseClient
+            .from('registro_impresiones')
+            .select('contenido_html')
+            .order('fecha_impresion', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (errorUltimo) {
+            console.error('Error consultando último registro:', errorUltimo);
+          }
+
+          // Si el contenido es idéntico al último, no guardamos de nuevo
+          if (ultimo && ultimo.contenido_html === contenidoHTML) {
+            console.log('Registro idéntico al anterior, no se duplica.');
+            return;
+          }
+
           const { error } = await supabaseClient
             .from('registro_impresiones')
             .insert({
@@ -3087,13 +3143,21 @@ function sincronizarEstadoActual() {
     if (campo.parentElement) campo.replaceWith(span);
   });
 
-  clon.querySelectorAll('th').forEach(th => {
-    if (!th.textContent.trim() && !th.querySelector('*')) th.remove();
-  });
+ // Ya NO borramos los <th> vacíos: si se borran aquí pero las <td> de esas
+  // mismas columnas se quedan, el encabezado y los datos quedan desfasados
+  // (por eso los títulos no coincidían con los valores). Los dejamos vacíos
+  // en su lugar, así la cantidad de columnas siempre coincide.
 
   clon.querySelectorAll('tbody tr').forEach(fila => {
     const tieneTexto = fila.textContent.trim().length > 0;
     if (!tieneTexto) fila.remove();
+  });
+
+  
+// NUEVO: eliminar el reloj interno — ya usamos "Guardado real" como hora verdadera
+// (solo quitamos el texto del reloj, NO la celda completa, para no desalinear columnas)
+clon.querySelectorAll('.fechaHoraActual').forEach(el => {
+    el.remove();
   });
 
   // NUEVO: blindaje real de altura — se aplica DESPUÉS de limpiar todo,
@@ -3124,16 +3188,50 @@ function sincronizarEstadoActual() {
 
   return clon.outerHTML;
 }
+
+
+async function calcularHashTexto(texto) {
+  const codificado = new TextEncoder().encode(texto);
+  const bufferHash = await crypto.subtle.digest('SHA-256', codificado);
+  const bytesHash = Array.from(new Uint8Array(bufferHash));
+  return bytesHash.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function crearRespaldoExcelManual() {
+  try {
+    const html = generarCopiaTablaHTML();
+    const fechaDatos = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
+    const hashDatos = await calcularHashTexto(html);
+
+    const { error } = await supabaseClient
+      .from('copias_excel')
+      .insert({
+        fecha_datos: fechaDatos,
+        fecha_envio: new Date().toISOString(),
+        contenido_html: html,
+        hash_datos: hashDatos,
+        origen: 'manual_forzado'
+      });
+
+    if (error) {
+      Swal.fire({ title: 'Error al crear respaldo', text: error.message, icon: 'error' });
+      return;
+    }
+
+    mostrarToastExito('Respaldo Excel manual creado exitosamente');
+  } catch (err) {
+    Swal.fire({ title: 'Error al crear respaldo', text: err.message, icon: 'error' });
+  }
+}
+
 // === VENTANA "COPIAS EXCEL" (muestra el HTML generado en el servidor) ===
  async function abrirCopiasExcel(fechaFiltro = '') {
   await borrarCopiasExcelAntiguas();
 
-  let query = supabaseClient.from('copias_excel').select('*').order('fecha_envio', { ascending: false });
+ let query = supabaseClient.from('copias_excel').select('*').order('fecha_envio', { ascending: false });
 
   if (fechaFiltro) {
-    const inicio = new Date(`${fechaFiltro}T00:00:00-05:00`).toISOString();
-    const fin = new Date(`${fechaFiltro}T23:59:59-05:00`).toISOString();
-    query = query.gte('fecha_envio', inicio).lte('fecha_envio', fin);
+    query = query.eq('fecha_datos', fechaFiltro);
   }
 
   const { data, error } = await query;
@@ -3142,16 +3240,23 @@ function sincronizarEstadoActual() {
     return;
   }
 
- const listaHTML = (data && data.length > 0) ? data.map(reg => {
+const listaHTML = (data && data.length > 0) ? data.map(reg => {
     const fechaEnvioLocal = new Date(reg.fecha_envio).toLocaleString('es-CO', {
       timeZone: 'America/Bogota', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
     });
-    return `
-      <div style="border:5px solid #f44336; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
+const esAutomatico = reg.origen === 'automatico';
+const esForzado = reg.origen === 'manual_forzado';
+const colorBorde = esAutomatico ? '#4CAF50' : (esForzado ? '#0CC7AA' : '#f44336');
+const etiquetaOrigen = esAutomatico ? '🟢 Automático (1am)' : (esForzado ? '🟢 Real Forzado Boton' : '🔴 Manual / Prueba');
+   return `
+      <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
+        <span style="position:absolute; top:6px; left:10px; font-size:14px; font-weight:bold; color:${colorBorde};">${etiquetaOrigen}</span>
         <button type="button" class="btn-eliminar-copia" data-id="${reg.id}"
           style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; cursor:pointer;">✕</button>
-        <p style="font-weight:bold; color:#333; margin:0 0 4px; font-size:13px;">📅 Datos del día: ${reg.fecha_datos}</p>
- <div class="copia-outer" style="border:1px solid #ccc; background:#000; color:#fff; padding:8px; overflow:hidden; min-width:0; width:100%; box-sizing:border-box;">
+      <p style="font-weight:bold; color:#333; margin:0 0 4px; font-size:15px; background:#C374E3; padding:5px 8px; border-radius:5px; width:16%; margin-bottom:10px;">📅 Datos del día Trabajado: ${reg.fecha_datos}</p>
+       
+<div class="copia-outer" style="position:relative; border:1px solid #ccc; background:#000; color:#fff; padding:8px; overflow:hidden; min-width:0; width:100%; box-sizing:border-box;">
+        <span style="position:absolute; top:6px; right:150px; z-index:5; font-size:8px; font-weight:bold; color:#fff;background: rgba(0, 180, 200, 0.75); padding:4px 12px; border-radius:6px; white-space:nowrap;">🕒 ${fechaEnvioLocal}</span>
         <div class="copia-inner" style="display:inline-block; width:max-content; transform-origin: top left;">${reg.contenido_html || ''}</div>
       </div>
       </div>`;
@@ -3182,13 +3287,17 @@ function sincronizarEstadoActual() {
   min-height: 300px;
 }
 </style>
+     <div style="text-align:right; font-weight:bold; font-size:15px; color:#333; margin-bottom:8px;">
+        📦 Total copias mostradas: ${data ? data.length : 0}
+      </div>
+
       <div style="display:flex; gap:8px; margin-bottom:14px;">
-        <input type="date" id="inputFiltroFechaExcel" value="${fechaFiltro}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #999;">
+        <input type="date" id="inputFiltroFechaExcel" value="${fechaFiltro}" style="flex:1; padding:10px; border-radius:6px; border:1px solid #999; font-size:20px; color:#999;">
         <button type="button" id="btnBuscarFechaExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
         <button type="button" id="btnLimpiarFechaExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
         <button type="button" id="btnBorrarTodoExcel" style="padding:8px 16px; border:none; border-radius:6px; background:#b71c1c; color:#fff; font-weight:bold; cursor:pointer;">🗑️ Eliminar Copias Excel</button>
       </div>
-  <div style="display:grid; grid-template-columns: minmax(0, 1fr); gap:12px; max-height:80vh; overflow-y:auto; text-align:left;">${listaHTML}</div>
+  <div style="display:grid; grid-template-columns: minmax(0, 1fr); gap:75px; max-height:80vh; overflow-y:auto; text-align:left;">${listaHTML}</div>
     `,
 width: '95%',
 heightAuto: false,
@@ -3848,6 +3957,37 @@ document.addEventListener('input', (e) => {
 
     document.addEventListener('DOMContentLoaded', solidificarImagenStitch);
 
+   async function imprimirRegistroGuardado(contenidoHTML) {
+      if (!window.hayImpresoraConectada || !window.hayImpresoraConectada()) {
+        alert("Primero conecta la impresora con el botón de Bluetooth.");
+        return;
+      }
+      if (window.imprimiendoAhora) {
+        alert("Ya hay una impresión en curso, espera a que termine.");
+        return;
+      }
+
+      const contImpresion = document.getElementById('contenedor-impresion');
+      if (!contImpresion) return;
+
+      window.imprimiendoAhora = true;
+
+      const contenidoOriginal = contImpresion.innerHTML;
+      const estabaVistaActiva = contImpresion.classList.contains('vista-activa');
+      if (estabaVistaActiva) contImpresion.classList.remove('vista-activa');
+
+      contImpresion.innerHTML = contenidoHTML;
+      await new Promise(resolve => requestAnimationFrame(resolve));
+
+      try {
+        await window.imprimirEnGato();
+      } finally {
+        contImpresion.innerHTML = contenidoOriginal;
+        if (estabaVistaActiva) contImpresion.classList.add('vista-activa');
+        window.imprimiendoAhora = false;
+      }
+    }
+
     async function abrirRegistrosImpresiones(fechaFiltro = '') {
       await borrarRegistrosAntiguosImpresiones();
 
@@ -3879,11 +4019,15 @@ document.addEventListener('input', (e) => {
         const esReal = reg.tipo_registro === 'real';
           const etiquetaTipo = esReal ? 'Registro Real' : 'Registro Prueba';
           const colorBorde = esReal ? '#4CAF50' : '#FF5722';
-          return `
+      return `
           <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
             <button type="button" class="btn-eliminar-registro" data-id="${reg.id}"
               style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; font-size:14px; cursor:pointer; line-height:1; z-index:10;">
               ✕
+            </button>
+            <button type="button" class="btn-imprimir-registro" data-id="${reg.id}"
+              style="width:100%; margin-bottom:8px; padding:8px; border:none; border-radius:6px; background: linear-gradient(to right, #0D47A1, #64B5F6); color:#fff; font-weight:bold; font-size:13px; cursor:pointer;">
+              🖨️ Imprimir
             </button>
             <p style="font-weight:bold; color:${colorBorde}; margin:0 0 4px; font-size:12px;">${etiquetaTipo}</p>
             <p style="font-weight:bold; color:#333; margin:0 0 8px; font-size:13px;">🕒 ${fechaLocal}</p>
@@ -3897,7 +4041,7 @@ document.addEventListener('input', (e) => {
      
       Swal.fire({
         title: '📋 Registros de Impresiones',
-        html: `
+      html: `
 <style>
 .popup-registros-impresiones {
   max-height: 95vh;
@@ -3906,10 +4050,38 @@ document.addEventListener('input', (e) => {
   overflow: auto !important;
   min-width: 400px;
   min-height: 200px;
+  position: relative;
+}
+
+.popup-registros-impresiones::-webkit-resizer {
+  background: linear-gradient(135deg, transparent 0%, transparent 45%, #3085d6 45%, #3085d6 55%, transparent 55%, transparent 60%, #3085d6 60%, #3085d6 70%, transparent 70%, transparent 75%, #3085d6 75%, #3085d6 85%, transparent 85%);
+  background-size: 100% 100%;
+  border: none;
+}
+
+.popup-registros-impresiones::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    135deg,
+    #3085d6 0px,
+    #3085d6 2px,
+    transparent 2px,
+    transparent 5px
+  );
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
 }
 </style>
-      <div style="display:flex; gap:8px; margin-bottom:14px;">
-        <input type="date" id="inputFiltroFecha" value="${fechaFiltro}" style="flex:1; padding:8px; border-radius:6px; border:1px solid #999;">
+      <div style="text-align:right; font-weight:bold; font-size:15px; color:#333; margin-bottom:8px;">
+        📋 Total registros mostrados: ${data ? data.length : 0}
+      </div>
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <input type="date" id="inputFiltroFecha" value="${fechaFiltro}" style="flex:1; padding:10px; border-radius:6px; border:1px solid #999; font-size:20px; color:#999;">
         <button type="button" id="btnBuscarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#3085d6; color:#fff; font-weight:bold; cursor:pointer;">Buscar</button>
         <button type="button" id="btnLimpiarFecha" style="padding:8px 16px; border:none; border-radius:6px; background:#999; color:#fff; font-weight:bold; cursor:pointer;">Ver todo</button>
         <button type="button" id="btnBorrarTodoRegistros" style="padding:8px 16px; border:none; border-radius:6px; background:#b71c1c; color:#fff; font-weight:bold; cursor:pointer;">🗑️ Borrar Todo</button>
@@ -3957,7 +4129,7 @@ document.addEventListener('input', (e) => {
             });
           });
 
-    document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
+  document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
             btn.addEventListener('click', () => {
               const id = btn.getAttribute('data-id');
               Swal.fire({
@@ -3977,6 +4149,25 @@ document.addEventListener('input', (e) => {
                   });
                 }
               });
+            });
+          });
+
+          document.querySelectorAll('.btn-imprimir-registro').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const id = btn.getAttribute('data-id');
+              const registro = data.find(r => String(r.id) === String(id));
+              if (!registro) return;
+
+              const textoOriginal = btn.innerHTML;
+              btn.disabled = true;
+              btn.innerHTML = '<span class="spinner"></span> Imprimiendo...';
+
+              try {
+                await imprimirRegistroGuardado(registro.contenido_html);
+              } finally {
+                btn.disabled = false;
+                btn.innerHTML = textoOriginal;
+              }
             });
           });
         }
