@@ -3229,6 +3229,80 @@ async function crearRespaldoExcelManual() {
   }
 }
 
+// === Manija de redimensionar más grande y fácil de tocar (para ambas ventanas) ===
+function agregarManijaResizeTactil(color = '#FF9800') {
+  const popup = Swal.getPopup();
+  if (!popup) return;
+  if (popup.querySelector('.manija-resize-tactil')) return;
+
+  if (getComputedStyle(popup).position === 'static') popup.style.position = 'relative';
+
+  const manija = document.createElement('div');
+  manija.className = 'manija-resize-tactil';
+  manija.style.cssText = `
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 46px;
+    height: 46px;
+    cursor: nwse-resize;
+    z-index: 999999;
+    touch-action: none;
+    background: linear-gradient(135deg, transparent 0%, transparent 38%, ${color} 38%, ${color} 50%, transparent 50%, transparent 60%, ${color} 60%, ${color} 72%, transparent 72%, transparent 80%, ${color} 80%, ${color} 92%, transparent 92%);
+    background-size: 100% 100%;
+    border-bottom-right-radius: 10px;
+  `;
+  popup.appendChild(manija);
+
+  const controlador = new AbortController();
+  const { signal } = controlador;
+  popup._controladorResizeTactil = controlador;
+
+  let arrastrando = false;
+  let inicioX = 0, inicioY = 0, anchoInicial = 0, altoInicial = 0;
+
+  function empezar(x, y) {
+    arrastrando = true;
+    inicioX = x;
+    inicioY = y;
+    const rect = popup.getBoundingClientRect();
+    anchoInicial = rect.width;
+    altoInicial = rect.height;
+  }
+  function mover(x, y) {
+    if (!arrastrando) return;
+    const nuevoAncho = Math.max(320, anchoInicial + (x - inicioX));
+    const nuevoAlto = Math.max(220, altoInicial + (y - inicioY));
+    popup.style.width = nuevoAncho + 'px';
+    popup.style.height = nuevoAlto + 'px';
+  }
+  function terminar() {
+    arrastrando = false;
+  }
+
+  manija.addEventListener('mousedown', (e) => { e.preventDefault(); empezar(e.clientX, e.clientY); }, { signal });
+  document.addEventListener('mousemove', (e) => mover(e.clientX, e.clientY), { signal });
+  document.addEventListener('mouseup', terminar, { signal });
+
+  manija.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    empezar(t.clientX, t.clientY);
+  }, { passive: true, signal });
+  document.addEventListener('touchmove', (e) => {
+    if (!arrastrando) return;
+    const t = e.touches[0];
+    mover(t.clientX, t.clientY);
+  }, { passive: true, signal });
+  document.addEventListener('touchend', terminar, { signal });
+}
+
+function limpiarManijaResizeTactil() {
+  const popup = Swal.getPopup();
+  if (popup && popup._controladorResizeTactil) {
+    popup._controladorResizeTactil.abort();
+  }
+}
+
 // === VENTANA "COPIAS EXCEL" (muestra el HTML generado en el servidor) ===
  async function abrirCopiasExcel(fechaFiltro = '') {
   await borrarCopiasExcelAntiguas();
@@ -3309,9 +3383,13 @@ heightAuto: false,
 customClass: {
   popup: 'popup-copias-excel'
 },
-    showConfirmButton: false,
+   showConfirmButton: false,
     showCloseButton: true,
+    willClose: () => {
+      limpiarManijaResizeTactil();
+    },
  didOpen: () => {
+  agregarManijaResizeTactil('#FF9800');
   function recalcularEscalas() {
     document.querySelectorAll('.copia-outer').forEach(outer => {
       const inner = outer.querySelector('.copia-inner');
@@ -4093,14 +4171,18 @@ document.addEventListener('input', (e) => {
       </div>
       <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; max-height:75vh; overflow-y:auto; text-align:left;">${listaHTML}</div>
     `,
-        width: '95%',
+      width: '95%',
         heightAuto: false,
         customClass: {
           popup: 'popup-registros-impresiones'
         },
         showConfirmButton: false,
         showCloseButton: true,
+        willClose: () => {
+          limpiarManijaResizeTactil();
+        },
         didOpen: () => {
+          agregarManijaResizeTactil('#FF5722');
           document.getElementById('btnBuscarFecha').addEventListener('click', () => {
             const valor = document.getElementById('inputFiltroFecha').value;
             abrirRegistrosImpresiones(valor);
