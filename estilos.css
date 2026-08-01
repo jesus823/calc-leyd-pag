@@ -11,7 +11,7 @@ table {
   width: 100%;
   border: 2px solid #8A2BE2;
   /* ← borde exterior de la tabla */
-  
+
 }
 
 th,
@@ -314,6 +314,7 @@ td[class^="r"]:not([class*="resultado"]) {
   -webkit-tap-highlight-color: transparent;
   cursor: default;
 }
+
 .celda-bloqueada {
   pointer-events: none;
   cursor: not-allowed;
@@ -326,6 +327,7 @@ td[class^="r"]:not([class*="resultado"]) {
   width: 100px !important;
   min-width: 100px !important;
 }
+
 #miTabla td:nth-child(2) textarea {
   pointer-events: none;
   cursor: not-allowed;
@@ -348,22 +350,27 @@ td[class^="r"]:not([class*="resultado"]) {
   box-shadow: none !important;
   -webkit-tap-highlight-color: transparent;
 }
+
 .stitch-fondo-blanco {
   background-color: #ffffff;
 }
+
 #btnStitchImprimir {
   z-index: 999 !important;
   isolation: isolate;
 }
+
 .celda-marcada-gris {
   background-color: #808080 !important;
 }
+
 .raspas-oculto {
   visibility: hidden !important;
 }
 
 :root {
-  --alto-fila-raspas: 28px;   /* ← SOLO CAMBIAS ESTE NÚMERO */
+  --alto-fila-raspas: 28px;
+  /* ← SOLO CAMBIAS ESTE NÚMERO */
 }
 
 #fila-titulos-raspas,
@@ -391,4 +398,3 @@ td[class^="r"]:not([class*="resultado"]) {
   height: var(--alto-fila-raspas) !important;
   line-height: var(--alto-fila-raspas) !important;
 }
-
