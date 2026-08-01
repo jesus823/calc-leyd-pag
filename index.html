@@ -2217,7 +2217,7 @@
         }).then((result) => {
           if (result.isConfirmed) {
             if (result.value === '11') {
-              abrirModoEdicionAdmin();
+              abrirPanelAdmin();
             } else {
               Swal.fire({
                 title: 'Clave incorrecta',
@@ -2295,7 +2295,7 @@
         }, 1600);
       }
 
-      function mostrarModalPassword(titulo, mensaje, onConfirmar, onCancelar) {
+      function mostrarModalPassword(titulo, mensaje, onConfirmar, onCancelar, claveEsperada = '11') {
         if (document.getElementById('overlay-password-generico')) return;
 
         const overlay = document.createElement('div');
@@ -2340,7 +2340,7 @@
         }
 
         function intentarConfirmar() {
-          if (input.value === '11') {
+          if (input.value === claveEsperada) {
             cerrar();
             onConfirmar();
           } else {
@@ -2356,76 +2356,44 @@
           if (e.key === 'Enter') intentarConfirmar();
         });
       }
-      function abrirModoEdicionAdmin() {
-        const filasHTML = juegos.map((nombre) => crearFilaAdminHTML(nombre, valoresJuegos[nombre] || 0)).join('');
-        const textoBotonRaspas = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : ' Activar Info Raspas';
-        const colorBotonRaspas = infoRaspasActiva
-          ? 'linear-gradient(to right, #E65100, #FFB74D)'
-          : 'linear-gradient(to right, #6A1B9A, #BA68C8)';
-
+function abrirPanelAdmin() {
         Swal.fire({
-          title: '⚙️ Modo Edición - Raspas',
+          title: '🔒 Panel Admin',
+          customClass: { popup: 'popup-panel-admin' },
           html: `
-            <div id="listaFilasAdmin" style="max-height:550px; overflow-y:auto; text-align:left; padding-right:6px;">${filasHTML}</div>
-            <button type="button" id="btnAgregarFilaAdmin" style="margin-top:20px; margin-bottom:6px; width:100%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #2E7D32, #81C784); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
-    ➕ Agregar Nuevo Raspa
-</button>
-        <div style="text-align:left;">
-         <button type="button" id="btnToggleInfoRaspas" style="margin-top:14px; width:55%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: ${colorBotonRaspas}; color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
-    ${textoBotonRaspas}
-</button>
-            </div>
+          <style>
+            .popup-panel-admin .swal2-close {
+              color: #ff0000 !important;
+            }
+          </style>
           <div style="text-align:left;">
-         <button type="button" id="btnVerRegistros" style="margin-top:14px; width:55%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: linear-gradient(to right, #7AEBC5, #1FBF87); color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
+         <button type="button" id="btnVerRegistrosMain" style="margin-top:20px; width:100%; padding:18px 10px; min-height:56px; border:none; border-radius:6px; background: linear-gradient(to right, #7AEBC5, #1FBF87); color: black; font-weight: bold; font-size: 16px; cursor: pointer;">
     📋 Ver Registros de Impresiones
 </button>
             </div>
             <div style="text-align:left;">
-           <button type="button" id="btnRespaldoExcelManual" style="margin-top:14px; margin-bottom:10px; width:55%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: linear-gradient(to right, #616161, #9E9E9E); color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
+           <button type="button" id="btnRespaldoExcelManualMain" style="margin-top:32px; width:100%; padding:18px 10px; min-height:56px; border:none; border-radius:6px; background: linear-gradient(to right, #C2185B, #EC407A); color: white; font-weight: bold; font-size: 16px; cursor: pointer;">
     🆘 Respaldo Excel Manual
 </button>
             </div>
-        <div style="text-align:left;">
-         <button type="button" id="btnVerTiempoPurga" style="margin-top:14px; margin-bottom:10px; width:55%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: linear-gradient(to right, #E65100, #FFB74D); color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
-    ⏳ Ver Tiempo para Borrado
+        <div style="text-align:left; margin-top:72px;">
+         <button type="button" id="btnProgramadorMain" style="margin-bottom:10px; width:fit-content; padding:14px 20px; min-height:56px; border:none; border-radius:6px; background: linear-gradient(to right, #263238, #607D8B); color: white; font-weight: bold; font-size: 16px; cursor: pointer;">
+    🛠️ Programador
 </button>
             </div>
         `,
-          width: '650px',
-          showDenyButton: true,
-          reverseButtons: true,
-          confirmButtonText: '💾 Guardar',
-          denyButtonText: '🚪 Salir Modo Edición',
-          confirmButtonColor: '#3085d6',
-          denyButtonColor: '#f44336',
+          width: '550px',
+          showConfirmButton: false,
+          showCloseButton: true,
           didOpen: () => {
-            configurarListenersFilasAdmin();
-
-            document.getElementById('btnAgregarFilaAdmin').addEventListener('click', () => {
-              mostrarModalPassword('Confirmar acción', 'Digita la Contraseña para AGREGAR un Nuevo Raspa', () => {
-                const contenedor = document.getElementById('listaFilasAdmin');
-                contenedor.insertAdjacentHTML('beforeend', crearFilaAdminHTML('', 0));
-                configurarListenersFilasAdmin();
-                contenedor.scrollTop = contenedor.scrollHeight;
-
-                const nombresActuales = contenedor.querySelectorAll('.admin-nombre');
-                nombresActuales[nombresActuales.length - 1].focus();
-              });
-            });
-
-            document.getElementById('btnVerRegistros').addEventListener('click', () => {
+            document.getElementById('btnVerRegistrosMain').addEventListener('click', () => {
               Swal.close();
               abrirRegistrosImpresiones();
             });
-            document.getElementById('btnVerTiempoPurga').addEventListener('click', () => {
-              Swal.close();
-              mostrarEstadoPurgas();
-            });
 
-            document.getElementById('btnRespaldoExcelManual').addEventListener('click', () => {
+            document.getElementById('btnRespaldoExcelManualMain').addEventListener('click', () => {
               Swal.fire({
                 title: '¿Crear respaldo manual ahora?',
-
                 text: 'Se guardará una copia con el estado actual de la tabla.',
                 icon: 'question',
                 showCancelButton: true,
@@ -2441,22 +2409,47 @@
               });
             });
 
-            document.getElementById('btnToggleInfoRaspas').addEventListener('click', () => {
-              const accion = infoRaspasActiva ? 'DESACTIVAR' : 'ACTIVAR';
-              mostrarModalPassword('Confirmar acción', `Digita la Contraseña para ${accion} la Info de Raspas`, () => {
-                infoRaspasActiva = !infoRaspasActiva;
-                aplicarVisibilidadInfoRaspas();
-                localStorage.setItem('infoRaspasActiva', infoRaspasActiva ? '1' : '0');
+            document.getElementById('btnProgramadorMain').addEventListener('click', () => {
+              mostrarModalPassword('Acceso Programador', 'Digita la Contraseña para entrar', () => {
+                Swal.close();
+                abrirModoProgramador();
+              }, null, '99');
+            });
+          }
+        });
+      }
 
-                const btnToggle = document.getElementById('btnToggleInfoRaspas');
-                if (btnToggle) {
-                  btnToggle.innerHTML = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : ' Activar Info Raspas';
-                  btnToggle.style.background = infoRaspasActiva
-                    ? 'linear-gradient(to right, #E65100, #FFB74D)'
-                    : 'linear-gradient(to right, #6A1B9A, #BA68C8)';
-                }
+      function abrirModoEdicionAdmin() {
+        const filasHTML = juegos.map((nombre) => crearFilaAdminHTML(nombre, valoresJuegos[nombre] || 0)).join('');
 
-                mostrarToastExito(infoRaspasActiva ? 'Info Raspas activada' : 'Info Raspas desactivada');
+        Swal.fire({
+          title: '⚙️ Modo Edición - Raspas',
+          html: `
+            <div id="listaFilasAdmin" style="max-height:650px; overflow-y:auto; text-align:left; padding-right:6px;">${filasHTML}</div>
+            <button type="button" id="btnAgregarFilaAdmin" style="margin-top:20px; margin-bottom:6px; width:100%; padding:10px; border:none; border-radius:6px; background: linear-gradient(to right, #2E7D32, #81C784); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
+    ➕ Agregar Nuevo Raspa
+</button>
+        `,
+          width: '800px',
+          showDenyButton: true,
+          reverseButtons: true,
+          confirmButtonText: '💾 Guardar',
+          denyButtonText: '🚪 Salir Modo Edición',
+          confirmButtonColor: '#3085d6',
+          denyButtonColor: '#f44336',
+          didOpen: () => {
+            agregarBotonAtras(() => abrirModoProgramador());
+            configurarListenersFilasAdmin();
+
+            document.getElementById('btnAgregarFilaAdmin').addEventListener('click', () => {
+              mostrarModalPassword('Confirmar acción', 'Digita la Contraseña para AGREGAR un Nuevo Raspa', () => {
+                const contenedor = document.getElementById('listaFilasAdmin');
+                contenedor.insertAdjacentHTML('beforeend', crearFilaAdminHTML('', 0));
+                configurarListenersFilasAdmin();
+                contenedor.scrollTop = contenedor.scrollHeight;
+
+                const nombresActuales = contenedor.querySelectorAll('.admin-nombre');
+                nombresActuales[nombresActuales.length - 1].focus();
               });
             });
           },
@@ -2496,6 +2489,73 @@
               if (!r.isConfirmed) {
                 abrirModoEdicionAdmin();
               }
+            });
+          }
+        });
+      }
+      function abrirModoProgramador() {
+        const textoBotonRaspas = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : ' Activar Info Raspas';
+        const colorBotonRaspas = infoRaspasActiva
+          ? 'linear-gradient(to right, #00695C, #4DB6AC)'
+          : 'linear-gradient(to right, #6A1B9A, #BA68C8)';
+
+        Swal.fire({
+          title: '🛠️ Programador',
+          html: `
+            <div style="text-align:left;">
+             <button type="button" id="btnEdicionRaspas" style="margin-top:20px; width:100%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: linear-gradient(to right, #1565C0, #64B5F6); color: white; font-weight: bold; font-size: 15px; cursor: pointer;">
+    📝 Edicion Raspas
+</button>
+            </div>
+            <div style="text-align:left;">
+             <button type="button" id="btnVerTiempoPurgaProg" style="margin-top:28px; width:100%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: linear-gradient(to right, #E65100, #FFB74D); color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
+    ⏳ Ver Tiempo para Borrado
+</button>
+            </div>
+            <div style="text-align:left;">
+             <button type="button" id="btnToggleInfoRaspasProg" style="margin-top:28px; width:100%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: ${colorBotonRaspas}; color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
+    ${textoBotonRaspas}
+</button>
+            </div>
+          `,
+          width: '600px',
+          showConfirmButton: false,
+          showDenyButton: true,
+          reverseButtons: true,
+          denyButtonText: '🚪 Salir',
+          denyButtonColor: '#f44336',
+          didOpen: () => {
+            const btnSalirProg = Swal.getDenyButton();
+            if (btnSalirProg) btnSalirProg.style.marginTop = '28px';
+            agregarBotonAtras(() => abrirPanelAdmin());
+
+            document.getElementById('btnEdicionRaspas').addEventListener('click', () => {
+              Swal.close();
+              abrirModoEdicionAdmin();
+            });
+
+            document.getElementById('btnVerTiempoPurgaProg').addEventListener('click', () => {
+              Swal.close();
+              mostrarEstadoPurgas();
+            });
+
+            document.getElementById('btnToggleInfoRaspasProg').addEventListener('click', () => {
+              const accion = infoRaspasActiva ? 'DESACTIVAR' : 'ACTIVAR';
+              mostrarModalPassword('Confirmar acción', `Digita la Contraseña para ${accion} la Info de Raspas`, () => {
+                infoRaspasActiva = !infoRaspasActiva;
+                aplicarVisibilidadInfoRaspas();
+                localStorage.setItem('infoRaspasActiva', infoRaspasActiva ? '1' : '0');
+
+                const btnToggle = document.getElementById('btnToggleInfoRaspasProg');
+                if (btnToggle) {
+                  btnToggle.innerHTML = infoRaspasActiva ? '🙈 Desactivar Info Raspas' : ' Activar Info Raspas';
+                  btnToggle.style.background = infoRaspasActiva
+                    ? 'linear-gradient(to right, #00695C, #4DB6AC)'
+                    : 'linear-gradient(to right, #6A1B9A, #BA68C8)';
+                }
+
+                mostrarToastExito(infoRaspasActiva ? 'Info Raspas activada' : 'Info Raspas desactivada');
+              });
             });
           }
         });
@@ -3740,26 +3800,24 @@ async function calcularHashTexto(texto) {
         btn.innerHTML = '← Atrás';
         btn.style.cssText = `
           position: absolute;
-          top: 10px;
-          left: 10px;
-          padding: 8px 16px;
+          top: 20px;
+          left: 60px;
+          padding: 12px 22px;
           border: none;
-          border-radius: 20px;
+          border-radius: 24px;
           background: #616161;
           color: #fff;
           font-weight: bold;
-          font-size: 13px;
+          font-size: 16px;
           cursor: pointer;
           z-index: 999999999;
           box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-          transition: background 0.25s, transform 0.15s;
+          transition: transform 0.15s;
         `;
         btn.addEventListener('mouseenter', () => {
-          btn.style.background = 'linear-gradient(to right, #00838F, #26C6DA)';
           btn.style.transform = 'scale(1.05)';
         });
         btn.addEventListener('mouseleave', () => {
-          btn.style.background = '#616161';
           btn.style.transform = 'scale(1)';
         });
         btn.addEventListener('click', (e) => {
@@ -3818,7 +3876,7 @@ async function calcularHashTexto(texto) {
           Conservar
         </label>
         <button type="button" class="btn-replicar-copia" data-id="${reg.id}" ${!reg.datos_json ? 'disabled' : ''}
-          style="position:absolute; top:6px; right:150px; font-size:10px; font-weight:bold; padding:4px 8px; border:none; border-radius:6px; background: linear-gradient(to right, #00838F, #4DD0E1); color:#000; cursor:pointer; z-index:6; ${!reg.datos_json ? 'opacity:0.5; cursor:not-allowed;' : ''}">
+          style="position:absolute; top:6px; right:150px; font-size:12px; font-weight:bold; padding:6px 10px; border:none; border-radius:6px; background: linear-gradient(to right, #00838F, #4DD0E1); color:#000; cursor:pointer; z-index:6; ${!reg.datos_json ? 'opacity:0.5; cursor:not-allowed;' : ''}">
           🔄 Replicar en Original
         </button>
         <button type="button" class="btn-eliminar-copia" data-id="${reg.id}"
@@ -3830,7 +3888,7 @@ async function calcularHashTexto(texto) {
         <div class="copia-inner" style="display:inline-block; width:max-content; transform-origin: top left;">${reg.contenido_html || ''}</div>
       </div>
       </div>`;
-        }).join('') : '<p style="text-align:center; color:#888; grid-column: 1/-1;">No hay copias para mostrar.</p>';
+        }).join('') : '<p style="text-align:center; color:#000; font-size:22px; font-weight:bold; grid-column: 1/-1;">No hay copias para mostrar.</p>';
 
 
         Swal.fire({
@@ -4747,7 +4805,7 @@ async function calcularHashTexto(texto) {
             </div>
           </div>`;
         }).join('')
-        : '<p style="text-align:center; color:#888; grid-column: 1 / -1;">No hay registros para mostrar.</p>';
+        : '<p style="text-align:center; color:#000; font-size:22px; font-weight:bold; grid-column: 1 / -1;">No hay registros para mostrar.</p>';
 
 
       Swal.fire({
@@ -4859,6 +4917,7 @@ async function calcularHashTexto(texto) {
         didOpen: () => {
           agregarManijaResizeTactil('#FF5722');
           agregarBotonCerrarSwal();
+          if (!fechaFiltro) agregarBotonAtras(() => abrirPanelAdmin());
           inicializarCampoFecha('inputFiltroFecha');
           document.getElementById('btnBuscarFecha').addEventListener('click', () => {
             const valor = document.getElementById('inputFiltroFecha').value;
@@ -4871,12 +4930,7 @@ async function calcularHashTexto(texto) {
             abrirRegistrosImpresiones('');
           });
 
-          const btnAtrasRegistros = document.getElementById('btnAtrasRegistros');
-          if (btnAtrasRegistros) {
-            btnAtrasRegistros.addEventListener('click', () => {
-              abrirRegistrosImpresiones('');
-            });
-          }
+          if (fechaFiltro) agregarBotonAtras(() => abrirRegistrosImpresiones(''));
 
           document.getElementById('btnBorrarTodoRegistros').addEventListener('click', () => {
             Swal.fire({
@@ -5086,7 +5140,10 @@ async function calcularHashTexto(texto) {
         padding: '1.6em',
         showConfirmButton: true,
         confirmButtonText: 'Cerrar',
-        confirmButtonColor: '#3085d6'
+        confirmButtonColor: '#3085d6',
+        didOpen: () => {
+          agregarBotonAtras(() => abrirModoProgramador());
+        }
       });
     }
   </script>
