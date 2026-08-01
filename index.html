@@ -2294,6 +2294,11 @@ function pedirClaveAdmin() {
     🆘 Respaldo Excel Manual
 </button>
             </div>
+        <div style="text-align:left;">
+         <button type="button" id="btnVerTiempoPurga" style="margin-top:14px; margin-bottom:10px; width:55%; padding:16px 10px; min-height:52px; border:none; border-radius:6px; background: linear-gradient(to right, #E65100, #FFB74D); color: black; font-weight: bold; font-size: 15px; cursor: pointer;">
+    ⏳ Ver Tiempo para Borrado
+</button>
+            </div>
         `,
           width: '650px',
           showDenyButton: true,
@@ -2321,10 +2326,15 @@ function pedirClaveAdmin() {
               Swal.close();
               abrirRegistrosImpresiones();
             });
+document.getElementById('btnVerTiempoPurga').addEventListener('click', () => {
+              Swal.close();
+              mostrarEstadoPurgas();
+            });
 
             document.getElementById('btnRespaldoExcelManual').addEventListener('click', () => {
              Swal.fire({
   title: '¿Crear respaldo manual ahora?',
+           
   text: 'Se guardará una copia con el estado actual de la tabla.',
   icon: 'question',
   showCancelButton: true,
@@ -3160,36 +3170,52 @@ function pedirClaveAdmin() {
       }
 
     async function borrarRegistrosAntiguosImpresiones() {
-        const CANTIDAD_A_CONSERVAR = 5;
+        const { data: ciclo } = await supabaseClient
+          .from('ciclos_borrado')
+          .select('ultima_purga')
+          .eq('tipo', 'registro_impresiones')
+          .maybeSingle();
 
-        // Buscamos los IDs de los 5 registros más recientes (esos nunca se borran)
-        const { data: recientes, error: errorRecientes } = await supabaseClient
+        if (!ciclo) return;
+
+        const proximaPurga = new Date(ciclo.ultima_purga);
+        proximaPurga.setMonth(proximaPurga.getMonth() + 2);
+
+        if (new Date() < proximaPurga) return; // aún no toca purgar este ciclo
+
+        const CANTIDAD_A_CONSERVAR = 5;
+        const { data: recientes } = await supabaseClient
           .from('registro_impresiones')
           .select('id')
           .order('fecha_impresion', { ascending: false })
           .limit(CANTIDAD_A_CONSERVAR);
 
-        if (errorRecientes || !recientes || recientes.length === 0) return; // tabla vacía, nada que borrar
-
-        const idsProtegidos = recientes.map(r => r.id);
-
-        const limite = new Date();
-        limite.setMonth(limite.getMonth() - 2);
-
-        // Borra todo lo de más de 2 meses, PERO nunca los últimos 5 registros
-        // (así siempre quedan al menos 5, sin importar qué tan viejos sean)
-        await supabaseClient
+        const { data: conservados } = await supabaseClient
           .from('registro_impresiones')
-          .delete()
-          .lt('fecha_impresion', limite.toISOString())
-          .not('id', 'in', `(${idsProtegidos.join(',')})`);
+          .select('id')
+          .eq('conservar', true);
+
+        const idsProtegidos = [...((recientes || []).map(r => r.id)), ...((conservados || []).map(r => r.id))];
+
+        let query = supabaseClient.from('registro_impresiones').delete();
+        query = idsProtegidos.length > 0
+          ? query.not('id', 'in', `(${idsProtegidos.join(',')})`)
+          : query.not('id', 'is', null);
+
+        await query;
+
+        // Se reinicia el ciclo: la próxima purga será dentro de 2 meses desde ahora
+        await supabaseClient
+          .from('ciclos_borrado')
+          .update({ ultima_purga: new Date().toISOString() })
+          .eq('tipo', 'registro_impresiones');
       }
 
       async function borrarTodosLosRegistrosImpresiones() {
         const { error } = await supabaseClient
           .from('registro_impresiones')
           .delete()
-          .not('id', 'is', null);
+          .eq('conservar', false);
 
         if (error) {
           Swal.fire({ title: 'Error al borrar todo', text: error.message, icon: 'error' });
@@ -3461,11 +3487,15 @@ const esForzado = reg.origen === 'manual_forzado';
 const colorBorde = esAutomatico ? '#4CAF50' : (esForzado ? '#0CC7AA' : '#f44336');
 const etiquetaOrigen = esAutomatico ? '🟢 Automático (1am)' : (esForzado ? '🟢 Real Forzado Boton' : '🔴 Manual / Prueba');
    return `
-      <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
+      <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:32px; padding-bottom:26px; background:#fff; position:relative;">
         <span style="position:absolute; top:6px; left:10px; font-size:14px; font-weight:bold; color:${colorBorde};">${etiquetaOrigen}</span>
+        <label style="position:absolute; top:6px; right:40px; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:bold; color:#333; background:#FFEB3B; padding:3px 6px; border-radius:6px; cursor:pointer; z-index:6;">
+          <input type="checkbox" class="chk-conservar-copia" data-id="${reg.id}" ${reg.conservar ? 'checked' : ''} style="width:15px; height:15px; cursor:pointer; margin:0;">
+          Conservar
+        </label>
         <button type="button" class="btn-eliminar-copia" data-id="${reg.id}"
           style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; cursor:pointer;">✕</button>
-      <p style="font-weight:bold; color:#333; margin:0 0 4px; font-size:15px; background:#C374E3; padding:5px 8px; border-radius:5px; width:18%; margin-bottom:10px;">📅 Datos del día Trabajado: (${formatearFechaTrabajada(reg.fecha_datos)})</p>
+      <p style="font-weight:bold; color:#333; margin:0 0 4px; font-size:15px; background:#C374E3; padding:5px 8px; border-radius:5px; width:20%; height:6%; margin-bottom:10px;">📅 Datos del día Trabajado: (${formatearFechaTrabajada(reg.fecha_datos)})</p>
        
 <div class="copia-outer" style="position:relative; border:1px solid #ccc; background:#000; color:#fff; padding:8px; overflow:hidden; min-width:0; width:100%; box-sizing:border-box;">
         <span style="position:absolute; top:6px; right:150px; z-index:5; font-size:8px; font-weight:bold; color:#fff;background: rgba(0, 180, 200, 0.75); padding:4px 12px; border-radius:6px; white-space:nowrap;">🕒( Fecha de envío desde supabase) ${fechaEnvioLocal}</span>
@@ -3503,11 +3533,11 @@ const etiquetaOrigen = esAutomatico ? '🟢 Automático (1am)' : (esForzado ? '�
   color: #ff0000 !important;
 }
 </style>
-     <div style="text-align:right; font-weight:bold; font-size:15px; color:#333; margin-bottom:8px;">
+    <div style="text-align:right; font-weight:bold; font-size:15px; color:#333; margin-bottom:8px;">
         📦 Total copias mostradas: ${data ? data.length : 0}
       </div>
 
-      <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <div style="display:flex; gap:8px; margin-bottom:60px;">
         <div class="campo-fecha-wrapper">
           <input type="date" id="inputFiltroFechaExcel" value="${fechaFiltro}" class="input-fecha-custom" style="padding:10px; border-radius:6px; border:1px solid #999; font-size:20px;">
           <span class="fecha-overlay-texto" data-for="inputFiltroFechaExcel">dd/mm/aaaa</span>
@@ -3544,9 +3574,9 @@ customClass: {
       const anchoDisponible = outer.clientWidth;
       const anchoReal = inner.scrollWidth;
       if (!anchoDisponible || !anchoReal) return;
-      const escala = anchoDisponible / anchoReal;
+     const escala = anchoDisponible / anchoReal;
       inner.style.transform = `scale(${escala})`;
-      outer.style.height = (inner.scrollHeight * escala) + 'px';
+      outer.style.height = (inner.scrollHeight * escala + 20) + 'px';
     });
   }
 
@@ -3574,9 +3604,9 @@ customClass: {
         }).then((r) => {
           if (r.isConfirmed) {
            mostrarModalPassword('Confirmar Borrado', 'Digita la Contraseña para ELIMINAR TODAS las copias Excel', async () => {
-              const { error } = await supabaseClient.from('copias_excel').delete().not('id', 'is', null);
+              const { error } = await supabaseClient.from('copias_excel').delete().eq('conservar', false);
               if (error) { await Swal.fire({ title: 'Error', text: error.message, icon: 'error' }); abrirCopiasExcel(fechaFiltro); return; }
-              mostrarToastExito('Se borraron todas las copias exitosamente');
+              mostrarToastExito('Se borraron todas las copias exitosamente (las marcadas Conservar no se tocaron)');
               abrirCopiasExcel('');
             }, () => {
               abrirCopiasExcel(fechaFiltro);
@@ -3590,6 +3620,11 @@ customClass: {
   document.querySelectorAll('.btn-eliminar-copia').forEach(btn => {
         btn.addEventListener('click', () => {
           const id = btn.getAttribute('data-id');
+          const registro = data.find(r => String(r.id) === String(id));
+          if (registro && registro.conservar) {
+            Swal.fire({ title: 'Copia protegida', text: 'Debes desmarcar la casilla "Conservar" antes de poder eliminar esta copia.', icon: 'warning' });
+            return;
+          }
           Swal.fire({
             title: '¿Eliminar esta copia?', icon: 'warning', showCancelButton: true, reverseButtons: true,
             confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar', confirmButtonColor: '#d33', cancelButtonColor: '#3085d6'
@@ -3607,6 +3642,27 @@ customClass: {
               abrirCopiasExcel(fechaFiltro);
             }
           });
+        });
+      });
+
+      document.querySelectorAll('.chk-conservar-copia').forEach(chk => {
+        chk.addEventListener('change', async () => {
+          const id = chk.getAttribute('data-id');
+          const nuevoValor = chk.checked;
+          const { error } = await supabaseClient
+            .from('copias_excel')
+            .update({ conservar: nuevoValor })
+            .eq('id', id);
+          if (error) {
+            chk.checked = !nuevoValor;
+            Swal.fire({ title: 'Error', text: error.message, icon: 'error' });
+            return;
+          }
+
+          const registro = data.find(r => String(r.id) === String(id));
+          if (registro) registro.conservar = nuevoValor;
+
+          mostrarToastExito(nuevoValor ? 'Copia marcada para conservar' : 'Copia liberada, ya se puede eliminar');
         });
       });
     }
@@ -4259,6 +4315,10 @@ document.addEventListener('input', (e) => {
           const colorBorde = esReal ? '#4CAF50' : '#FF5722';
       return `
           <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
+            <label style="position:absolute; top:6px; right:38px; display:flex; align-items:center; gap:3px; font-size:9px; font-weight:bold; color:#333; background:#FFEB3B; padding:2px 5px; border-radius:5px; cursor:pointer; z-index:11;">
+              <input type="checkbox" class="chk-conservar-registro" data-id="${reg.id}" ${reg.conservar ? 'checked' : ''} style="width:13px; height:13px; cursor:pointer; margin:0;">
+              Cons.
+            </label>
             <button type="button" class="btn-eliminar-registro" data-id="${reg.id}"
               style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; font-size:14px; cursor:pointer; line-height:1; z-index:10;">
               ✕
@@ -4394,6 +4454,11 @@ document.addEventListener('input', (e) => {
 document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
             btn.addEventListener('click', () => {
               const id = btn.getAttribute('data-id');
+              const registro = data.find(r => String(r.id) === String(id));
+              if (registro && registro.conservar) {
+                Swal.fire({ title: 'Registro protegido', text: 'Debes desmarcar la casilla "Conservar" antes de poder eliminar este registro.', icon: 'warning' });
+                return;
+              }
               Swal.fire({
                 title: '¿Eliminar este registro?',
                 text: 'Esta acción no se puede deshacer.',
@@ -4436,36 +4501,340 @@ document.querySelectorAll('.btn-eliminar-registro').forEach(btn => {
               }
             });
           });
+
+          document.querySelectorAll('.chk-conservar-registro').forEach(chk => {
+            chk.addEventListener('change', async () => {
+              const id = chk.getAttribute('data-id');
+              const nuevoValor = chk.checked;
+              const { error } = await supabaseClient
+                .from('registro_impresiones')
+                .update({ conservar: nuevoValor })
+                .eq('id', id);
+              if (error) {
+                chk.checked = !nuevoValor;
+                Swal.fire({ title: 'Error', text: error.message, icon: 'error' });
+                return;
+              }
+
+              const registro = data.find(r => String(r.id) === String(id));
+              if (registro) registro.conservar = nuevoValor;
+
+              mostrarToastExito(nuevoValor ? 'Registro marcado para conservar' : 'Registro liberado, ya se puede eliminar');
+            });
+          });
         }
       });
     }
 
 async function borrarCopiasExcelAntiguas() {
-  const CANTIDAD_A_CONSERVAR = 5;
+  const { data: ciclo } = await supabaseClient
+    .from('ciclos_borrado')
+    .select('ultima_purga')
+    .eq('tipo', 'copias_excel')
+    .maybeSingle();
 
-  // Buscamos los IDs de los 5 registros más recientes (esos nunca se borran)
-  const { data: recientes, error: errorRecientes } = await supabaseClient
+  if (!ciclo) return;
+
+  const proximaPurga = new Date(ciclo.ultima_purga);
+  proximaPurga.setMonth(proximaPurga.getMonth() + 1);
+
+  if (new Date() < proximaPurga) return; // aún no toca purgar este ciclo
+
+  const CANTIDAD_A_CONSERVAR = 5;
+  const { data: recientes } = await supabaseClient
     .from('copias_excel')
     .select('id')
     .order('fecha_envio', { ascending: false })
     .limit(CANTIDAD_A_CONSERVAR);
 
-  if (errorRecientes || !recientes || recientes.length === 0) return; // tabla vacía, nada que borrar
-
-  const idsProtegidos = recientes.map(r => r.id);
-
-  const limite = new Date();
-  limite.setMonth(limite.getMonth() - 1);
-  const limiteStr = limite.toISOString().split('T')[0]; // YYYY-MM-DD
-
-  // Borra todo lo de más de 1 mes, PERO nunca los últimos 5 registros
-  // (así siempre quedan al menos 5, sin importar qué tan viejos sean)
-  await supabaseClient
+  const { data: conservadas } = await supabaseClient
     .from('copias_excel')
-    .delete()
-    .lt('fecha_datos', limiteStr)
-    .not('id', 'in', `(${idsProtegidos.join(',')})`);
+    .select('id')
+    .eq('conservar', true);
+
+  const idsProtegidos = [...((recientes || []).map(r => r.id)), ...((conservadas || []).map(r => r.id))];
+
+  let query = supabaseClient.from('copias_excel').delete();
+  query = idsProtegidos.length > 0
+    ? query.not('id', 'in', `(${idsProtegidos.join(',')})`)
+    : query.not('id', 'is', null);
+
+  await query;
+
+  // Se reinicia el ciclo: la próxima purga será dentro de 1 mes desde ahora
+  await supabaseClient
+    .from('ciclos_borrado')
+    .update({ ultima_purga: new Date().toISOString() })
+    .eq('tipo', 'copias_excel');
 }
+
+function formatearTiempoRestante(fechaLimite) {
+  const ahora = new Date();
+  const diffMs = fechaLimite - ahora;
+
+  if (diffMs <= 0) return 'Se eliminará en la próxima vez que se abra esa ventana';
+
+  const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const horas = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+  if (dias > 0) return `${dias} día${dias !== 1 ? 's' : ''} y ${horas} hora${horas !== 1 ? 's' : ''}`;
+  return `${horas} hora${horas !== 1 ? 's' : ''}`;
+}
+
+async function mostrarEstadoPurgas() {
+  const { data: cicloCopias } = await supabaseClient
+    .from('ciclos_borrado')
+    .select('ultima_purga')
+    .eq('tipo', 'copias_excel')
+    .maybeSingle();
+
+  const { data: cicloRegistros } = await supabaseClient
+    .from('ciclos_borrado')
+    .select('ultima_purga')
+    .eq('tipo', 'registro_impresiones')
+    .maybeSingle();
+
+  let textoCopias = 'No hay ciclo registrado';
+  let textoRegistros = 'No hay ciclo registrado';
+
+  if (cicloCopias) {
+    const limite = new Date(cicloCopias.ultima_purga);
+    limite.setMonth(limite.getMonth() + 1);
+    textoCopias = formatearTiempoRestante(limite);
+  }
+
+  if (cicloRegistros) {
+    const limite = new Date(cicloRegistros.ultima_purga);
+    limite.setMonth(limite.getMonth() + 2);
+    textoRegistros = formatearTiempoRestante(limite);
+  }
+
+  Swal.fire({
+    title: '⏳ Tiempo para Borrado Automático',
+    html: `
+      <div style="text-align:left; margin-top:10px;">
+        <div style="border:3px solid #9C27B0; border-radius:10px; padding:14px; margin-bottom:14px; background:#F3E5F5;">
+          <p style="margin:0 0 6px; font-weight:bold; color:#6A1B9A; font-size:15px;">📊 Copias Excel</p>
+          <p style="margin:0; font-size:16px; font-weight:bold; color:#333;">Faltan: ${textoCopias}</p>
+        </div>
+        <div style="border:3px solid #2196F3; border-radius:10px; padding:14px; background:#E3F2FD;">
+          <p style="margin:0 0 6px; font-weight:bold; color:#1565C0; font-size:15px;">📋 Registros de Impresiones</p>
+          <p style="margin:0; font-size:16px; font-weight:bold; color:#333;">Faltan: ${textoRegistros}</p>
+        </div>
+        <p style="margin-top:14px; font-size:12px; color:#777;">Nota: las copias/registros marcados "Conservar" y los 5 más recientes de cada tipo no se ven afectados por este ciclo.</p>
+      </div>
+    `,
+    width: '32em',
+    padding: '1.6em',
+    showConfirmButton: true,
+    confirmButtonText: 'Cerrar',
+    confirmButtonColor: '#3085d6'
+  });
+}
+  </script>
+
+  <script>
+    async function calcularAvisoEliminacion() {
+      const { data: ciclo, error } = await supabaseClient
+        .from('ciclos_borrado')
+        .select('ultima_purga')
+        .eq('tipo', 'copias_excel')
+        .maybeSingle();
+
+      if (error || !ciclo) return null;
+
+      // Solo avisar si hay copias no protegidas que realmente se perderían
+      const { data: pendientes } = await supabaseClient
+        .from('copias_excel')
+        .select('id')
+        .eq('conservar', false)
+        .limit(1);
+
+      if (!pendientes || pendientes.length === 0) return null;
+
+      const proximaPurga = new Date(ciclo.ultima_purga);
+      proximaPurga.setMonth(proximaPurga.getMonth() + 1);
+      proximaPurga.setHours(0, 0, 0, 0);
+
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
+      const diasRestantes = Math.round((proximaPurga - hoy) / (1000 * 60 * 60 * 24));
+
+      if (diasRestantes < 0 || diasRestantes > 3) return null;
+
+      return { fechaReferencia: ciclo.ultima_purga, diasRestantes };
+    }
+
+    async function guardarEstadoAviso(fechaReferencia, accion) {
+      await supabaseClient
+        .from('aviso_eliminacion')
+        .upsert({ id: 1, fecha_referencia: fechaReferencia, accion: accion, actualizado_en: new Date().toISOString() });
+    }
+
+    function mostrarAvisoEliminacion(aviso) {
+      const dias = aviso.diasRestantes;
+      const textoDias = dias === 0 ? 'HOY SE ELIMINAN' : (dias === 1 ? 'MAÑANA SE ELIMINAN' : `FALTAN ${dias} DÍAS PARA QUE SE ELIMINEN`);
+
+      Swal.fire({
+        title: `⚠️ ${textoDias}`,
+        html: `<p style="font-size:19px; font-weight:900; color:#B71C1C; margin:0; line-height:1.4;">
+                 COPIAS DE EXCEL GUARDADAS
+               </p>
+               <p style="font-size:14px; color:#555; margin-top:10px;">
+                 Marca "Conservar" en las copias que no quieras perder.
+               </p>`,
+        icon: 'warning',
+        background: '#FFF3CD',
+        width: '32em',
+        padding: '1.6em',
+        showCloseButton: true,
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: '🔍 Revisar',
+        cancelButtonText: 'Ignorar',
+        reverseButtons: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#757575',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          const btnConfirm = Swal.getConfirmButton();
+          const btnCancel = Swal.getCancelButton();
+          if (btnConfirm) { btnConfirm.style.fontSize = '18px'; btnConfirm.style.padding = '12px 26px'; btnConfirm.style.fontWeight = 'bold'; }
+          if (btnCancel) { btnCancel.style.fontSize = '18px'; btnCancel.style.padding = '12px 26px'; btnCancel.style.fontWeight = 'bold'; }
+        }
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await guardarEstadoAviso(aviso.fechaReferencia, 'revisado');
+          abrirCopiasExcel();
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          await guardarEstadoAviso(aviso.fechaReferencia, 'ignorado');
+        }
+        // Si se cierra con la X no se guarda nada: vuelve a salir la próxima vez que se abra/recargue la página
+        verificarAvisoEliminacionRegistros();
+      });
+    }
+
+    async function verificarAvisoEliminacion() {
+      const aviso = await calcularAvisoEliminacion();
+      if (!aviso) {
+        verificarAvisoEliminacionRegistros();
+        return;
+      }
+
+      const { data: estadoAviso } = await supabaseClient
+        .from('aviso_eliminacion')
+        .select('*')
+        .eq('id', 1)
+        .maybeSingle();
+
+      if (estadoAviso && estadoAviso.fecha_referencia === aviso.fechaReferencia && estadoAviso.accion) {
+        verificarAvisoEliminacionRegistros();
+        return;
+      }
+
+      mostrarAvisoEliminacion(aviso);
+    }
+
+    async function calcularAvisoEliminacionRegistros() {
+      const { data: ciclo, error } = await supabaseClient
+        .from('ciclos_borrado')
+        .select('ultima_purga')
+        .eq('tipo', 'registro_impresiones')
+        .maybeSingle();
+
+      if (error || !ciclo) return null;
+
+      const { data: pendientes } = await supabaseClient
+        .from('registro_impresiones')
+        .select('id')
+        .eq('conservar', false)
+        .limit(1);
+
+      if (!pendientes || pendientes.length === 0) return null;
+
+      const proximaPurga = new Date(ciclo.ultima_purga);
+      proximaPurga.setMonth(proximaPurga.getMonth() + 2);
+      proximaPurga.setHours(0, 0, 0, 0);
+
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
+      const diasRestantes = Math.round((proximaPurga - hoy) / (1000 * 60 * 60 * 24));
+
+      if (diasRestantes < 0 || diasRestantes > 3) return null;
+
+      return { fechaReferencia: ciclo.ultima_purga, diasRestantes };
+    }
+
+    async function guardarEstadoAvisoRegistros(fechaReferencia, accion) {
+      await supabaseClient
+        .from('aviso_eliminacion')
+        .upsert({ id: 2, fecha_referencia: fechaReferencia, accion: accion, actualizado_en: new Date().toISOString() });
+    }
+
+    function mostrarAvisoEliminacionRegistros(aviso) {
+      const dias = aviso.diasRestantes;
+      const textoDias = dias === 0 ? 'HOY SE ELIMINAN' : (dias === 1 ? 'MAÑANA SE ELIMINAN' : `FALTAN ${dias} DÍAS PARA QUE SE ELIMINEN`);
+
+      Swal.fire({
+        title: `⚠️ ${textoDias}`,
+        html: `<p style="font-size:19px; font-weight:900; color:#B71C1C; margin:0; line-height:1.4;">
+                 REGISTROS DE IMPRESIONES GUARDADOS
+               </p>
+               <p style="font-size:14px; color:#555; margin-top:10px;">
+                 Marca "Conservar" en los registros que no quieras perder.
+               </p>`,
+        icon: 'warning',
+        background: '#FFF3CD',
+        width: '32em',
+        padding: '1.6em',
+        showCloseButton: true,
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: '🔍 Revisar',
+        cancelButtonText: 'Ignorar',
+        reverseButtons: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#757575',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          const btnConfirm = Swal.getConfirmButton();
+          const btnCancel = Swal.getCancelButton();
+          if (btnConfirm) { btnConfirm.style.fontSize = '18px'; btnConfirm.style.padding = '12px 26px'; btnConfirm.style.fontWeight = 'bold'; }
+          if (btnCancel) { btnCancel.style.fontSize = '18px'; btnCancel.style.padding = '12px 26px'; btnCancel.style.fontWeight = 'bold'; }
+        }
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await guardarEstadoAvisoRegistros(aviso.fechaReferencia, 'revisado');
+          abrirRegistrosImpresiones();
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          await guardarEstadoAvisoRegistros(aviso.fechaReferencia, 'ignorado');
+        }
+        // Si se cierra con la X no se guarda nada: vuelve a salir la próxima vez que se abra/recargue la página
+      });
+    }
+
+    async function verificarAvisoEliminacionRegistros() {
+      const aviso = await calcularAvisoEliminacionRegistros();
+      if (!aviso) return;
+
+      const { data: estadoAviso } = await supabaseClient
+        .from('aviso_eliminacion')
+        .select('*')
+        .eq('id', 2)
+        .maybeSingle();
+
+      if (estadoAviso && estadoAviso.fecha_referencia === aviso.fechaReferencia && estadoAviso.accion) {
+        return;
+      }
+
+      mostrarAvisoEliminacionRegistros(aviso);
+    }
+
+    document.addEventListener('DOMContentLoaded', verificarAvisoEliminacion);
   </script>
 
 
