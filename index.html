@@ -3580,12 +3580,16 @@ function abrirPanelAdmin() {
           if (!el.textContent.trim()) el.remove();
         });
 
-        clon.querySelectorAll('input, textarea').forEach(campo => {
-          const valor = (campo.value ?? campo.textContent ?? '').trim();
-          const span = document.createElement('span');
-          span.textContent = valor;
-          if (campo.parentElement) campo.replaceWith(span);
-        });
+       clon.querySelectorAll('input, textarea').forEach(campo => {
+  const valor = (campo.value ?? campo.textContent ?? '').trim();
+  const span = document.createElement('span');
+  span.textContent = valor;
+  if (campo.classList.contains('venta')) {
+    span.style.color = '#000000';
+    span.style.fontWeight = 'bold';
+  }
+  if (campo.parentElement) campo.replaceWith(span);
+});
 
         // Ya NO borramos los <th> vacíos: si se borran aquí pero las <td> de esas
         // mismas columnas se quedan, el encabezado y los datos quedan desfasados
@@ -3957,10 +3961,10 @@ async function calcularHashTexto(texto) {
 </style>
     ${fechaFiltro ? `
     <div style="text-align:center; font-weight:bold; font-size:18px; color:#00838F; background:#E0F7FA; padding:8px; border-radius:8px; margin-bottom:10px;">
-        📦 Registros Encontrados
+         Registros Encontrados
       </div>` : ''}
     <div style="text-align:right; font-weight:bold; font-size:15px; color:${fechaFiltro ? '#fff' : '#333'}; margin-bottom:8px;">
-        📦 Total copias mostradas: ${data ? data.length : 0}
+         Total copias mostradas: ${data ? data.length : 0}
       </div>
 
       <div style="display:flex; gap:8px; margin-bottom:60px;">
@@ -4219,10 +4223,10 @@ async function calcularHashTexto(texto) {
       function preguntarConBotones(titulo, opciones) {
         return new Promise((resolve) => {
           const botonesHTML = opciones.map(op => `
-      <button id="${op.id}" type="button" style="font-size:22px; font-weight:bold; padding:14px; border:none; border-radius:10px; background:#3085d6; color:#fff; cursor:pointer;">
+      <button id="${op.id}" type="button" style="font-size:22px; font-weight:bold; padding:14px; border:none; border-radius:10px; background:#3085d6; color:#fff; cursor:pointer; margin-bottom:8px;">
         ${op.texto}
       </button>
-    `).join('<div style="height:22px;"></div>');
+    `).join('<div style="height:30px;"></div>');
 
           let respondido = false;
 
