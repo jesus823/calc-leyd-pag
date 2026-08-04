@@ -2060,7 +2060,10 @@
 
         Swal.fire({
           title: '¿Restaurar lo borrado?',
-          html: `Vas a restaurar la versión borrada el <b>${fechaTexto}</b> - ${horaTexto}`,
+          html: `<div style="text-align:center;">
+                   <p style="margin:0 0 8px; font-size:18px;">Vas a Restaurar la versión borrada el:</p>
+                   <p style="margin:0; font-size:17px;"><b>${fechaTexto}</b> - ${horaTexto}</p>
+                 </div>`,
           icon: 'question',
           showCancelButton: true,
           reverseButtons: true,
