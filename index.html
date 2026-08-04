@@ -4505,6 +4505,8 @@ async function calcularHashTexto(texto) {
       document.addEventListener('input', (e) => {
         const campo = e.target;
 
+        if (!campo.closest('#miTabla')) return;
+
         if (campo.id && campo.id.startsWith('loteria')) {
           const valorLimpio = campo.value.trim();
           const coincideExacto = loterias.some(
