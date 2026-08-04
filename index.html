@@ -391,7 +391,7 @@
           </th>
 
           <th style="width: 100px; border: 3px solid black;">
-            <button type="button" onclick="pedirClaveAdmin()" id="btnAdmin"
+            <button type="button" onclick="abrirPanelAdmin()" id="btnAdmin"
               style="font-size: 15px; font-weight: bold; padding: 4px 8px; border: none; border-radius: 6px;background: linear-gradient(to right, #000000, #434343); color: white; cursor: pointer;">
               🔒 Admin
             </button>
@@ -2410,7 +2410,9 @@ function abrirPanelAdmin() {
                 cancelButtonColor: '#B71C1C'
               }).then((r) => {
                 if (r.isConfirmed) {
-                  crearRespaldoExcelManual();
+                  mostrarModalPassword('Confirmar Respaldo', 'Digita la Contraseña para crear el respaldo Excel', () => {
+                    crearRespaldoExcelManual();
+                  }, null, '11');
                 }
               });
             });
@@ -3881,14 +3883,14 @@ async function calcularHashTexto(texto) {
           return `
       <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:32px; padding-bottom:26px; background:#fff; position:relative;">
         <span style="position:absolute; top:6px; left:10px; font-size:14px; font-weight:bold; color:${colorBorde};">${etiquetaOrigen}</span>
-        <label style="position:absolute; top:6px; right:40px; display:flex; align-items:center; gap:4px; font-size:11px; font-weight:bold; color:#333; background:#FFEB3B; padding:3px 6px; border-radius:6px; cursor:pointer; z-index:6;">
-          <input type="checkbox" class="chk-conservar-copia" data-id="${reg.id}" ${reg.conservar ? 'checked' : ''} style="width:15px; height:15px; cursor:pointer; margin:0;">
+        <label style="position:absolute; top:6px; right:75px; display:flex; align-items:center; gap:1px; font-size:14px; font-weight:bold; color:#333; background:#FFEB3B; padding:4px 7px; border-radius:6px; cursor:pointer; z-index:6;">
+          <input type="checkbox" class="chk-conservar-copia" data-id="${reg.id}" ${reg.conservar ? 'checked' : ''} style="width:19px; height:19px; cursor:pointer; margin:0;">
           Conservar
         </label>
-        <button type="button" class="btn-replicar-copia" data-id="${reg.id}" ${!reg.datos_json ? 'disabled' : ''}
-          style="position:absolute; top:6px; right:150px; font-size:12px; font-weight:bold; padding:6px 10px; border:none; border-radius:6px; background: linear-gradient(to right, #00838F, #4DD0E1); color:#000; cursor:pointer; z-index:6; ${!reg.datos_json ? 'opacity:0.5; cursor:not-allowed;' : ''}">
-          🔄 Replicar en Original
-        </button>
+       <button type="button" class="btn-replicar-copia" data-id="${reg.id}" ${!reg.datos_json ? 'disabled' : ''}
+  style="position:absolute; top:6px; right:220px; font-size:14px; font-weight:bold; padding:6px 10px; border:none; border-radius:6px; background: linear-gradient(to right, #00838F, #4DD0E1); color:#000; cursor:pointer; z-index:6; ${!reg.datos_json ? 'opacity:0.5; cursor:not-allowed;' : ''}">
+  🔄 Replicar en Original
+</button>
         <button type="button" class="btn-eliminar-copia" data-id="${reg.id}"
           style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; cursor:pointer;">✕</button>
       <p style="font-weight:bold; color:#333; margin:0 0 10px; font-size:15px; background:#C374E3; padding:5px 8px; border-radius:5px; width:fit-content; max-width:100%; box-sizing:border-box;">📅 Datos del día Trabajado: (${formatearFechaTrabajada(reg.fecha_datos)})</p>
@@ -4797,10 +4799,10 @@ async function calcularHashTexto(texto) {
           const etiquetaTipo = esReal ? 'Registro Real' : 'Registro Prueba';
           const colorBorde = esReal ? '#4CAF50' : '#FF5722';
           return `
-          <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:32px; background:#fff; position:relative;">
-            <label style="position:absolute; top:6px; right:38px; display:flex; align-items:center; gap:3px; font-size:9px; font-weight:bold; color:#333; background:#FFEB3B; padding:2px 5px; border-radius:5px; cursor:pointer; z-index:11;">
-              <input type="checkbox" class="chk-conservar-registro" data-id="${reg.id}" ${reg.conservar ? 'checked' : ''} style="width:13px; height:13px; cursor:pointer; margin:0;">
-              Cons.
+          <div style="border:5px solid ${colorBorde}; border-radius:10px; padding:10px; padding-top:50px; background:#fff; position:relative;">
+           <label style="position:absolute; top:6px; right:75px; display:flex; align-items:center; gap:5px; font-size:12px; font-weight:bold; color:#333; background:#FFEB3B; padding:3px 7px; border-radius:5px; cursor:pointer; z-index:11;">
+              <input type="checkbox" class="chk-conservar-registro" data-id="${reg.id}" ${reg.conservar ? 'checked' : ''} style="width:17px; height:17px; cursor:pointer; margin:0;">
+              Conservar
             </label>
             <button type="button" class="btn-eliminar-registro" data-id="${reg.id}"
               style="position:absolute; top:6px; right:6px; width:28px; height:28px; border:none; border-radius:50%; background:#f44336; color:#fff; font-weight:bold; font-size:14px; cursor:pointer; line-height:1; z-index:10;">
@@ -4810,8 +4812,8 @@ async function calcularHashTexto(texto) {
               style="width:100%; margin-bottom:8px; padding:8px; border:none; border-radius:6px; background: linear-gradient(to right, #0D47A1, #64B5F6); color:#fff; font-weight:bold; font-size:13px; cursor:pointer;">
               🖨️ Imprimir
             </button>
-            <p style="font-weight:bold; color:${colorBorde}; margin:0 0 4px; font-size:12px;">${etiquetaTipo}</p>
-            <p style="font-weight:bold; color:#333; margin:0 0 8px; font-size:13px;">🕒 ${fechaLocal}</p>
+             <p style="font-weight:bold; color:${colorBorde}; margin:0 0 4px; font-size:12px;">${etiquetaTipo}</p> 
+            <!-- <p style="font-weight:bold; color:#333; margin:0 0 8px; font-size:13px;">🕒 ${fechaLocal}</p> -->
             <div style="background:#fff; color:#000; font-family:Arial, Helvetica, sans-serif; padding:6px; border:1px solid #ccc; zoom: 0.7; --tam-base:34px; --tam-premios:20px;">
               ${reg.contenido_html}
             </div>
