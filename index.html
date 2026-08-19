@@ -4311,10 +4311,10 @@ async function calcularHashTexto(texto) {
     <script>
       window.imprimiendoAhora = false;
 
-      function calcularFechaImpresion(esAyer) {
+      function calcularFechaImpresion(diasAtras) {
         const fecha = new Date();
         fecha.setHours(12, 0, 0, 0);
-        if (esAyer) fecha.setDate(fecha.getDate() - 1);
+        fecha.setDate(fecha.getDate() - (diasAtras || 0));
         const anio = fecha.getFullYear();
         const mes = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'][fecha.getMonth()];
         const dia = String(fecha.getDate()).padStart(2, '0');
@@ -4365,16 +4365,18 @@ async function calcularHashTexto(texto) {
         const fechaSeleccion = await preguntarConBotones('¿Qué fecha deseas imprimir?', [
           { id: 'btnFechaHoy', texto: 'Hoy', valor: 'hoy' },
           { id: 'btnFechaAyer', texto: 'Ayer', valor: 'ayer' },
+          { id: 'btnFechaAntesAyer', texto: 'Antes de ayer', valor: 'antes-ayer' },
           { id: 'btnFechaSinFecha', texto: 'Sin fecha', valor: 'sin-fecha' }
         ]);
 
         if (!fechaSeleccion) return;
 
+        const diasAtras = fechaSeleccion === 'ayer' ? 1 : (fechaSeleccion === 'antes-ayer' ? 2 : 0);
         const fechaImpresion = fechaSeleccion === 'sin-fecha'
           ? ''
-          : calcularFechaImpresion(fechaSeleccion === 'ayer');
+          : calcularFechaImpresion(diasAtras);
 
-        const etiquetasFecha = { hoy: 'Hoy', ayer: 'Ayer', 'sin-fecha': 'Sin fecha' };
+        const etiquetasFecha = { hoy: 'Hoy', ayer: 'Ayer', 'antes-ayer': 'Antes de ayer', 'sin-fecha': 'Sin fecha' };
         const textoFecha = fechaSeleccion === 'sin-fecha'
           ? etiquetasFecha[fechaSeleccion]
           : `${etiquetasFecha[fechaSeleccion]} - ${fechaImpresion}`;
@@ -4485,7 +4487,7 @@ async function calcularHashTexto(texto) {
 
         return `
       <p class="cod">Cod. 088388</p>
-      ${fechaImpresion ? `<p class="fecha-ticket">${fechaImpresion}</p>` : ''}
+      <p class="fecha-ticket" style="${fechaImpresion ? '' : 'visibility:hidden;'}">${fechaImpresion || '-'}</p>
       <div class="espacio-manual"></div>
       ${seccionPremios}
      <p class="seccion-titulo" style="margin-top: 4px;">BILLETES: $ ${billetesTotal}</p>
@@ -4572,21 +4574,33 @@ async function calcularHashTexto(texto) {
         cont.appendChild(btnCerrar);
       }
 
-      function toggleVistaPrevia() {
+      async function toggleVistaPrevia() {
         const cont = document.getElementById('contenedor-impresion');
         const btn = document.getElementById('btnVistaPrevia');
-        vistaPreviaActiva = !vistaPreviaActiva;
 
-        if (vistaPreviaActiva) {
+        if (!vistaPreviaActiva) {
+          const fechaSeleccion = await preguntarConBotones('¿Qué fecha deseas ver en la vista previa?', [
+            { id: 'btnFechaHoyPrev', texto: 'Hoy', valor: 'hoy' },
+            { id: 'btnFechaAyerPrev', texto: 'Ayer', valor: 'ayer' },
+            { id: 'btnFechaAntesAyerPrev', texto: 'Antes de ayer', valor: 'antes-ayer' },
+            { id: 'btnFechaSinFechaPrev', texto: 'Sin fecha', valor: 'sin-fecha' }
+          ]);
+
+          if (!fechaSeleccion) return;
+
+          const diasAtras = fechaSeleccion === 'ayer' ? 1 : (fechaSeleccion === 'antes-ayer' ? 2 : 0);
+          fechaVistaPreviaActual = fechaSeleccion === 'sin-fecha' ? '' : calcularFechaImpresion(diasAtras);
+
+          vistaPreviaActiva = true;
           cont.style.setProperty('--drag-x', '0px');
           cont.style.setProperty('--drag-y', '0px');
 
-          fechaVistaPreviaActual = calcularFechaImpresion(false);
           cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
           cont.classList.add('vista-activa');
           agregarBotonCerrarVista();
           if (btn) btn.innerHTML = '❌ Cerrar Vista';
         } else {
+          vistaPreviaActiva = false;
           cont.classList.remove('vista-activa');
           cont.style.setProperty('--drag-x', '0px');
           cont.style.setProperty('--drag-y', '0px');
