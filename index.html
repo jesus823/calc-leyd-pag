@@ -39,14 +39,13 @@
     #contenedor-impresion.vista-activa {
       position: fixed;
       left: 50%;
-      top: 15%;
+      top: 50%;
       --drag-x: 0px;
       --drag-y: 0px;
-      transform: translate(calc(-50% + var(--drag-x)), var(--drag-y)) scale(0.65);
-      transform-origin: top center;
+      --escala-vista: 0.65;
+      transform: translate(calc(-50% + var(--drag-x)), calc(-50% + var(--drag-y))) scale(var(--escala-vista));
+      transform-origin: center center;
       z-index: 999999;
-      max-height: 90vh;
-      overflow-y: auto;
       outline: 5px solid yellow;
       outline-offset: 3px;
     }
@@ -4706,19 +4705,18 @@ async function calcularHashTexto(texto) {
 
           if (cantidadNum > 0 && referenciaTexto) {
             contadorAnulados++;
-            anuladosDetalleHTML += `
-      <div class="linea-premio">
-        <span>${referenciaTexto}</span>
-      </div>`;
+            anuladosDetalleHTML += `<span>${referenciaTexto}</span>`;
           }
         }
 
         const seccionAnulados = contadorAnulados > 0 ? `
-      <div class="linea-premio">
+      <div class="linea-premio" style="align-items: flex-start;">
         <span>Anulados:</span>
         <span class="circulo">${contadorAnulados}</span>
-      </div>
-      ${anuladosDetalleHTML}` : '';
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          ${anuladosDetalleHTML}
+        </div>
+      </div>` : '';
 
         return `
       <p class="cod">Cod. 088388</p>
@@ -4772,6 +4770,27 @@ async function calcularHashTexto(texto) {
 
       let vistaPreviaActiva = false;
       let fechaVistaPreviaActual = '';
+
+      function ajustarEscalaVistaPrevia() {
+        const cont = document.getElementById('contenedor-impresion');
+        if (!cont) return;
+
+        const altoContenido = cont.scrollHeight;
+        const anchoContenido = cont.scrollWidth;
+        if (!altoContenido || !anchoContenido) return;
+
+        const margen = 20;
+        const altoDisponible = window.innerHeight - margen;
+        const anchoDisponible = window.innerWidth - margen;
+
+        const escalaMax = 0.65;
+        const escalaPorAlto = altoDisponible / altoContenido;
+        const escalaPorAncho = anchoDisponible / anchoContenido;
+
+        const escalaFinal = Math.min(escalaMax, escalaPorAlto, escalaPorAncho);
+
+        cont.style.setProperty('--escala-vista', escalaFinal.toString());
+      }
 
       function agregarBotonCerrarVista() {
         const cont = document.getElementById('contenedor-impresion');
@@ -4841,6 +4860,7 @@ async function calcularHashTexto(texto) {
           cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
           cont.classList.add('vista-activa');
           agregarBotonCerrarVista();
+          requestAnimationFrame(ajustarEscalaVistaPrevia);
           if (btn) btn.innerHTML = '❌ Cerrar Vista';
         } else {
           vistaPreviaActiva = false;
@@ -4857,6 +4877,7 @@ async function calcularHashTexto(texto) {
         if (cont && cont.classList.contains('vista-activa')) {
           cont.innerHTML = construirContenidoTicket(fechaVistaPreviaActual);
           agregarBotonCerrarVista();
+          requestAnimationFrame(ajustarEscalaVistaPrevia);
         }
       }
 
@@ -4925,6 +4946,13 @@ async function calcularHashTexto(texto) {
       }
 
       document.addEventListener('DOMContentLoaded', setupArrastreVistaPrevia);
+
+      window.addEventListener('resize', () => {
+        const cont = document.getElementById('contenedor-impresion');
+        if (cont && cont.classList.contains('vista-activa')) {
+          ajustarEscalaVistaPrevia();
+        }
+      });
 
 
 
