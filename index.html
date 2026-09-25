@@ -264,7 +264,7 @@
       z-index: 3000000;
       background: #fff;
       border-radius: 10px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
       padding: 14px;
       width: 280px;
       font-family: Arial, Helvetica, sans-serif;
@@ -492,7 +492,7 @@
               style="height: 25px;width: 50px;text-align: center;"></td>
           <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
           <td><textarea></textarea></td>
-         <td id="nequi" style="border: 3px solid; background-color:#000;"></td> <!-- cantidaddd -->
+          <td id="nequi" style="border: 3px solid; background-color:#000;"></td> <!-- cantidaddd -->
 
           <td style="width: 70px;  border: 3px solid; font-weight: bolder;   ">Anulados</td> <!-- anuladosss -->
 
@@ -527,10 +527,9 @@
               style="height: 25px;width: 50px;text-align: center;"></td>
           <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
           <td><textarea></textarea></td>
-           <td style="width: 70px; border: 3px solid; background-color:#000;"></td>
+          <td style="width: 70px; border: 3px solid; background-color:#000;"></td>
           <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
-              style=" font-size: 17px; font-weight: bold; width: 140px; height: 25px; text-align: center;"
-             ></td>
+              style=" font-size: 17px; font-weight: bold; width: 140px; height: 25px; text-align: center;"></td>
           <td><textarea></textarea></td>
 
           <td style="position: relative; height: 40px; width: 60px; z-index: 999;">
@@ -566,7 +565,7 @@
               style="height: 25px;width: 50px;text-align: center;"></td>
           <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
           <td><textarea></textarea></td>
-         <td style="width: 70px; border: 3px solid; background-color:#000;"></td>
+          <td style="width: 70px; border: 3px solid; background-color:#000;"></td>
           <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
               style=" font-size: 17px; font-weight: bold; width: 140px; height: 25px; text-align: center;"></td>
           <td><textarea></textarea></td>
@@ -591,7 +590,7 @@
               style="height: 25px;width: 50px;text-align: center;"></td>
           <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
           <td><textarea></textarea></td>
-    <td style="width: 70px; border: 3px solid; background-color:#000;"></td>
+          <td style="width: 70px; border: 3px solid; background-color:#000;"></td>
           <td style="width: 70px; border: 3px solid;"><input type="tel" class="cantidad4"
               style=" font-size: 17px; font-weight: bold; width: 140px; height: 25px; text-align: center;"></td>
           <td><textarea></textarea></td>
@@ -616,11 +615,11 @@
               style="height: 25px;width: 50px; text-align: center;"></td>
           <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
           <td><textarea></textarea></td>
-           <td><textarea></textarea></td>
-           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
           <td><textarea></textarea></td>
-          <td ><textarea></textarea></td>
+          <td><textarea></textarea></td>
+          <td><textarea></textarea></td>
+          <td><textarea></textarea></td>
         </tr>
 
         <tr>
@@ -2494,7 +2493,7 @@
           if (e.key === 'Enter') intentarConfirmar();
         });
       }
-function abrirPanelAdmin() {
+      function abrirPanelAdmin() {
         Swal.fire({
           title: '🔒 Panel Admin',
           customClass: { popup: 'popup-panel-admin' },
@@ -2547,7 +2546,7 @@ function abrirPanelAdmin() {
               abrirRegistrosImpresiones();
             });
 
-        
+
 
             document.getElementById('btnProgramadorMain').addEventListener('click', () => {
               mostrarModalPassword('Acceso Programador', 'Digita la Contraseña para entrar', () => {
@@ -2922,8 +2921,8 @@ function abrirPanelAdmin() {
       }
 
       // === Calendario personalizado: solo muestra los días del mes actual ===
-      const nombresMeses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-      const nombresDiasCorto = ['DO','LU','MA','MI','JU','VI','SA'];
+      const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+      const nombresDiasCorto = ['DO', 'LU', 'MA', 'MI', 'JU', 'VI', 'SA'];
       let calendarioAbiertoId = null;
 
       function actualizarOverlayFecha(id) {
@@ -3673,9 +3672,9 @@ function abrirPanelAdmin() {
           const html = generarCopiaTablaHTML();
           const fecha = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
 
-         await supabaseClient
-      .from('estado_actual')
-      .upsert({ id: 1, datos: { html, fecha, valores: capturarValoresTabla() }, actualizado_en: new Date().toISOString() });
+          await supabaseClient
+            .from('estado_actual')
+            .upsert({ id: 1, datos: { html, fecha, valores: capturarValoresTabla() }, actualizado_en: new Date().toISOString() });
         }, 2000);
       }
 
@@ -3689,19 +3688,19 @@ function abrirPanelAdmin() {
           if (!el.textContent.trim()) el.remove();
         });
 
-       clon.querySelectorAll('input, textarea').forEach(campo => {
-  const valor = (campo.value ?? campo.textContent ?? '').trim();
-  const span = document.createElement('span');
-  span.textContent = valor;
-  if (campo.classList.contains('venta')) {
-    span.style.color = '#000000';
-    span.style.fontWeight = 'bold';
-  }
-  if (campo.classList.contains('raspas-oculto')) {
-    span.classList.add('raspas-oculto');
-  }
-  if (campo.parentElement) campo.replaceWith(span);
-});
+        clon.querySelectorAll('input, textarea').forEach(campo => {
+          const valor = (campo.value ?? campo.textContent ?? '').trim();
+          const span = document.createElement('span');
+          span.textContent = valor;
+          if (campo.classList.contains('venta')) {
+            span.style.color = '#000000';
+            span.style.fontWeight = 'bold';
+          }
+          if (campo.classList.contains('raspas-oculto')) {
+            span.classList.add('raspas-oculto');
+          }
+          if (campo.parentElement) campo.replaceWith(span);
+        });
 
         // Ya NO borramos los <th> vacíos: si se borran aquí pero las <td> de esas
         // mismas columnas se quedan, el encabezado y los datos quedan desfasados
@@ -3749,26 +3748,26 @@ function abrirPanelAdmin() {
         return clon.outerHTML;
       }
 
-function capturarValoresTabla() {
-  const campos = document.querySelectorAll("textarea:not(.etiqueta-grande), input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
-  return Array.from(campos).map(el => el.value);
-}
+      function capturarValoresTabla() {
+        const campos = document.querySelectorAll("textarea:not(.etiqueta-grande), input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
+        return Array.from(campos).map(el => el.value);
+      }
 
-function restaurarValoresTabla(valores) {
-  if (!Array.isArray(valores)) return;
-  const campos = document.querySelectorAll("textarea:not(.etiqueta-grande), input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
-  campos.forEach((el, i) => {
-    if (i < valores.length) el.value = valores[i] || '';
-  });
-  campos.forEach(el => el.dispatchEvent(new Event('input', { bubbles: true })));
-}
+      function restaurarValoresTabla(valores) {
+        if (!Array.isArray(valores)) return;
+        const campos = document.querySelectorAll("textarea:not(.etiqueta-grande), input[type=tel], input[type=text], input.cantidad2, input.cantidad3, input.cantidad4, input.venta");
+        campos.forEach((el, i) => {
+          if (i < valores.length) el.value = valores[i] || '';
+        });
+        campos.forEach(el => el.dispatchEvent(new Event('input', { bubbles: true })));
+      }
 
-async function calcularHashTexto(texto) {
-  const codificado = new TextEncoder().encode(texto);
-  const bufferHash = await crypto.subtle.digest('SHA-256', codificado);
-  const bytesHash = Array.from(new Uint8Array(bufferHash));
-  return bytesHash.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+      async function calcularHashTexto(texto) {
+        const codificado = new TextEncoder().encode(texto);
+        const bufferHash = await crypto.subtle.digest('SHA-256', codificado);
+        const bytesHash = Array.from(new Uint8Array(bufferHash));
+        return bytesHash.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
 
       function confirmarRespaldoExcelManual() {
         Swal.fire({
@@ -3796,16 +3795,16 @@ async function calcularHashTexto(texto) {
           const fechaDatos = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
           const hashDatos = await calcularHashTexto(html);
 
-         const { error } = await supabaseClient
-      .from('copias_excel')
-      .insert({
-        fecha_datos: fechaDatos,
-        fecha_envio: new Date().toISOString(),
-        contenido_html: html,
-        hash_datos: hashDatos,
-        origen: 'manual_forzado',
-        datos_json: capturarValoresTabla()
-      });
+          const { error } = await supabaseClient
+            .from('copias_excel')
+            .insert({
+              fecha_datos: fechaDatos,
+              fecha_envio: new Date().toISOString(),
+              contenido_html: html,
+              hash_datos: hashDatos,
+              origen: 'manual_forzado',
+              datos_json: capturarValoresTabla()
+            });
 
           if (error) {
             Swal.fire({ title: 'Error al crear respaldo', text: error.message, icon: 'error' });
@@ -4218,44 +4217,44 @@ async function calcularHashTexto(texto) {
             });
 
             document.querySelectorAll('.btn-replicar-copia').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.getAttribute('data-id');
-          const registro = data.find(r => String(r.id) === String(id));
-          if (!registro || !registro.datos_json) {
-            Swal.fire({ title: 'No disponible', text: 'Esta copia es anterior a esta función y no tiene datos guardados para restaurar.', icon: 'warning' });
-            return;
-          }
+              btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const registro = data.find(r => String(r.id) === String(id));
+                if (!registro || !registro.datos_json) {
+                  Swal.fire({ title: 'No disponible', text: 'Esta copia es anterior a esta función y no tiene datos guardados para restaurar.', icon: 'warning' });
+                  return;
+                }
 
-          const valoresActuales = capturarValoresTabla();
-          const sonIguales = JSON.stringify(valoresActuales) === JSON.stringify(registro.datos_json);
+                const valoresActuales = capturarValoresTabla();
+                const sonIguales = JSON.stringify(valoresActuales) === JSON.stringify(registro.datos_json);
 
-          if (sonIguales) {
-            Swal.fire({ title: 'Ya está igual', text: 'La página original ya tiene exactamente esta misma información. No hay nada que sobrescribir.', icon: 'info' })
-              .then(() => {
-                abrirCopiasExcel(fechaFiltro);
+                if (sonIguales) {
+                  Swal.fire({ title: 'Ya está igual', text: 'La página original ya tiene exactamente esta misma información. No hay nada que sobrescribir.', icon: 'info' })
+                    .then(() => {
+                      abrirCopiasExcel(fechaFiltro);
+                    });
+                  return;
+                }
+
+                Swal.fire({
+                  title: '¿Sobrescribir la página original?',
+                  text: 'Esto reemplazará TODOS los datos actuales de la tabla con los de esta copia. No se puede deshacer.',
+                  icon: 'warning', showCancelButton: true, reverseButtons: true,
+                  confirmButtonText: 'Sí, sobrescribir', cancelButtonText: 'Cancelar',
+                  confirmButtonColor: '#d33', cancelButtonColor: '#3085d6'
+                }).then((r) => {
+                  if (r.isConfirmed) {
+                    mostrarModalPassword('Confirmar Restauración', 'Digita la Contraseña para SOBRESCRIBIR la tabla original con esta copia', () => {
+                      restaurarValoresTabla(registro.datos_json);
+                      Swal.close();
+                      mostrarToastExito('Datos restaurados en la página original exitosamente');
+                    });
+                  }
+                });
               });
-            return;
-          }
+            });
 
-          Swal.fire({
-            title: '¿Sobrescribir la página original?',
-            text: 'Esto reemplazará TODOS los datos actuales de la tabla con los de esta copia. No se puede deshacer.',
-            icon: 'warning', showCancelButton: true, reverseButtons: true,
-            confirmButtonText: 'Sí, sobrescribir', cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#d33', cancelButtonColor: '#3085d6'
-          }).then((r) => {
-            if (r.isConfirmed) {
-              mostrarModalPassword('Confirmar Restauración', 'Digita la Contraseña para SOBRESCRIBIR la tabla original con esta copia', () => {
-                restaurarValoresTabla(registro.datos_json);
-                Swal.close();
-                mostrarToastExito('Datos restaurados en la página original exitosamente');
-              });
-            }
-          });
-        });
-      });
 
-    
 
 
             document.querySelectorAll('.chk-conservar-copia').forEach(chk => {
@@ -4528,24 +4527,24 @@ async function calcularHashTexto(texto) {
       async function mostrarConfirmacionImprimir() {
         if (window.imprimiendoAhora) return;
 
-      function validarAnulados() {
-        const incompletos = [];
-        const inputsAnulados = document.querySelectorAll('input.cantidad4');
-        for (let i = 0; i < inputsAnulados.length; i += 2) {
-          const inputCantidad = inputsAnulados[i];
-          const inputReferencia = inputsAnulados[i + 1];
-          const cantidadTexto = inputCantidad?.value.trim() || '';
-          const referenciaTexto = inputReferencia?.value.trim() || '';
-          const numeroFila = Math.floor(i / 2) + 1;
+        function validarAnulados() {
+          const incompletos = [];
+          const inputsAnulados = document.querySelectorAll('input.cantidad4');
+          for (let i = 0; i < inputsAnulados.length; i += 2) {
+            const inputCantidad = inputsAnulados[i];
+            const inputReferencia = inputsAnulados[i + 1];
+            const cantidadTexto = inputCantidad?.value.trim() || '';
+            const referenciaTexto = inputReferencia?.value.trim() || '';
+            const numeroFila = Math.floor(i / 2) + 1;
 
-          if (cantidadTexto && !referenciaTexto) {
-            incompletos.push(`Fila ${numeroFila} de Anulados: digitaste la Cantidad pero falta la Referencia`);
-          } else if (!cantidadTexto && referenciaTexto) {
-            incompletos.push(`Fila ${numeroFila} de Anulados: digitaste la Referencia pero falta la Cantidad`);
+            if (cantidadTexto && !referenciaTexto) {
+              incompletos.push(`Fila ${numeroFila} de Anulados: digitaste la Cantidad pero falta la Referencia`);
+            } else if (!cantidadTexto && referenciaTexto) {
+              incompletos.push(`Fila ${numeroFila} de Anulados: digitaste la Referencia pero falta la Cantidad`);
+            }
           }
+          return incompletos;
         }
-        return incompletos;
-      }
 
         const fechaSeleccion = await preguntarConBotones('¿Qué fecha deseas imprimir?', [
           { id: 'btnFechaHoy', texto: 'Hoy', valor: 'hoy' },
@@ -4691,7 +4690,7 @@ async function calcularHashTexto(texto) {
         });
 
         const seccionAnulados = contadorAnulados > 0 ? `
-      <div class="linea-premio" style="align-items: flex-start;">
+     <div class="linea-premio" style="align-items: flex-start; font-size: 26px;">
         <span>Anulados:</span>
         <span class="circulo">${contadorAnulados}</span>
         <div style="display:flex; flex-direction:column; gap:6px;">
