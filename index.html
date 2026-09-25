@@ -493,9 +493,9 @@
               style="height: 25px;width: 50px;text-align: center;"></td>
           <td class="resultado resultado-monedas" style="font-weight: bolder;border: 3px solid;"></td>
           <td><textarea></textarea></td>
-         <td id="nequi" style=" border: 3px solid;">Cantidaddd</td>
+         <td id="nequi" style=" border: 3px solid; font-weight: bolder;">Cantidad</td> <!-- cantidaddd -->
 
-          <td style="width: 70px;  border: 3px solid;   ">Anuladosss</td>
+          <td style="width: 70px;  border: 3px solid; font-weight: bolder;   ">Anulados</td> <!-- anuladosss -->
 
           <td><textarea></textarea></td>
           <td id="boton-conectar-impresora" style="text-align: center; border: 3px solid #8A2BE2;">
@@ -756,17 +756,12 @@
         </tr>
 
         <tr>
-          <td> <button type="button" onclick="abrirCopiasExcel()" style=" box-shadow: 4px 4px 10px rgb(168, 58, 7);height: 50px; font-weight: bolder; border-color: rgb(255, 0, 85); font-size: 17px; color: rgb(221, 250, 3); border-radius: 25px;background: linear-gradient(
-  to bottom,
-  rgb(125, 92, 155) 0%,
-  rgb(93, 55, 197) 45%,
-  rgb(126, 101, 225) 55%,
-  rgb(21, 83, 184) 100%
- );
-
- ">
-              Revisar Excel
-            </button></td>
+          <td>
+            <button type="button" id="btnRespaldoExcelManualMain" onclick="confirmarRespaldoExcelManual()"
+              style="font-size: 12px; font-weight: bold; padding: 6px 10px; border: none; border-radius: 8px; background: linear-gradient(to right, #C2185B, #EC407A); color: black; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); width: 100%;">
+              🆘 Respaldo Excel Manual
+            </button>
+          </td>
           <td><textarea></textarea></td>
           <td style="border: 3px solid;"> <textarea></textarea></td>
           <td style="border: 3px solid;"><input type="tel" class="cantidad2"
@@ -2519,15 +2514,22 @@ function abrirPanelAdmin() {
             }
           </style>
           <div style="text-align:left;">
+         <button type="button" id="btnRevisarExcelMain" style="margin-top:20px; width:100%; padding:18px 10px; min-height:56px; border:none; border-radius:6px; background: linear-gradient(
+  to bottom,
+  rgb(125, 92, 155) 0%,
+  rgb(93, 55, 197) 45%,
+  rgb(126, 101, 225) 55%,
+  rgb(21, 83, 184) 100%
+ ); color: rgb(221, 250, 3); font-weight: bold; font-size: 17px; cursor: pointer;">
+    📊 Revisar Excel
+</button>
+            </div>
+            <div style="text-align:left;">
          <button type="button" id="btnVerRegistrosMain" style="margin-top:20px; width:100%; padding:18px 10px; min-height:56px; border:none; border-radius:6px; background: linear-gradient(to right, #7AEBC5, #1FBF87); color: black; font-weight: bold; font-size: 17px; cursor: pointer;">
     📋 Ver Registros de Impresiones
 </button>
             </div>
-            <div style="text-align:left;">
-           <button type="button" id="btnRespaldoExcelManualMain" style="margin-top:32px; width:100%; padding:18px 10px; min-height:56px; border:none; border-radius:6px; background: linear-gradient(to right, #C2185B, #EC407A);  color: black;  font-weight: bold; font-size: 17px; cursor: pointer;">
-    🆘 Respaldo Excel Manual
-</button>
-            </div>
+          
         <div style="text-align:left; margin-top:32px; display:flex; flex-direction:column; align-items:flex-start; gap:14px;">
          <button type="button" id="btnRestaurarBorradoMain" style="width:fit-content; padding:8px 12px; min-height:36px; border:none; border-radius:6px; background: linear-gradient(to right, #E65100, #FFB74D); color: black; font-weight: bold; font-size: 13px; height: 40px; cursor: pointer;">
     🔄 Restaurar lo Último Borrado
@@ -2544,30 +2546,17 @@ function abrirPanelAdmin() {
           showConfirmButton: false,
           showCloseButton: true,
           didOpen: () => {
+            document.getElementById('btnRevisarExcelMain').addEventListener('click', () => {
+              Swal.close();
+              abrirCopiasExcel();
+            });
+
             document.getElementById('btnVerRegistrosMain').addEventListener('click', () => {
               Swal.close();
               abrirRegistrosImpresiones();
             });
 
-            document.getElementById('btnRespaldoExcelManualMain').addEventListener('click', () => {
-              Swal.fire({
-                title: '¿Crear respaldo manual ahora?',
-                text: 'Se guardará una copia con el estado actual de la tabla.',
-                icon: 'question',
-                showCancelButton: true,
-                reverseButtons: true,
-                confirmButtonText: 'Sí, crear respaldo',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#B71C1C'
-              }).then((r) => {
-                if (r.isConfirmed) {
-                  mostrarModalPassword('Confirmar Respaldo', 'Digita la Contraseña para crear el respaldo Excel', () => {
-                    crearRespaldoExcelManual();
-                  }, null, '11');
-                }
-              });
-            });
+        
 
             document.getElementById('btnProgramadorMain').addEventListener('click', () => {
               mostrarModalPassword('Acceso Programador', 'Digita la Contraseña para entrar', () => {
@@ -3790,6 +3779,26 @@ async function calcularHashTexto(texto) {
   return bytesHash.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+      function confirmarRespaldoExcelManual() {
+        Swal.fire({
+          title: '¿Crear respaldo manual ahora?',
+          text: 'Se guardará una copia con el estado actual de la tabla.',
+          icon: 'question',
+          showCancelButton: true,
+          reverseButtons: true,
+          confirmButtonText: 'Sí, crear respaldo',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#B71C1C'
+        }).then((r) => {
+          if (r.isConfirmed) {
+            mostrarModalPassword('Confirmar Respaldo', 'Digita la Contraseña para crear el respaldo Excel', () => {
+              crearRespaldoExcelManual();
+            }, null, '11');
+          }
+        });
+      }
+
       async function crearRespaldoExcelManual() {
         try {
           const html = generarCopiaTablaHTML();
@@ -4641,6 +4650,33 @@ async function calcularHashTexto(texto) {
       <p class="seccion-titulo">RECAMBIO RASPAS</p>
       ${recambioHTML}` : '';
 
+        let anuladosDetalleHTML = '';
+        let contadorAnulados = 0;
+        const inputsAnulados = document.querySelectorAll('input.cantidad4');
+        for (let i = 0; i < inputsAnulados.length; i += 2) {
+          const inputCantidad = inputsAnulados[i];
+          const inputReferencia = inputsAnulados[i + 1];
+          const cantidadTexto = inputCantidad?.value.trim() || '';
+          const referenciaTexto = inputReferencia?.value.trim() || '';
+          const cantidadNum = parseFloat(limpiarMiles(cantidadTexto)) || 0;
+
+          if (cantidadNum > 0 && referenciaTexto) {
+            contadorAnulados++;
+            anuladosDetalleHTML += `
+      <div class="linea-premio">
+        <span class="circulo">1</span>
+        <span> ${referenciaTexto}</span>
+      </div>`;
+          }
+        }
+
+        const seccionAnulados = contadorAnulados > 0 ? `
+      <div class="linea-premio">
+        <span>Anulados:</span>
+        <span class="circulo">${contadorAnulados}</span>
+      </div>
+      ${anuladosDetalleHTML}` : '';
+
         return `
       <p class="cod">Cod. 088388</p>
       <p class="fecha-ticket" style="${fechaImpresion ? '' : 'visibility:hidden;'}">${fechaImpresion || '-'}</p>
@@ -4650,6 +4686,7 @@ async function calcularHashTexto(texto) {
       <p class="seccion-titulo">MONEDAS: $ ${monedasTotal}</p>
       <hr>
       <p class="total-final">Total: $ ${totalGeneral}</p>
+      ${seccionAnulados}
       <div style="height: 20px;"></div> 
       ${seccionRecambio}
       <div style="height: 60px;"></div>
