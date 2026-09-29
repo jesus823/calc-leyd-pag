@@ -4690,7 +4690,7 @@
         });
 
         const seccionAnulados = contadorAnulados > 0 ? `
-     <div class="linea-premio" style="align-items: flex-start; font-size: 26px;">
+     <div class="linea-premio" style="align-items: flex-start; font-size: 26px;"> 
         <span>Anulados:</span>
         <span class="circulo">${contadorAnulados}</span>
         <div style="display:flex; flex-direction:column; gap:6px;">
@@ -5605,16 +5605,12 @@
           await guardarEstadoAviso(aviso.fechaReferencia, 'ignorado');
         }
         // Si se cierra con la X no se guarda nada: vuelve a salir la próxima vez que se abra/recargue la página
-        verificarAvisoEliminacionRegistros();
       });
     }
 
     async function verificarAvisoEliminacion() {
       const aviso = await calcularAvisoEliminacion();
-      if (!aviso) {
-        verificarAvisoEliminacionRegistros();
-        return;
-      }
+      if (!aviso) return;
 
       const { data: estadoAviso } = await supabaseClient
         .from('aviso_eliminacion')
@@ -5623,109 +5619,12 @@
         .maybeSingle();
 
       if (estadoAviso && estadoAviso.fecha_referencia === aviso.fechaReferencia && estadoAviso.accion) {
-        verificarAvisoEliminacionRegistros();
         return;
       }
 
       mostrarAvisoEliminacion(aviso);
     }
 
-    async function calcularAvisoEliminacionRegistros() {
-      const { data: ciclo, error } = await supabaseClient
-        .from('ciclos_borrado')
-        .select('ultima_purga')
-        .eq('tipo', 'registro_impresiones')
-        .maybeSingle();
-
-      if (error || !ciclo) return null;
-
-      const { data: pendientes } = await supabaseClient
-        .from('registro_impresiones')
-        .select('id')
-        .eq('conservar', false)
-        .limit(1);
-
-      if (!pendientes || pendientes.length === 0) return null;
-
-      const proximaPurga = new Date(ciclo.ultima_purga);
-      proximaPurga.setMonth(proximaPurga.getMonth() + 2);
-      proximaPurga.setHours(0, 0, 0, 0);
-
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-
-      const diasRestantes = Math.round((proximaPurga - hoy) / (1000 * 60 * 60 * 24));
-
-      if (diasRestantes < 0 || diasRestantes > 3) return null;
-
-      return { fechaReferencia: ciclo.ultima_purga, diasRestantes };
-    }
-
-    async function guardarEstadoAvisoRegistros(fechaReferencia, accion) {
-      await supabaseClient
-        .from('aviso_eliminacion')
-        .upsert({ id: 2, fecha_referencia: fechaReferencia, accion: accion, actualizado_en: new Date().toISOString() });
-    }
-
-    function mostrarAvisoEliminacionRegistros(aviso) {
-      const dias = aviso.diasRestantes;
-      const textoDias = dias === 0 ? 'HOY SE ELIMINAN' : (dias === 1 ? 'MAÑANA SE ELIMINAN' : `FALTAN ${dias} DÍAS PARA QUE SE ELIMINEN`);
-
-      Swal.fire({
-        title: `⚠️ ${textoDias}`,
-        html: `<p style="font-size:19px; font-weight:900; color:#B71C1C; margin:0; line-height:1.4;">
-                 REGISTROS DE IMPRESIONES GUARDADOS
-               </p>
-               <p style="font-size:14px; color:#555; margin-top:10px;">
-                 Marca "Conservar" en los registros que no quieras perder.
-               </p>`,
-        icon: 'warning',
-        background: '#FFF3CD',
-        width: '32em',
-        padding: '1.6em',
-        showCloseButton: true,
-        showConfirmButton: true,
-        showCancelButton: true,
-        confirmButtonText: '🔍 Revisar',
-        cancelButtonText: 'Ignorar',
-        reverseButtons: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#757575',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        didOpen: () => {
-          const btnConfirm = Swal.getConfirmButton();
-          const btnCancel = Swal.getCancelButton();
-          if (btnConfirm) { btnConfirm.style.fontSize = '18px'; btnConfirm.style.padding = '12px 26px'; btnConfirm.style.fontWeight = 'bold'; }
-          if (btnCancel) { btnCancel.style.fontSize = '18px'; btnCancel.style.padding = '12px 26px'; btnCancel.style.fontWeight = 'bold'; }
-        }
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          await guardarEstadoAvisoRegistros(aviso.fechaReferencia, 'revisado');
-          abrirRegistrosImpresiones();
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-          await guardarEstadoAvisoRegistros(aviso.fechaReferencia, 'ignorado');
-        }
-        // Si se cierra con la X no se guarda nada: vuelve a salir la próxima vez que se abra/recargue la página
-      });
-    }
-
-    async function verificarAvisoEliminacionRegistros() {
-      const aviso = await calcularAvisoEliminacionRegistros();
-      if (!aviso) return;
-
-      const { data: estadoAviso } = await supabaseClient
-        .from('aviso_eliminacion')
-        .select('*')
-        .eq('id', 2)
-        .maybeSingle();
-
-      if (estadoAviso && estadoAviso.fecha_referencia === aviso.fechaReferencia && estadoAviso.accion) {
-        return;
-      }
-
-      mostrarAvisoEliminacionRegistros(aviso);
-    }
 
     document.addEventListener('DOMContentLoaded', verificarAvisoEliminacion);
   </script>
