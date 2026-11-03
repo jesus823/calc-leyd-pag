@@ -2511,7 +2511,7 @@
   rgb(126, 101, 225) 55%,
   rgb(21, 83, 184) 100%
  ); color: rgb(221, 250, 3); font-weight: bold; font-size: 17px; cursor: pointer;">
-    📊 Revisar Excel
+    📊 Revisar Copias Excel
 </button>
             </div>
             <div style="text-align:left;">
@@ -2522,7 +2522,7 @@
           
         <div style="text-align:left; margin-top:32px; display:flex; flex-direction:column; align-items:flex-start; gap:14px;">
          <button type="button" id="btnRestaurarBorradoMain" style="width:fit-content; padding:8px 12px; min-height:36px; border:none; border-radius:6px; background: linear-gradient(to right, #E65100, #FFB74D); color: black; font-weight: bold; font-size: 13px; height: 40px; cursor: pointer;">
-    🔄 Restaurar lo Último Borrado
+    🔄 Restaurar Último Excel Borrado
 </button>
 
 <hr style="width:100%; border:none; height:2px; margin:26px 0 0; background: linear-gradient(to right, transparent, rgba(0,0,0,0.55) 15%, rgba(0,0,0,0.55) 85%, transparent);">
@@ -3156,7 +3156,7 @@
         "Pagatón", "Maxichance", "Betplay", "Paga Triple", "Linea Cundi", "Linea Tolima",
         "Linea Cruz Roja", "Linea Huila", "Linea Meta", "Linea Valle", "Linea Manizales",
         "Linea Bogota", "Linea Quindio", "Linea Risaralda", "Linea Medellin", "Linea Santander",
-        "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas", "Keno"
+        "Linea Boyaca", "Linea Cauca", "Paga Encime", "Chance", "Cabezote", "Otros Premios", "Rifas", "Keno", "Extra"
       ];
 
 
@@ -3202,7 +3202,7 @@
             const coincideExacto = loterias.some(
               dep => dep.toLowerCase() === valorActual.toLowerCase()
             );
-            if (!coincideExacto) {
+            if (!coincideExacto && valorActual !== '') {
               input.value = '';
               localStorage.setItem(input.id, '');
               input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -3296,7 +3296,7 @@
             const coincideExacto = juegos.some(
               dep => dep.toLowerCase() === valorActual.toLowerCase()
             );
-            if (!coincideExacto) {
+            if (!coincideExacto && valorActual !== '') {
               input.value = '';
               localStorage.setItem(input.id, '');
               input.dispatchEvent(new Event('input', { bubbles: true }));
